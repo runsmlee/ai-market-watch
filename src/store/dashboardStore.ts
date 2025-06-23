@@ -114,7 +114,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     sortBy: 'recent' as SortOption,
   },
   
-  sidebarCollapsed: false,
+  sidebarCollapsed: true,
 
   setStartups: (startups, lastUpdated, isFromCache = false) => {
     console.log('📊 Setting startups:', { count: startups.length, lastUpdated, isFromCache });
