@@ -24,7 +24,7 @@ interface DashboardState {
   // Actions
   setStartups: (startups: Startup[], lastUpdated?: string, isFromCache?: boolean) => void;
   updateFilters: (filters: Partial<StartupFilters>) => void;
-  applyFilters: () => void;
+  applyFilters: () => Promise<void>;
   sortStartups: (startups: Startup[], sortBy: SortOption) => Startup[];
   clearFilters: () => void;
   setLoading: (loading: boolean) => void;
