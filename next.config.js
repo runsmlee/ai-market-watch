@@ -4,7 +4,6 @@ const nextConfig = {
     optimizeCss: false,
   },
   images: {
-    domains: ['images.unsplash.com', 'via.placeholder.com'],
     remotePatterns: [
       {
         protocol: 'https',

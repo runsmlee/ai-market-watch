@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { TrendingUp, RefreshCw, Wifi, WifiOff, ArrowUpDown } from 'lucide-react';
 import { useDashboardStore } from '@/store/dashboardStore';
 import { SortOption } from '@/types/startup';
-import Image from 'next/image';
 
 export default function Header() {
   const [isVisible, setIsVisible] = useState(false);

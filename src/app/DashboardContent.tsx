@@ -100,11 +100,19 @@ export default function DashboardContent() {
         console.log('📊 API Response received:', {
           dataLength: response.transformedData?.length || 0,
           lastUpdated: response.lastUpdated,
-          hasError: !!response.error
+          hasError: !!response.error,
+          responseType: typeof response,
+          responseKeys: Object.keys(response || {})
         });
 
         if (response.error) {
+          console.error('❌ API response contains error:', response.error, response.message);
           throw new Error(response.message || 'Failed to fetch data');
+        }
+
+        if (!response.transformedData || !Array.isArray(response.transformedData)) {
+          console.error('❌ Invalid API response structure:', response);
+          throw new Error('Invalid data format received from API');
         }
 
         const startups = response.transformedData || [];

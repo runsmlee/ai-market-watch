@@ -49,6 +49,8 @@ export async function fetchStartups(
     // Add timestamp to prevent aggressive caching
     url.searchParams.append('_t', Date.now().toString());
 
+    console.log('🔗 Fetching from URL:', url.toString());
+    
     const response = await fetch(url.toString(), {
       method: 'GET',
       headers: {
@@ -57,9 +59,17 @@ export async function fetchStartups(
         'Accept': 'application/json',
       }
     });
+    
+    console.log('📡 Response status:', response.status, response.statusText);
 
     if (!response.ok) {
-      throw new Error(`API request failed: ${response.status}`);
+      const errorText = await response.text();
+      console.error('❌ API request failed:', { 
+        status: response.status, 
+        statusText: response.statusText,
+        errorText: errorText.substring(0, 200) + (errorText.length > 200 ? '...' : '')
+      });
+      throw new Error(`API request failed: ${response.status} - ${response.statusText}`);
     }
 
     const data = await response.json();
