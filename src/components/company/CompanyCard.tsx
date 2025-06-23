@@ -22,30 +22,26 @@ const truncateText = (text: string, maxLength: number): string => {
 const CompanyCard = ({ company, onClick }: CompanyCardProps) => {
   return (
     <div 
-      className="group relative overflow-hidden cursor-pointer h-[420px]"
+      className="group relative overflow-hidden cursor-pointer h-[400px]"
       onClick={onClick}
     >
-      {/* Background glow effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.01] to-transparent 
-                     rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-      
-      {/* Main card */}
-      <div className="relative glass rounded-2xl p-6 hover:bg-white/[0.02] 
-                     transition-all duration-500 hover:scale-[1.02] hover:shadow-glow
-                     border-white/[0.06] group-hover:border-white/[0.1] h-full flex flex-col">
+      {/* Main card with unified design */}
+      <div className="relative bg-white/[0.02] border border-white/[0.08] rounded-lg p-5 
+                     hover:bg-white/[0.04] hover:border-white/[0.12]
+                     transition-all duration-300 hover:scale-[1.02] h-full flex flex-col">
         
         {/* Header section */}
-        <div className="flex items-start justify-between mb-4 min-h-[80px]">
+        <div className="flex items-start justify-between mb-4">
           <div className="flex-1 pr-3">
-            <h3 className="text-lg font-semibold text-white mb-2 
-                          group-hover:text-gradient transition-all duration-300 leading-tight
-                          line-clamp-2 min-h-[3.5rem]" 
+            <h3 className="text-base font-semibold text-white mb-2 
+                          group-hover:text-white/90 transition-colors duration-300 leading-tight
+                          line-clamp-2 min-h-[2.5rem]" 
                 title={safeString(company.companyName)}>
               {safeString(company.companyName)}
             </h3>
             <div className="flex items-center gap-2 mb-2">
-              <span className="px-2.5 py-1 bg-white/10 border border-white/10 
-                              rounded-full text-xs font-medium text-white/70 
+              <span className="px-2 py-1 bg-white/[0.08] border border-white/[0.12] 
+                              rounded text-xs font-medium text-white/80 
                               backdrop-blur-sm truncate max-w-[120px]"
                     title={safeString(company.category)}>
                 {truncateText(safeString(company.category), 15)}
@@ -55,17 +51,14 @@ const CompanyCard = ({ company, onClick }: CompanyCardProps) => {
           
           {/* Status indicator */}
           <div className="flex items-center gap-1.5 shrink-0">
-            <div className="relative">
-              <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse-subtle"></div>
-              <div className="absolute inset-0 w-1.5 h-1.5 bg-green-400/30 rounded-full animate-ping"></div>
-            </div>
-            <span className="text-xs text-white/50 font-medium">Active</span>
+            <div className="w-1.5 h-1.5 bg-white/60 rounded-full"></div>
+            <span className="text-xs text-white/60 font-medium">Active</span>
           </div>
         </div>
 
         {/* Description */}
         <div className="mb-4 flex-shrink-0">
-          <p className="text-sm text-white/60 line-clamp-3 leading-relaxed min-h-[4rem]"
+          <p className="text-sm text-white/70 line-clamp-3 leading-relaxed min-h-[3.5rem]"
              title={safeString(company.description)}>
             {safeString(company.description)}
           </p>
@@ -73,25 +66,25 @@ const CompanyCard = ({ company, onClick }: CompanyCardProps) => {
 
         {/* Key metrics grid */}
         <div className="grid grid-cols-2 gap-3 mb-4 flex-shrink-0">
-          <div className="bg-white/[0.02] border border-white/[0.08] rounded-lg p-3
-                         hover:bg-white/[0.04] transition-colors duration-300">
+          <div className="bg-white/[0.03] border border-white/[0.1] rounded p-3
+                         hover:bg-white/[0.05] transition-colors duration-200">
             <div className="flex items-center gap-1.5 mb-1">
-              <Calendar className="w-3.5 h-3.5 text-white/40" />
-              <span className="text-xs text-white/50 font-medium uppercase tracking-wide">Founded</span>
+              <Calendar className="w-3.5 h-3.5 text-white/50" />
+              <span className="text-xs text-white/60 font-medium">Founded</span>
             </div>
-            <div className="text-base font-semibold text-white truncate"
+            <div className="text-sm font-semibold text-white/90 truncate"
                  title={safeString(company.yearFounded)}>
               {safeString(company.yearFounded)}
             </div>
           </div>
           
-          <div className="bg-white/[0.02] border border-white/[0.08] rounded-lg p-3
-                         hover:bg-white/[0.04] transition-colors duration-300">
+          <div className="bg-white/[0.03] border border-white/[0.1] rounded p-3
+                         hover:bg-white/[0.05] transition-colors duration-200">
             <div className="flex items-center gap-1.5 mb-1">
-              <Users className="w-3.5 h-3.5 text-white/40" />
-              <span className="text-xs text-white/50 font-medium uppercase tracking-wide">Team</span>
+              <Users className="w-3.5 h-3.5 text-white/50" />
+              <span className="text-xs text-white/60 font-medium">Team</span>
             </div>
-            <div className="text-base font-semibold text-white truncate"
+            <div className="text-sm font-semibold text-white/90 truncate"
                  title={safeString(company.teamSize)}>
               {truncateText(safeString(company.teamSize), 20)}
             </div>
@@ -99,23 +92,22 @@ const CompanyCard = ({ company, onClick }: CompanyCardProps) => {
         </div>
 
         {/* Footer section - push to bottom */}
-        <div className="pt-4 border-t border-white/[0.06] mt-auto">
+        <div className="pt-4 border-t border-white/[0.08] mt-auto">
           <div className="flex items-center justify-between mb-3">
             {/* Funding info */}
             <div className="flex items-center gap-2.5 flex-1 min-w-0">
               <div className="relative flex-shrink-0">
-                <div className="absolute inset-0 bg-white/10 blur-md rounded-lg"></div>
-                <div className="relative w-8 h-8 bg-gradient-to-br from-white/10 to-white/5 
-                               rounded-lg border border-white/10 flex items-center justify-center">
-                  <DollarSign className="w-4 h-4 text-white/70" />
+                <div className="w-7 h-7 bg-white/[0.06] border border-white/[0.1] 
+                               rounded flex items-center justify-center">
+                  <DollarSign className="w-3.5 h-3.5 text-white/70" />
                 </div>
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-sm text-white font-semibold truncate"
+                <div className="text-sm text-white/90 font-medium truncate"
                      title={safeString(company.totalFundingRaised)}>
                   {truncateText(safeString(company.totalFundingRaised), 25)}
                 </div>
-                <div className="text-xs text-white/50 truncate"
+                <div className="text-xs text-white/60 truncate"
                      title={safeString(company.latestFundingRound)}>
                   {truncateText(safeString(company.latestFundingRound), 20)}
                 </div>
@@ -123,15 +115,15 @@ const CompanyCard = ({ company, onClick }: CompanyCardProps) => {
             </div>
 
             {/* Action indicator */}
-            <div className="flex items-center gap-1.5 text-white/40 
+            <div className="flex items-center gap-1.5 text-white/50 
                            group-hover:text-white/70 transition-colors duration-300 flex-shrink-0">
-              <span className="text-xs font-medium">View Details</span>
+              <span className="text-xs font-medium">Details</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </div>
           </div>
 
           {/* Location */}
-          <div className="flex items-center gap-1.5 text-white/50">
+          <div className="flex items-center gap-1.5 text-white/60">
             <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
             <span className="text-sm truncate"
                   title={safeString(company.location)}>
@@ -139,12 +131,6 @@ const CompanyCard = ({ company, onClick }: CompanyCardProps) => {
             </span>
           </div>
         </div>
-
-        {/* Subtle hover underline */}
-        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r 
-                       from-transparent via-white/20 to-transparent 
-                       scale-x-0 group-hover:scale-x-100 
-                       transition-transform duration-500 origin-center"></div>
       </div>
     </div>
   );

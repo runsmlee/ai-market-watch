@@ -1,5 +1,55 @@
 # AI Market Watch - Context Log
 
+## 2024-12-28 - CompanyModal 디자인 통일성 개선
+
+### 모달 배경 및 식별력 강화
+- **CSS 변수 활용**: `glass-strong` 클래스로 웹사이트 색상 팔레트와 완벽 일치
+- **푸른 톤 통일**: `rgb(var(--surface-secondary))` 사용으로 전체 웹사이트 색상 톤 일관성 확보
+- **백드롭 강화**: `bg-black/70 backdrop-blur-md`로 뒷배경 차단 강화
+- **그림자 효과**: `shadow-2xl shadow-black/50`로 모달 부각
+
+### 전체 웹사이트와 디자인 통일성 확보
+- **glass 효과 제거**: 기존 `glass-strong` 클래스를 구체적 스타일로 대체
+- **색상 팔레트 통일**: 
+  - 배경: `bg-white/[0.02]` (다른 컴포넌트와 동일)
+  - 테두리: `border-white/[0.08]` → `border-white/[0.12]` (강화)
+  - 호버: `hover:bg-white/[0.04]` (일관성 유지)
+- **패딩 및 간격**: 다른 컴포넌트(CompanyCard, Header, AdvancedFilters)와 동일한 간격 체계 적용
+
+### 상세 컴포넌트 스타일 통일
+- **CompactMetricCard**: `glass` → `bg-white/[0.02] border border-white/[0.08]`
+- **CompactDetailCard**: 동일한 배경 및 테두리 스타일 적용
+- **탭 컨테이너**: `backdrop-blur-sm` 추가로 계층감 강화
+- **모든 카드**: `hover:border-white/[0.12]` 호버 효과 통일
+
+### 차트 및 툴팁 개선
+- **Tooltip 배경**: `backgroundColor: 'rgb(var(--surface-secondary))'` CSS 변수 활용으로 완벽한 색상 일치
+- **Tooltip 테두리**: `border: '1px solid rgba(255, 255, 255, 0.12)'` 일관성 확보
+- **백드롭 블러**: `backdropFilter: 'blur(12px)'` 추가로 가독성 향상
+
+### 색상 톤 일관성 최종 수정 (2024-12-28 추가)
+- **문제 식별**: 전체 웹사이트는 푸른 톤(8,8,12 → 12,12,16) 채택하나 모달에서 하드코딩된 색상 사용
+- **CSS 변수 전환**: 
+  - 모달 배경: `bg-[rgba(24,24,27,0.9)]` → `glass-strong` 클래스 활용
+  - 툴팁 배경: `rgba(24, 24, 27, 0.95)` → `rgb(var(--surface-secondary))` 변수 참조
+- **색상 팔레트 통일**: 
+  - `--surface-secondary: 24, 24, 27` (푸른 톤)
+  - `--background-start-rgb: 8, 8, 12` (푸른 톤)
+  - `--background-end-rgb: 12, 12, 16` (푸른 톤)
+- **미래 호환성**: CSS 변수 사용으로 전체 테마 변경 시 자동 일관성 유지
+
+### 인터랙션 개선
+- **전체 transition**: `transition-all duration-200`으로 부드러운 상호작용
+- **호버 상태**: 모든 카드에 일관된 호버 효과 적용
+- **터치 친화적**: 버튼 크기 및 간격 모바일 최적화 유지
+
+### 접근성 및 가독성
+- **색상 대비**: 90% 불투명 배경으로 텍스트 가독성 대폭 향상
+- **시각적 계층**: 명확한 테두리와 배경으로 정보 구분 강화
+- **일관성**: 전체 웹사이트와 동일한 디자인 언어 적용
+
+**Impact**: 모달 가독성 향상, 전체 웹사이트와 완벽한 디자인 통일성 확보, 사용자 경험 일관성 강화
+
 ## 2024-12-19 - Mobile UX Enhancements and Responsive Optimizations
 
 ### Mobile-First Filter UX
@@ -221,6 +271,79 @@ AI Startups Intelligence Platform
 - **기억 용이성**: 간단하고 직관적인 브랜드명 구조
 
 ### 사용자 경험 향상
+
+## 2024-12-31 - 고정 슬라이딩 사이드바 및 공간 효율성 최적화
+
+### 사이드바 아키텍처 혁신
+- **고정 위치 구현**: `position: fixed`로 스크롤과 무관하게 항상 같은 위치 유지
+- **슬라이드 인/아웃**: 우측 끝에서 `translate-x-full` ↔ `translate-x-0` 애니메이션
+- **공간 효율성**: 기존 그리드 레이아웃을 제거하고 전체 화면 활용
+- **시각적 차별화**: 우측 끝에서 튀어나오는 독특한 UX 패턴
+
+### 기술적 구현
+- **고정 사이드바**: `fixed top-0 right-0 h-full w-96 z-40`
+- **블러 배경**: `bg-black/20 backdrop-blur-xl border-l border-white/10`
+- **부드러운 전환**: `transition-transform duration-300 ease-in-out`
+- **모바일 오버레이**: 전체 화면 오버레이로 모바일 UX 개선
+
+### 메인 콘텐츠 적응형 레이아웃
+- **동적 마진**: `mr-0` ↔ `mr-96`으로 사이드바 공간 확보
+- **전체 너비 활용**: 사이드바 숨김 시 화면 전체 너비 사용
+- **반응형 그리드**: VirtualizedCompanyGrid가 사이드바 상태에 따라 자동 조정
+- **부드러운 전환**: `transition-all duration-300`으로 레이아웃 변화 애니메이션
+
+### 토글 버튼 위치 최적화
+- **동적 위치**: 사이드바 상태에 따라 `right-8` ↔ `right-[25.5rem]`
+- **사이드바 연동**: 사이드바 바로 옆에 버튼 위치하여 직관적 연결
+- **시각적 일관성**: 사이드바와 버튼이 하나의 시스템으로 인식
+- **접근성**: 사이드바 열림/닫힌 상태에서 모두 쉽게 접근 가능
+
+### UX/UI 개선사항
+- **스크롤 독립성**: 페이지 스크롤과 무관하게 사이드바 항상 접근 가능
+- **몰입감**: 고정 사이드바로 데이터 분석 중 스크롤해도 정보 유지
+- **공간 활용**: 기존 4열 그리드 제약에서 벗어나 유연한 레이아웃
+- **시각적 계층**: z-index 40으로 콘텐츠 위에 명확히 부각
+
+### 성능 최적화
+- **GPU 가속**: `transform` 속성 사용으로 부드러운 애니메이션
+- **레이아웃 시프트 방지**: `transition-all`로 점진적 레이아웃 변화
+- **메모리 효율**: 고정 위치로 리플로우 최소화
+- **반응형 최적화**: 화면 크기별 최적화된 사이드바 너비
+
+### 모바일 최적화
+- **전체 화면 오버레이**: `fixed inset-0 bg-black/50`로 모바일에서 명확한 포커스
+- **터치 친화적**: 오버레이 클릭으로 사이드바 닫기 가능
+- **블러 효과**: `backdrop-blur-sm`으로 배경 컨텍스트 유지
+- **접근성**: `lg:hidden`으로 데스크톱에서는 오버레이 비활성화
+
+**Impact**: 스크롤 독립적 데이터 접근, 공간 효율성 극대화, 독특한 슬라이딩 UX로 차별화
+
+## 2024-12-31 - 사이드바 기본 숨김 및 토글 버튼 애니메이션 강화
+
+### 사이드바 UX 개선
+- **기본 상태 변경**: 사이드바를 기본 숨김(`sidebarCollapsed: true`)으로 설정
+- **사용자 발견성 향상**: 우측하단 토글 버튼에 은은한 애니메이션 효과 추가
+- **시각적 유도**: 사용자가 자연스럽게 토글 버튼을 발견하고 클릭하도록 유도
+
+### 애니메이션 효과 구현
+- **`animate-pulse-gentle`**: 4초 주기로 은은한 펄스 효과 (크기 1.0 ↔ 1.02)
+- **`animate-bounce-subtle`**: 3초 주기로 부드러운 바운스 효과 (2px 상하 이동)
+- **`animate-ping-slow`**: 3초 주기로 느린 링 확산 효과 (투명도 0.3 → 0)
+- **글로우 효과**: 호버시 파란색-보라색 그라데이션 글로우 표시
+
+### 시각적 개선사항
+- **다층 애니메이션**: 버튼 자체, 아이콘, 링 효과가 각각 다른 주기로 동작
+- **호버 인터랙션**: 마우스 오버시 그라데이션 글로우와 그림자 강화
+- **성능 최적화**: CSS 애니메이션 사용으로 GPU 가속 활용
+- **접근성 고려**: `prefers-reduced-motion` 설정 시 애니메이션 비활성화
+
+### 사용자 경험 향상
+- **직관적 발견**: 은은한 애니메이션으로 기능 존재 알림
+- **비침습적 디자인**: 과도하지 않은 애니메이션으로 주의 분산 방지
+- **일관된 브랜딩**: 기존 글래스모피즘 디자인과 조화로운 효과
+- **반응형 피드백**: 클릭 시 즉시 반응하는 스케일 애니메이션
+
+**Impact**: 사이드바 발견성 대폭 향상, 사용자 참여도 증가, 클린한 초기 화면 제공
 
 ## 2024-12-31 - Sorting System Implementation
 - **정렬 기능 추가**: 스타트업 리스트에 4가지 정렬 옵션 구현
@@ -568,3 +691,67 @@ npm run lint   # 린트 검사
 - 페이지 로딩 속도 개선
 - 구글 등 검색엔진에서의 인덱싱 품질 향상
 - 모바일 친화성 및 접근성 개선
+
+## 2024-12-20 - Hydration Error Resolution & Dynamic Import Implementation
+
+### Overview
+Resolved critical hydration errors by implementing dynamic import pattern and client-side only rendering for interactive components.
+
+### Key Changes
+1. **Dynamic Import Pattern**: Split main page into dynamic `DashboardContent` component with SSR disabled
+2. **Client-Side Safety**: Added `mounted` state to prevent server/client mismatch
+3. **Locale-Safe Formatting**: Replaced `toLocaleString()` with consistent `Intl.NumberFormat('en-US')`
+4. **VirtualizedCompanyGrid**: Enhanced with `isClient` state for responsive calculations
+5. **Error Boundaries**: Improved error handling and loading states
+
+### Technical Implementation
+- **src/app/page.tsx**: Main wrapper with dynamic import and loading state
+- **src/app/DashboardContent.tsx**: Core dashboard logic (client-only)
+- **src/components/layout/StatsGrid.tsx**: Safe number formatting
+- **src/components/company/VirtualizedCompanyGrid.tsx**: Client-aware responsive behavior
+
+### Benefits
+- ✅ Eliminated hydration mismatches
+- ✅ Consistent server/client rendering
+- ✅ Improved loading UX
+- ✅ Maintained all existing functionality
+- ✅ Enhanced error resilience
+
+### Performance Impact
+- Initial render: Slightly delayed for client-side components
+- Runtime performance: No degradation
+- User experience: Smoother, no hydration flashes
+
+Related files: `src/app/page.tsx`, `src/app/DashboardContent.tsx`, `src/components/layout/StatsGrid.tsx`, `src/components/company/VirtualizedCompanyGrid.tsx`
+
+## 2024-12-20 - Collapsible Sidebar Implementation
+
+### Overview
+Implemented collapsible Analytics sidebar with dynamic grid layout adjustment for better UX.
+
+### Key Changes
+1. **Store Enhancement**: Added `sidebarCollapsed` state and `toggleSidebar` action to `dashboardStore.ts`
+2. **AnalyticsSidebar Optimization**: Removed duplicate metrics (Total Companies, AI Categories, Total Funding) that were already in StatsGrid
+3. **Dynamic Grid Layout**: VirtualizedCompanyGrid now adjusts between 3-4 columns based on sidebar state
+4. **Floating Toggle Button**: Added elegant floating button for sidebar control with smooth animations
+5. **Responsive Behavior**: 
+   - Sidebar collapsed: 4 columns on XL screens, 3 on LG
+   - Sidebar visible: 3 columns on XL screens, 2 on LG
+   - Mobile/tablet behavior unchanged
+
+### Unique Analytics Metrics (No duplicates)
+- Recent Startups (since 2020)
+- Average Team Size
+- Global Reach (unique cities)
+- Scale-ups (100+ employees)
+- Category distribution charts
+- Location distribution charts
+- Innovation timeline
+
+### UX Improvements
+- Smooth transitions between layouts
+- Visual feedback on column count
+- Preserved mobile responsiveness
+- Elegant glass-morphism toggle button
+
+Related files: `src/store/dashboardStore.ts`, `src/components/charts/AnalyticsSidebar.tsx`, `src/components/company/VirtualizedCompanyGrid.tsx`, `src/app/page.tsx`

@@ -511,23 +511,26 @@ export default function CompanyModal({ company, isOpen, onClose }: CompanyModalP
       onWheel={(e) => e.stopPropagation()}
       onTouchMove={(e) => e.stopPropagation()}
     >
-      {/* Background overlay */}
+      {/* Background overlay - 더 강한 배경으로 모달 식별력 향상 */}
       <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/70 backdrop-blur-md"
         onClick={onClose}
       />
       
       {/* Modal container */}
       <div className="relative z-10 h-full flex items-center justify-center p-4 sm:p-8">
         <div 
-          className="glass-strong w-full max-w-6xl rounded-xl sm:rounded-2xl border-white/[0.08] 
-                     max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] flex flex-col"
+          className="relative w-full max-w-6xl rounded-xl sm:rounded-2xl 
+                     max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] flex flex-col
+                     glass-strong backdrop-blur-xl shadow-2xl shadow-black/50"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Compact Header */}
-          <div className="flex items-center justify-between p-3 sm:p-4 border-b border-white/[0.06] bg-white/[0.02] flex-shrink-0">
+          <div className="flex items-center justify-between p-3 sm:p-4 border-b border-white/[0.08] 
+                         bg-white/[0.02] backdrop-blur-sm flex-shrink-0 rounded-t-xl sm:rounded-t-2xl">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-              <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl overflow-hidden bg-white/[0.05] border border-white/[0.08] flex-shrink-0">
+              <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl overflow-hidden 
+                             bg-white/[0.06] border border-white/[0.12] flex-shrink-0">
                 {logoUrl ? (
                   <img 
                     src={logoUrl} 
@@ -552,11 +555,13 @@ export default function CompanyModal({ company, isOpen, onClose }: CompanyModalP
               <div className="min-w-0 flex-1">
                 <h2 className="text-base sm:text-lg font-bold text-white truncate">{company.companyName}</h2>
                 <div className="flex items-center gap-1 sm:gap-2 text-xs text-white/60">
-                  <span className="px-1.5 sm:px-2 py-0.5 bg-white/[0.08] rounded-full truncate max-w-[100px] sm:max-w-none">
+                  <span className="px-1.5 sm:px-2 py-0.5 bg-white/[0.08] border border-white/[0.12] 
+                                 rounded-full truncate max-w-[100px] sm:max-w-none">
                     {company.category}
                   </span>
                   {company.totalFundingRaised && (
-                    <span className="hidden sm:inline px-2 py-0.5 bg-orange-500/[0.15] text-orange-300 rounded-full">
+                    <span className="hidden sm:inline px-2 py-0.5 bg-orange-500/[0.15] text-orange-300 
+                                   rounded-full border border-orange-500/[0.25]">
                       {company.totalFundingRaised}
                     </span>
                   )}
@@ -566,16 +571,16 @@ export default function CompanyModal({ company, isOpen, onClose }: CompanyModalP
 
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] 
-                       border border-white/[0.08] flex items-center justify-center
-                       transition-colors duration-200 flex-shrink-0"
+              className="w-8 h-8 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] 
+                       border border-white/[0.12] hover:border-white/[0.16] flex items-center justify-center
+                       transition-all duration-200 flex-shrink-0"
             >
               <X className="w-4 h-4 text-white/70" />
             </button>
           </div>
 
           {/* Compact Tab Navigation */}
-          <div className="flex border-b border-white/[0.06] bg-white/[0.01] flex-shrink-0">
+          <div className="flex border-b border-white/[0.08] bg-white/[0.02] backdrop-blur-sm flex-shrink-0">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
@@ -585,8 +590,8 @@ export default function CompanyModal({ company, isOpen, onClose }: CompanyModalP
                   className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-4 sm:px-4 py-4 sm:py-4 text-sm sm:text-sm font-medium whitespace-nowrap
                             transition-all duration-200 min-w-0 flex-1 ${
                             activeTab === tab.id
-                              ? 'text-white bg-white/[0.06] border-b-2 border-orange-400'
-                              : 'text-white/60 hover:text-white/80 hover:bg-white/[0.02]'
+                              ? 'text-white bg-white/[0.08] border-b-2 border-orange-400'
+                              : 'text-white/60 hover:text-white/80 hover:bg-white/[0.04]'
                           }`}
                 >
                   <Icon className="w-4 h-4 sm:w-4 sm:h-4 flex-shrink-0" />
@@ -598,7 +603,7 @@ export default function CompanyModal({ company, isOpen, onClose }: CompanyModalP
 
           {/* Content Area */}
           <div 
-            className="flex-1 overflow-auto p-3 sm:p-4 min-h-0"
+            className="flex-1 overflow-auto p-3 sm:p-4 min-h-0 bg-white/[0.01]"
             onWheel={(e) => {
               // 모달 내부에서만 스크롤 허용
               e.stopPropagation();
@@ -645,7 +650,8 @@ function OverviewTab({ company }: { company: Startup }) {
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         {/* Company Description */}
-        <div className="glass rounded-xl p-3 sm:p-4 border-white/[0.06]">
+        <div className="bg-white/[0.02] border border-white/[0.08] rounded-xl p-3 sm:p-4 
+                       hover:bg-white/[0.04] transition-colors duration-200">
           <h3 className="text-sm sm:text-base font-semibold text-white mb-2 flex items-center gap-2">
             <Building2 className="w-4 h-4 text-white/70" />
             Company Overview
@@ -654,7 +660,7 @@ function OverviewTab({ company }: { company: Startup }) {
             {company.description}
           </p>
           {company.mainValueProposition && (
-            <div className="bg-white/[0.04] rounded-lg p-2 sm:p-3">
+            <div className="bg-white/[0.06] border border-white/[0.1] rounded-lg p-2 sm:p-3">
               <p className="text-xs text-orange-300 font-medium mb-1">Value Proposition</p>
               <p className="text-xs sm:text-sm text-white/80">{company.mainValueProposition}</p>
             </div>
@@ -678,7 +684,8 @@ function OverviewTab({ company }: { company: Startup }) {
       {/* Team & External Links */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Team */}
-        <div className="glass rounded-xl p-4 border-white/[0.06]">
+        <div className="bg-white/[0.02] border border-white/[0.08] rounded-xl p-4 
+                       hover:bg-white/[0.04] transition-colors duration-200">
           <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
             <Users className="w-4 h-4 text-white/70" />
             Leadership Team
@@ -701,7 +708,8 @@ function OverviewTab({ company }: { company: Startup }) {
 
         {/* External Link */}
         {company.webpage && (
-          <div className="glass rounded-xl p-4 border-white/[0.06]">
+          <div className="bg-white/[0.02] border border-white/[0.08] rounded-xl p-4 
+                         hover:bg-white/[0.04] transition-colors duration-200">
             <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
               <ExternalLink className="w-4 h-4 text-white/70" />
               Company Website
@@ -711,8 +719,8 @@ function OverviewTab({ company }: { company: Startup }) {
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-3 py-2 bg-orange-500/[0.15] 
-                       hover:bg-orange-500/[0.25] border border-orange-500/[0.25] 
-                       rounded-lg text-sm text-orange-300 transition-colors duration-200"
+                       hover:bg-orange-500/[0.25] border border-orange-500/[0.25] hover:border-orange-500/[0.35]
+                       rounded-lg text-sm text-orange-300 transition-all duration-200"
             >
               Visit Website
               <ExternalLink className="w-3 h-3" />
@@ -731,7 +739,8 @@ function VCAnalysisTab({ company, radarData }: { company: Startup; radarData: an
       {/* Investment Score Overview */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {radarData.map((item, index) => (
-          <div key={index} className="glass rounded-xl p-3 border-white/[0.06]">
+          <div key={index} className="bg-white/[0.02] border border-white/[0.08] rounded-xl p-3 
+                                    hover:bg-white/[0.04] transition-colors duration-200">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-white/70">{item.subject}</span>
               <span className="text-sm font-bold text-orange-300">{item.A}%</span>
@@ -749,7 +758,8 @@ function VCAnalysisTab({ company, radarData }: { company: Startup; radarData: an
       {/* Radar Chart & Analysis */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Radar Chart */}
-        <div className="glass rounded-xl p-4 border-white/[0.06]">
+        <div className="bg-white/[0.02] border border-white/[0.08] rounded-xl p-4 
+                       hover:bg-white/[0.04] transition-colors duration-200">
           <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
             <Target className="w-4 h-4 text-white/70" />
             Investment Radar
@@ -779,7 +789,8 @@ function VCAnalysisTab({ company, radarData }: { company: Startup; radarData: an
 
         {/* Investment Analysis */}
         <div className="space-y-3">
-          <div className="glass rounded-xl p-4 border-white/[0.06]">
+          <div className="bg-white/[0.02] border border-white/[0.08] rounded-xl p-4 
+                         hover:bg-white/[0.04] transition-colors duration-200">
             <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-white/70" />
               Investment Strengths
@@ -806,7 +817,8 @@ function VCAnalysisTab({ company, radarData }: { company: Startup; radarData: an
             </div>
           </div>
 
-          <div className="glass rounded-xl p-4 border-white/[0.06]">
+          <div className="bg-white/[0.02] border border-white/[0.08] rounded-xl p-4 
+                         hover:bg-white/[0.04] transition-colors duration-200">
             <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
               <Shield className="w-4 h-4 text-white/70" />
               Areas to Watch
@@ -857,7 +869,8 @@ function FundingTab({ company, timelineData }: { company: Startup; timelineData:
 
       {/* Funding Timeline */}
       {timelineData.length > 0 && (
-        <div className="glass rounded-xl p-4 border-white/[0.06]">
+        <div className="bg-white/[0.02] border border-white/[0.08] rounded-xl p-4 
+                       hover:bg-white/[0.04] transition-colors duration-200">
           <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
             <Calendar className="w-4 h-4 text-orange-400" />
             Funding Timeline
@@ -870,10 +883,11 @@ function FundingTab({ company, timelineData }: { company: Startup; timelineData:
                 <YAxisTyped tick={{ fontSize: 10, fill: '#ffffff80' }} />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: '#1a1a1a', 
-                    border: '1px solid #ffffff20',
+                    backgroundColor: 'rgb(var(--surface-secondary))', 
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
                     borderRadius: '8px',
-                    fontSize: '12px'
+                    fontSize: '12px',
+                    backdropFilter: 'blur(12px)'
                   }}
                 />
                 <BarTyped dataKey="amount" fill="#f97316" radius={[2, 2, 0, 0]} />
@@ -885,14 +899,16 @@ function FundingTab({ company, timelineData }: { company: Startup; timelineData:
 
       {/* Investor Details */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="glass rounded-xl p-4 border-white/[0.06]">
+        <div className="bg-white/[0.02] border border-white/[0.08] rounded-xl p-4 
+                       hover:bg-white/[0.04] transition-colors duration-200">
           <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
             <Star className="w-4 h-4 text-orange-400" />
             Key Investors
           </h4>
           <div className="space-y-2">
             {company.keyInvestors?.split(',').slice(0, 4).map((investor, index) => (
-              <div key={index} className="flex items-center gap-2 p-2 bg-white/[0.04] rounded-lg">
+              <div key={index} className="flex items-center gap-2 p-2 bg-white/[0.06] border border-white/[0.1] rounded-lg 
+                                        hover:bg-white/[0.08] transition-colors duration-200">
                 <div className="w-2 h-2 bg-orange-400 rounded-full" />
                 <span className="text-sm text-white">{investor.trim()}</span>
               </div>
@@ -901,12 +917,13 @@ function FundingTab({ company, timelineData }: { company: Startup; timelineData:
         </div>
         
         {company.growthMetrics && (
-          <div className="glass rounded-xl p-4 border-white/[0.06]">
+          <div className="bg-white/[0.02] border border-white/[0.08] rounded-xl p-4 
+                         hover:bg-white/[0.04] transition-colors duration-200">
             <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-orange-400" />
               Growth Metrics
             </h4>
-            <div className="bg-white/[0.04] rounded-lg p-3">
+            <div className="bg-white/[0.06] border border-white/[0.1] rounded-lg p-3">
               <p className="text-sm text-white/80 leading-relaxed">{company.growthMetrics}</p>
             </div>
           </div>
@@ -927,7 +944,8 @@ function CompactMetricCard({
   value: string; 
 }) {
   return (
-    <div className="glass rounded-lg p-2 sm:p-3 border-white/[0.06] hover:bg-white/[0.04] transition-colors duration-200">
+    <div className="bg-white/[0.02] border border-white/[0.08] rounded-lg p-2 sm:p-3 
+                   hover:bg-white/[0.04] hover:border-white/[0.12] transition-all duration-200">
       <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
         <Icon className="w-3 h-3 sm:w-4 sm:h-4 text-white/60" />
         <span className="text-xs font-medium text-white/50 uppercase tracking-wide truncate">
@@ -946,7 +964,8 @@ function CompactDetailCard({ title, content }: { title: string; content?: string
   if (!content) return null;
   
   return (
-    <div className="glass rounded-lg p-2 sm:p-3 border-white/[0.06]">
+    <div className="bg-white/[0.02] border border-white/[0.08] rounded-lg p-2 sm:p-3 
+                   hover:bg-white/[0.04] hover:border-white/[0.12] transition-all duration-200">
       <h4 className="text-xs sm:text-sm font-semibold text-white/80 mb-1 sm:mb-2">{title}</h4>
       <p className="text-xs sm:text-sm text-white/70 leading-relaxed" title={content}>
         {content}

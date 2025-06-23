@@ -95,7 +95,7 @@ export async function fetchStartups(
 
     return apiResponse;
   } catch (error) {
-    console.error('API Error:', error);
+    console.error('❌ API Error:', error);
     
     // Try to return cached data as fallback
     if (useCache) {
@@ -106,13 +106,7 @@ export async function fetchStartups(
       }
     }
     
-    // If it's a development environment and no cache available, provide helpful error info
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('🔧 Development mode: API failed and no cache available');
-      console.warn('💡 This is likely a CORS issue with Google Apps Script');
-      console.warn('📝 The app will continue with demo data');
-    }
-    
+    // No fallback to demo data - throw error to be handled by UI
     throw error;
   }
 }

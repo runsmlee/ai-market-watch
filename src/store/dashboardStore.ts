@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Startup, StartupFilters, DashboardStats, SortOption } from '@/types/startup';
 import { calculateDashboardStats } from '@/lib/statistics';
 import { DataCache, CACHE_KEYS } from '@/lib/cache';
+import { fetchStartups } from '@/lib/api';
 
 interface DashboardState {
   // Data
@@ -26,6 +27,8 @@ interface DashboardState {
   setError: (error: string | null) => void;
   refreshData: () => Promise<void>;
   getFilterMetadata: () => { categories: string[]; locations: string[] };
+  sidebarCollapsed: boolean;
+  toggleSidebar: () => void;
 }
 
 const initialFilters: StartupFilters = {
@@ -52,6 +55,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   lastUpdated: null,
   isFromCache: false,
   filters: initialFilters,
+  sidebarCollapsed: true, // 기본값을 숨김으로 변경
 
   // Actions
   setStartups: (startups, lastUpdated, isFromCache = false) => {
@@ -180,7 +184,6 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   setError: (error) => set({ error }),
 
   refreshData: async () => {
-    const { fetchStartups } = await import('@/lib/api');
     try {
       set({ loading: true, error: null });
       const response = await fetchStartups({}, { forceRefresh: true, includeStats: true });
@@ -253,6 +256,10 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     
     return metadata;
   },
+
+  toggleSidebar: () => set((state) => ({ 
+    sidebarCollapsed: !state.sidebarCollapsed 
+  })),
 }));
 
  

@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo, useCallback, useState } from 'react';
+import { useMemo, useCallback, useState, useEffect } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Startup } from '@/types/startup';
+import { useDashboardStore } from '@/store/dashboardStore';
 import CompanyCard from './CompanyCard';
 import CompanyModal from './CompanyModal';
 
@@ -16,17 +17,50 @@ export default function VirtualizedCompanyGrid({
   loading = false 
 }: VirtualizedCompanyGridProps) {
   const [selectedCompany, setSelectedCompany] = useState<Startup | null>(null);
+  const [isClient, setIsClient] = useState(false);
+  const { sidebarCollapsed } = useDashboardStore();
 
-  // Calculate grid dimensions based on screen size
+  // Ensure client-side only rendering for responsive behavior
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Calculate grid dimensions based on screen size and sidebar state
   const getColumnsPerRow = useCallback(() => {
-    if (typeof window === 'undefined') return 3;
+    // Default server-side value (prevents hydration mismatch)
+    // Use the collapsed state's desktop value for SSR consistency
+    if (!isClient || typeof window === 'undefined') {
+      return sidebarCollapsed ? 3 : 2;
+    }
     
     const width = window.innerWidth;
-    if (width < 768) return 1;      // Mobile: 1 column
-    if (width < 1024) return 2;     // Tablet: 2 columns
-    if (width < 1536) return 3;     // Desktop: 3 columns
-    return 4;                       // Large: 4 columns
-  }, []);
+    
+    // Mobile: always 1 column
+    if (width < 768) return 1;
+    
+    // Tablet: always 2 columns
+    if (width < 1024) return 2;
+    
+    // Desktop and larger: adjust based on sidebar state
+    if (width < 1280) {
+      // For smaller desktop screens
+      return sidebarCollapsed ? 3 : 2;
+    } else {
+      // For larger screens (xl and above)
+      return sidebarCollapsed ? 4 : 3;
+    }
+  }, [sidebarCollapsed, isClient]);
+
+  // Dynamic grid classes based on sidebar state (consistent server/client)
+  const getGridClasses = () => {
+    const baseClasses = "grid gap-6";
+    
+    if (sidebarCollapsed) {
+      return `${baseClasses} grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`;
+    } else {
+      return `${baseClasses} grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3`;
+    }
+  };
 
   // Group companies into rows
   const rows = useMemo(() => {
@@ -66,8 +100,8 @@ export default function VirtualizedCompanyGrid({
           </div>
         </div>
         
-        {/* Loading skeletons */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {/* Loading skeletons with dynamic grid */}
+        <div className={getGridClasses()}>
           {Array.from({ length: 12 }).map((_, i) => (
             <div key={i} className="bg-gray-800 border border-gray-700 rounded-xl p-6 animate-pulse">
               <div className="h-6 bg-gray-700 rounded mb-4"></div>
@@ -101,20 +135,25 @@ export default function VirtualizedCompanyGrid({
   return (
     <>
       <div className="space-y-8">
-        {/* Results info */}
+        {/* Results info with grid status */}
         <div className="flex items-center justify-between">
           <div className="text-white/70">
             Showing <span className="text-white font-medium">{companies.length}</span> companies
+            {isClient && (
+              <span className="text-white/50 text-sm ml-2">
+                • {getColumnsPerRow()} columns
+              </span>
+            )}
           </div>
           
           {/* Performance indicator */}
           <div className="text-xs text-white/50 bg-white/5 px-3 py-1 rounded-full border border-white/10">
-            🚀 Virtualized for performance
+            🚀 Optimized grid
           </div>
         </div>
 
-        {/* Virtualized grid - for now, we'll use a simpler approach */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {/* Dynamic grid based on sidebar state */}
+        <div className={getGridClasses()}>
           {companies.map((company) => (
             <CompanyCard 
               key={company.id} 

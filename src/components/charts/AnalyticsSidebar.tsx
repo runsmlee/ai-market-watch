@@ -1,7 +1,7 @@
 'use client';
 
 import { Startup } from '@/types/startup';
-import { BarChart3, Globe, TrendingUp, Zap, PieChart, DollarSign, Calendar, Users } from 'lucide-react';
+import { BarChart3, Globe, TrendingUp, Calendar, Users, MapPin } from 'lucide-react';
 
 interface AnalyticsSidebarProps {
   companies: Startup[];
@@ -29,23 +29,6 @@ export default function AnalyticsSidebar({ companies }: AnalyticsSidebarProps) {
     .sort(([,a], [,b]) => b - a)
     .slice(0, 5);
 
-  // Calculate funding insights
-  const totalFunding = companies.reduce((acc, company) => {
-    const funding = company.totalFundingRaised;
-    if (funding && funding !== 'N/A') {
-      // Extract numeric value from funding string (e.g., "$1.2B" -> 1200000000)
-      const numericMatch = funding.match(/[\d.]+/);
-      if (numericMatch) {
-        let value = parseFloat(numericMatch[0]);
-        if (funding.includes('B')) value *= 1000000000;
-        else if (funding.includes('M')) value *= 1000000;
-        else if (funding.includes('K')) value *= 1000;
-        acc += value;
-      }
-    }
-    return acc;
-  }, 0);
-
   // Calculate year insights
   const currentYear = new Date().getFullYear();
   const recentCompanies = companies.filter(c => c.yearFounded >= 2020).length;
@@ -62,118 +45,93 @@ export default function AnalyticsSidebar({ companies }: AnalyticsSidebarProps) {
       }, 0) / companiesWithTeamSize.length)
     : 0;
 
-  const formatFunding = (amount: number): string => {
-    if (amount >= 1000000000) return `$${(amount / 1000000000).toFixed(1)}B`;
-    if (amount >= 1000000) return `$${(amount / 1000000).toFixed(1)}M`;
-    if (amount >= 1000) return `$${(amount / 1000).toFixed(1)}K`;
-    return `$${amount.toFixed(0)}`;
-  };
+  // Calculate unique insights (non-duplicated)
+  const uniqueLocations = Object.keys(locationStats).length;
+  const scaleUpCompanies = companies.filter(c => {
+    const teamMatch = c.teamSize?.match(/\d+/);
+    const teamSize = teamMatch ? parseInt(teamMatch[0]) : 0;
+    return teamSize >= 100;
+  }).length;
 
   return (
-    <div className="relative">
-      {/* Background glow */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.01] to-transparent rounded-2xl"></div>
-      
+    <div className="relative w-full">
       {/* Main Dashboard Container */}
-      <div className="relative glass-strong rounded-xl sm:rounded-2xl border-white/[0.08] p-4 sm:p-6 lg:p-8">
+      <div className="bg-white/[0.02] border border-white/[0.08] rounded-lg p-4 w-full min-w-0">
         
         {/* Dashboard Header */}
-        <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8 lg:mb-10">
-          <div className="relative">
-            <div className="absolute inset-0 bg-white/15 blur-lg rounded-xl"></div>
-            <div className="relative w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-white/15 to-white/8 
-                           rounded-lg sm:rounded-xl border border-white/15 flex items-center justify-center">
-              <PieChart className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white/90" />
-            </div>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 bg-white/[0.06] border border-white/[0.1] 
+                         rounded flex items-center justify-center flex-shrink-0">
+            <BarChart3 className="w-5 h-5 text-white/80" />
           </div>
-          <div>
-            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gradient">Market Intelligence</h2>
-            <p className="text-white/60 font-medium text-sm sm:text-base lg:text-lg">
-              Lively AI startup ecosystem insights • {companies.length} companies analyzed
+          <div className="min-w-0 flex-1">
+            <h2 className="text-base font-semibold text-white truncate">Market Intelligence</h2>
+            <p className="text-white/60 text-sm truncate">
+              Deep insights • {companies.length} companies
             </p>
           </div>
         </div>
 
-        {/* Key Metrics Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8 lg:mb-10">
+        {/* Unique Metrics Grid */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
           <MetricCard 
-            icon={<Zap className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />}
-            label="Total Companies"
-            value={companies.length.toString()}
-            color="from-white/15 to-white/8"
-            trend="+12% this month"
-          />
-          <MetricCard 
-            icon={<BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />}
-            label="AI Categories"
-            value={Object.keys(categoryStats).length.toString()}
-            color="from-white/12 to-white/6"
-            trend="8 new sectors"
-          />
-          <MetricCard 
-            icon={<Globe className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />}
-            label="Global Presence"
-            value={Object.keys(locationStats).length.toString()}
-            color="from-white/10 to-white/5"
-            trend="cities worldwide"
-          />
-          <MetricCard 
-            icon={<DollarSign className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />}
-            label="Total Funding"
-            value={formatFunding(totalFunding)}
-            color="from-white/14 to-white/7"
-            trend="aggregated value"
-          />
-          <MetricCard 
-            icon={<Calendar className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />}
-            label="Recent Startups"
+            icon={<Calendar className="w-4 h-4" />}
+            label="Recent"
             value={recentCompanies.toString()}
-            color="from-white/13 to-white/6"
             trend="since 2020"
           />
           <MetricCard 
-            icon={<Users className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />}
-            label="Avg Team Size"
+            icon={<Users className="w-4 h-4" />}
+            label="Avg Team"
             value={avgTeamSize > 0 ? avgTeamSize.toString() : 'N/A'}
-            color="from-white/11 to-white/5"
             trend="employees"
+          />
+          <MetricCard 
+            icon={<MapPin className="w-4 h-4" />}
+            label="Cities"
+            value={uniqueLocations.toString()}
+            trend="worldwide"
+          />
+          <MetricCard 
+            icon={<TrendingUp className="w-4 h-4" />}
+            label="Scale-ups"
+            value={scaleUpCompanies.toString()}
+            trend="100+ staff"
           />
         </div>
 
         {/* Analytics Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+        <div className="space-y-4">
           
           {/* Top Categories */}
           <AnalyticsChart
-            icon={<BarChart3 className="w-5 h-5" />}
-            title="Leading AI Categories"
-            subtitle="Market distribution by sector"
+            icon={<BarChart3 className="w-4 h-4" />}
+            title="Leading Categories"
+            subtitle="Market distribution"
             data={topCategories.slice(0, 4).map(([category, count]) => ({
               label: category,
               value: count,
               percentage: Math.round((count / companies.length) * 100)
             }))}
-            colorGradient="from-white/30 to-white/20"
           />
 
           {/* Top Locations */}
           <AnalyticsChart
-            icon={<Globe className="w-5 h-5" />}
-            title="Global Innovation Hubs"
+            icon={<Globe className="w-4 h-4" />}
+            title="Innovation Hubs"
             subtitle="Geographic concentration"
             data={topLocations.slice(0, 4).map(([location, count]) => ({
               label: location,
               value: count,
               percentage: Math.round((count / companies.length) * 100)
             }))}
-            colorGradient="from-white/25 to-white/15"
           />
 
           {/* Innovation Timeline */}
           <AnalyticsChart
-            icon={<TrendingUp className="w-5 h-5" />}
+            icon={<TrendingUp className="w-4 h-4" />}
             title="Innovation Timeline"
-            subtitle="Founding year trends"
+            subtitle="Founding trends"
             data={[
               { label: '2020-2024', value: companies.filter(c => c.yearFounded >= 2020).length, percentage: 0 },
               { label: '2015-2019', value: companies.filter(c => c.yearFounded >= 2015 && c.yearFounded < 2020).length, percentage: 0 },
@@ -183,7 +141,6 @@ export default function AnalyticsSidebar({ companies }: AnalyticsSidebarProps) {
               ...item,
               percentage: Math.round((item.value / companies.length) * 100)
             }))}
-            colorGradient="from-white/20 to-white/10"
           />
         </div>
       </div>
@@ -196,101 +153,90 @@ interface MetricCardProps {
   icon: React.ReactNode;
   label: string;
   value: string;
-  color: string;
   trend?: string;
 }
 
-function MetricCard({ icon, label, value, color, trend }: MetricCardProps) {
+function MetricCard({ icon, label, value, trend }: MetricCardProps) {
   return (
-    <div className="group relative">
-      {/* Subtle background glow */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent 
-                     rounded-lg sm:rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+    <div className="bg-white/[0.03] border border-white/[0.1] rounded p-3
+                   hover:bg-white/[0.05] transition-colors duration-200">
       
-      {/* Main card */}
-      <div className={`relative bg-gradient-to-br ${color} rounded-lg sm:rounded-xl p-3 sm:p-4 lg:p-6
-                      border border-white/10 backdrop-blur-sm
-                      hover:scale-105 transition-all duration-300 hover:border-white/20`}>
-        
-        {/* Header with icon and value */}
-        <div className="flex items-start justify-between mb-2 sm:mb-3">
-          <div className="flex-1 min-w-0">
-            {/* Value */}
-            <div className="text-lg sm:text-xl lg:text-2xl font-bold text-white tracking-tight mb-1">
-              {value}
-            </div>
-            {/* Label */}
-            <div className="text-xs sm:text-sm font-medium text-white/70 leading-tight">
-              {label}
-            </div>
+      {/* Header with icon and value */}
+      <div className="flex items-start justify-between mb-1">
+        <div className="flex-1 min-w-0">
+          {/* Value */}
+          <div className="text-base font-semibold text-white/90">
+            {value}
           </div>
-          
-          {/* Icon */}
-          <div className="text-white/80 flex-shrink-0 ml-2">
-            {icon}
+          {/* Label */}
+          <div className="text-xs text-white/60 truncate">
+            {label}
           </div>
         </div>
         
-        {/* Trend indicator */}
-        {trend && (
-          <div className="text-xs text-white/50 font-medium mt-1 sm:mt-2 truncate">
-            {trend}
-          </div>
-        )}
-        
-        {/* Subtle accent line */}
-        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r 
-                       from-transparent via-white/20 to-transparent"></div>
+        {/* Icon */}
+        <div className="text-white/60 flex-shrink-0 ml-2">
+          {icon}
+        </div>
       </div>
+      
+      {/* Trend indicator */}
+      {trend && (
+        <div className="text-xs text-white/50 mt-1">
+          {trend}
+        </div>
+      )}
     </div>
   );
 }
 
-// Analytics Chart Component
+// Enhanced Analytics Chart Component
 interface AnalyticsChartProps {
   icon: React.ReactNode;
   title: string;
   subtitle: string;
   data: Array<{ label: string; value: number; percentage: number }>;
-  colorGradient: string;
 }
 
-function AnalyticsChart({ icon, title, subtitle, data, colorGradient }: AnalyticsChartProps) {
+function AnalyticsChart({ icon, title, subtitle, data }: AnalyticsChartProps) {
   const maxValue = Math.max(...data.map(d => d.value));
   
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="relative">
-          <div className="absolute inset-0 bg-white/10 blur-md rounded-lg"></div>
-          <div className="relative w-10 h-10 bg-gradient-to-br from-white/10 to-white/5 
-                         rounded-lg border border-white/10 flex items-center justify-center">
-            {icon}
-          </div>
+    <div className="bg-white/[0.03] border border-white/[0.1] rounded p-4">
+      
+      {/* Chart Header */}
+      <div className="flex items-center gap-2.5 mb-4">
+        <div className="text-white/60 flex-shrink-0">
+          {icon}
         </div>
-        <div>
-          <h3 className="text-lg font-semibold text-white">{title}</h3>
-          <p className="text-white/50 text-sm">{subtitle}</p>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-sm font-semibold text-white/90 truncate">{title}</h3>
+          <p className="text-xs text-white/60 truncate">{subtitle}</p>
         </div>
       </div>
-      
-      <div className="space-y-4">
+
+      {/* Chart Data */}
+      <div className="space-y-3">
         {data.map((item, index) => (
-          <div key={item.label} className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-white/80 font-medium text-sm">{item.label}</span>
-              <div className="flex items-center gap-2">
-                <span className="text-white/60 text-xs">{item.value}</span>
-                <span className="text-white/40 text-xs">({item.percentage}%)</span>
-              </div>
+          <div key={index} className="group">
+            {/* Label and Value */}
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs text-white/70 truncate flex-1 mr-2"
+                    title={item.label}>
+                {item.label}
+              </span>
+              <span className="text-xs font-medium text-white/80 flex-shrink-0">
+                {item.value}
+              </span>
             </div>
-            <div className="w-full h-2 bg-white/[0.08] rounded-full overflow-hidden">
+            
+            {/* Progress Bar */}
+            <div className="w-full bg-white/[0.05] rounded-full h-1.5">
               <div 
-                className={`h-full bg-gradient-to-r ${colorGradient} rounded-full
-                           transition-all duration-1000 ease-out`}
+                className="bg-white/[0.2] h-1.5 rounded-full transition-all duration-300
+                          group-hover:bg-white/[0.3]"
                 style={{ 
-                  width: `${(item.value / maxValue) * 100}%`,
-                  animationDelay: `${index * 0.2}s`
+                  width: maxValue > 0 ? `${(item.value / maxValue) * 100}%` : '0%' 
                 }}
               />
             </div>

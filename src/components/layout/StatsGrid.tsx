@@ -8,15 +8,25 @@ interface StatsGridProps {
   stats: DashboardStats;
 }
 
+// Safe number formatting (consistent across server/client)
+const formatNumber = (num: number): string => {
+  try {
+    return new Intl.NumberFormat('en-US').format(num);
+  } catch (error) {
+    // Fallback for environments without Intl support
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+};
+
 export default function StatsGrid({ stats }: StatsGridProps) {
   const statItems = [
     { 
-      value: stats.totalCompanies.toLocaleString(), 
+      value: formatNumber(stats.totalCompanies), 
       label: 'Total Companies',
       icon: Building2,
     },
     { 
-      value: stats.totalCategories, 
+      value: stats.totalCategories.toString(), 
       label: 'AI Categories',
       icon: Tag,
     },
@@ -26,7 +36,7 @@ export default function StatsGrid({ stats }: StatsGridProps) {
       icon: DollarSign,
     },
     { 
-      value: stats.filteredCount.toLocaleString(), 
+      value: formatNumber(stats.filteredCount), 
       label: 'Filtered Results',
       icon: Filter,
     },

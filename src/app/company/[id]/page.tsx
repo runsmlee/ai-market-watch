@@ -174,7 +174,7 @@ export default async function CompanyPage({ params }: Props) {
 
             {/* Last Updated */}
             <footer className="text-sm text-gray-500 border-t border-gray-800 pt-4">
-              Last updated: {new Date(startup.updatedDate || Date.now()).toLocaleDateString()}
+              Last updated: {new Date(startup.updatedDate || Date.now()).toISOString().split('T')[0]}
             </footer>
           </div>
         </div>
