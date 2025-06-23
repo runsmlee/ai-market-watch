@@ -93,18 +93,27 @@ export default function VirtualizedCompanyGrid({
         </div>
         
         {/* Loading skeletons with dynamic grid */}
-        <div className={getGridClasses()}>
-          {Array.from({ length: 12 }).map((_, i) => (
-            <div key={i} className="bg-gray-800 border border-gray-700 rounded-xl p-6 animate-pulse">
-              <div className="h-6 bg-gray-700 rounded mb-4"></div>
-              <div className="h-4 bg-gray-700 rounded mb-2"></div>
-              <div className="h-4 bg-gray-700 rounded mb-4 w-3/4"></div>
-              <div className="space-y-2">
-                <div className="h-3 bg-gray-700 rounded"></div>
-                <div className="h-3 bg-gray-700 rounded w-2/3"></div>
-              </div>
+        <div className="relative">
+          {/* Loading indicator */}
+          <div className="absolute top-2 right-2 z-10 text-xs text-white/40 bg-black/30 px-2 py-1 rounded-full border border-white/10">
+            ⏳ Loading...
+          </div>
+          
+          <div className="bg-black/20 backdrop-blur-sm border border-white/[0.05] rounded-xl p-6">
+            <div className={getGridClasses()}>
+              {Array.from({ length: 12 }).map((_, i) => (
+                <div key={i} className="bg-gray-800 border border-gray-700 rounded-xl p-6 animate-pulse">
+                  <div className="h-6 bg-gray-700 rounded mb-4"></div>
+                  <div className="h-4 bg-gray-700 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-700 rounded mb-4 w-3/4"></div>
+                  <div className="space-y-2">
+                    <div className="h-3 bg-gray-700 rounded"></div>
+                    <div className="h-3 bg-gray-700 rounded w-2/3"></div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </div>
     );
@@ -147,13 +156,20 @@ export default function VirtualizedCompanyGrid({
           </div>
 
           {/* Virtualized container */}
-          <div
-            ref={parentRef}
-            className="h-[80vh] overflow-auto"
-            style={{
-              contain: 'strict',
-            }}
-          >
+          <div className="relative">
+            {/* Scroll hint indicator */}
+            <div className="absolute top-2 right-2 z-10 text-xs text-white/40 bg-black/30 px-2 py-1 rounded-full border border-white/10">
+              ↕ Scroll to explore
+            </div>
+            
+            <div
+              ref={parentRef}
+              className="h-[80vh] overflow-auto bg-black/20 backdrop-blur-sm border border-white/[0.05] rounded-xl p-6
+                         custom-scrollbar relative"
+              style={{
+                contain: 'strict',
+              }}
+            >
             <div
               style={{
                 height: `${rowVirtualizer.getTotalSize()}px`,
@@ -190,6 +206,7 @@ export default function VirtualizedCompanyGrid({
                 );
               })}
             </div>
+          </div>
           </div>
 
           {/* Performance note */}
@@ -230,14 +247,23 @@ export default function VirtualizedCompanyGrid({
         </div>
 
         {/* Dynamic grid based on sidebar state */}
-        <div className={getGridClasses()}>
-          {companies.map((company) => (
-            <CompanyCard 
-              key={company.id} 
-              company={company}
-              onClick={() => setSelectedCompany(company)}
-            />
-          ))}
+        <div className="relative">
+          {/* Visual indicator for grid container */}
+          <div className="absolute top-2 right-2 z-10 text-xs text-white/40 bg-black/30 px-2 py-1 rounded-full border border-white/10">
+            📋 {companies.length} companies
+          </div>
+          
+          <div className="bg-black/20 backdrop-blur-sm border border-white/[0.05] rounded-xl p-6">
+            <div className={getGridClasses()}>
+              {companies.map((company) => (
+                <CompanyCard 
+                  key={company.id} 
+                  company={company}
+                  onClick={() => setSelectedCompany(company)}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
