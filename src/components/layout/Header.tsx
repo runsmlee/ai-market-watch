@@ -1,14 +1,34 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BarChart3, TrendingUp } from 'lucide-react';
+import { BarChart3, TrendingUp, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { useDashboardStore } from '@/store/dashboardStore';
 
 export default function Header() {
   const [isVisible, setIsVisible] = useState(false);
+  const { lastUpdated, isFromCache, loading, refreshData } = useDashboardStore();
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
+
+  const handleRefresh = async () => {
+    await refreshData();
+  };
+
+  const formatLastUpdated = (dateStr: string | null) => {
+    if (!dateStr) return 'Never';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
+    
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    return date.toLocaleDateString();
+  };
 
   return (
     <header className="relative mb-20 text-center">
@@ -64,22 +84,40 @@ export default function Header() {
           <span className="text-white/80 font-medium"> AI startup ecosystem</span>
         </p>
 
-        {/* Statistics preview */}
-        <div className="flex items-center justify-center gap-8 text-sm text-white/50 mb-8">
+        {/* Data status and refresh */}
+        <div className="flex items-center justify-center gap-6 text-sm text-white/50 mb-8 flex-wrap">
+          <div className="flex items-center gap-2">
+            {isFromCache ? (
+              <Wifi className="w-4 h-4 text-orange-400" />
+            ) : (
+              <WifiOff className="w-4 h-4 text-green-400" />
+            )}
+            <span className={isFromCache ? 'text-orange-400' : 'text-green-400'}>
+              {isFromCache ? 'Cached Data' : 'Fresh Data'}
+            </span>
+          </div>
+          
+          <div className="w-px h-4 bg-white/20"></div>
+          
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse-subtle"></div>
-            <span>Live Data</span>
+            <span>Updated {formatLastUpdated(lastUpdated)}</span>
           </div>
+          
           <div className="w-px h-4 bg-white/20"></div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse-subtle" style={{ animationDelay: '1s' }}></div>
-            <span>Real-time Updates</span>
-          </div>
-          <div className="w-px h-4 bg-white/20"></div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse-subtle" style={{ animationDelay: '2s' }}></div>
-            <span>Global Coverage</span>
-          </div>
+          
+          <button
+            onClick={handleRefresh}
+            disabled={loading}
+            className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 
+                       rounded-full hover:bg-white/10 hover:border-white/20 
+                       transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+            <span className="text-xs font-medium">
+              {loading ? 'Refreshing...' : 'Refresh'}
+            </span>
+          </button>
         </div>
 
         {/* WeeklyVentures Credit */}

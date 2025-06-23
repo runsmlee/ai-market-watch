@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Header from '@/components/layout/Header';
 import StatsGrid from '@/components/layout/StatsGrid';
 import AdvancedFilters from '@/components/filters/AdvancedFilters';
-import CompanyGrid from '@/components/company/CompanyGrid';
+import VirtualizedCompanyGrid from '@/components/company/VirtualizedCompanyGrid';
 import AnalyticsSidebar from '@/components/charts/AnalyticsSidebar';
 import { useDashboardStore } from '@/store/dashboardStore';
 import { fetchStartups, transformApiDataToStartups } from '@/lib/api';
@@ -93,23 +93,35 @@ export default function Dashboard() {
     setStartups,
     setLoading,
     setError,
+    lastUpdated,
+    isFromCache,
+    refreshData,
+    getFilterMetadata,
   } = useDashboardStore();
 
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize data
+  // Initialize data with caching
   useEffect(() => {
     async function initializeData() {
       setLoading(true);
       try {
-        // Try to fetch real data first
-        const data = await fetchStartups();
-        const startups = transformApiDataToStartups(data.data);
-        setStartups(startups);
+        console.log('🚀 Initializing dashboard data...');
+        
+        // Try to fetch real data with caching
+        const data = await fetchStartups({}, { 
+          useCache: true, 
+          includeStats: true 
+        });
+        
+        const startups = data.transformedData || transformApiDataToStartups(data.data);
+        setStartups(startups, data.lastUpdated, !!data.transformedData);
+        
+        console.log(`✅ Loaded ${startups.length} companies`);
       } catch (error) {
         console.warn('Failed to fetch real data, using demo data:', error);
         // Fallback to demo data
-        setStartups(demoData);
+        setStartups(demoData, new Date().toISOString(), false);
       } finally {
         setLoading(false);
         setIsInitialized(true);
@@ -121,11 +133,8 @@ export default function Dashboard() {
     }
   }, [isInitialized, setStartups, setLoading, setError]);
 
-  // Extract unique categories and locations
-  const categories = Array.from(new Set(filteredStartups.map(s => s.category))).filter(Boolean) as string[];
-  const locations = Array.from(new Set(
-    filteredStartups.map(s => s.location ? s.location.split(',')[0].trim() : 'Unknown')
-  )).filter(Boolean) as string[];
+  // Get filter metadata efficiently
+  const { categories, locations } = getFilterMetadata();
 
   if (error) {
     return (
@@ -166,7 +175,7 @@ export default function Dashboard() {
         />
         
         {/* Full width company grid */}
-        <CompanyGrid companies={filteredStartups} loading={loading} />
+        <VirtualizedCompanyGrid companies={filteredStartups} loading={loading} />
       </div>
     </div>
   );

@@ -1,11 +1,44 @@
-import { Startup, ApiResponse } from '@/types/startup';
+import { Startup, ApiResponse, DashboardStats } from '@/types/startup';
+import { DataCache, CACHE_KEYS } from './cache';
+import { calculateDashboardStats, clearStatsCache } from './statistics';
 
-// 기본 Apps Script URL - 실제 환경에서는 환경 변수로 설정
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxxxSB7grQucOxewCEFnZIHGVa3NT27bUSwL03nfMbpac9ol5XVoSE-JHlM1Symx9xf/exec';
+// API endpoint - uses Next.js API route as proxy to avoid CORS issues
+const API_ENDPOINT = '/api/startups';
 
-export async function fetchStartups(params?: Record<string, string>): Promise<ApiResponse> {
+// Cache configuration - 24시간 캐시 (하루에 한번 업데이트되므로)
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+export interface FetchOptions {
+  useCache?: boolean;
+  forceRefresh?: boolean;
+  includeStats?: boolean;
+}
+
+export async function fetchStartups(
+  params?: Record<string, string>, 
+  options: FetchOptions = {}
+): Promise<ApiResponse> {
+  const { useCache = true, forceRefresh = false, includeStats = false } = options;
+  
+  // Create cache key based on parameters
+  const cacheKey = params ? 
+    `${CACHE_KEYS.STARTUPS}-${JSON.stringify(params)}` : 
+    CACHE_KEYS.STARTUPS;
+
+  // Try cache first (unless force refresh)
+  if (useCache && !forceRefresh) {
+    const cachedData = DataCache.get<ApiResponse>({ key: cacheKey });
+    if (cachedData) {
+      console.log('📦 Using cached data');
+      return cachedData;
+    }
+  }
+
   try {
-    const url = new URL(APPS_SCRIPT_URL);
+    console.log('🌐 Fetching fresh data from API');
+    const url = new URL(API_ENDPOINT, 
+      typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'
+    );
     
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -13,7 +46,17 @@ export async function fetchStartups(params?: Record<string, string>): Promise<Ap
       });
     }
 
-    const response = await fetch(url.toString());
+    // Add timestamp to prevent aggressive caching
+    url.searchParams.append('_t', Date.now().toString());
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'Accept': 'application/json',
+      }
+    });
 
     if (!response.ok) {
       throw new Error(`API request failed: ${response.status}`);
@@ -25,9 +68,51 @@ export async function fetchStartups(params?: Record<string, string>): Promise<Ap
       throw new Error(data.message || 'API Error');
     }
 
-    return data;
+    // Transform and cache the data
+    const transformedStartups = transformApiDataToStartups(data.data || []);
+    
+    const apiResponse: ApiResponse = {
+      ...data,
+      data: data.data,
+      transformedData: transformedStartups,
+      lastUpdated: new Date().toISOString()
+    };
+
+    // Cache the response
+    if (useCache) {
+      DataCache.set({ key: cacheKey, ttl: CACHE_TTL }, apiResponse);
+      console.log('💾 Data cached successfully');
+    }
+
+    // Clear stats cache since we have new data
+    clearStatsCache();
+
+    // Cache pre-computed statistics if requested
+    if (includeStats && transformedStartups.length > 0) {
+      const stats = calculateDashboardStats(transformedStartups, transformedStartups);
+      DataCache.set({ key: CACHE_KEYS.STATS, ttl: CACHE_TTL }, stats);
+    }
+
+    return apiResponse;
   } catch (error) {
     console.error('API Error:', error);
+    
+    // Try to return cached data as fallback
+    if (useCache) {
+      const cachedData = DataCache.get<ApiResponse>({ key: cacheKey });
+      if (cachedData) {
+        console.log('⚠️ API failed, using stale cached data');
+        return cachedData;
+      }
+    }
+    
+    // If it's a development environment and no cache available, provide helpful error info
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('🔧 Development mode: API failed and no cache available');
+      console.warn('💡 This is likely a CORS issue with Google Apps Script');
+      console.warn('📝 The app will continue with demo data');
+    }
+    
     throw error;
   }
 }

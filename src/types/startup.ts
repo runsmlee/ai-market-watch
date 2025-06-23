@@ -57,6 +57,7 @@ export interface ApiResponse {
   lastUpdated: string;
   totalCompanies: number;
   data: any[];
+  transformedData?: Startup[];
   summary?: {
     categoriesCount: number;
     topCategories: [string, number][];
@@ -64,4 +65,6 @@ export interface ApiResponse {
     averageFunding: number;
   };
   filteredCount?: number;
+  error?: boolean;
+  message?: string;
 } 

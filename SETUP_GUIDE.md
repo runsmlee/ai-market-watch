@@ -29,11 +29,19 @@ npm install
 ```
 
 ### 3단계: 환경 변수 설정
-`.env.local` 파일을 생성하고 다음 내용 추가:
+⚠️ **보안 중요**: `.env.local` 파일을 생성하고 다음 내용 추가:
 ```env
-NEXT_PUBLIC_APPS_SCRIPT_URL=https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
+# Google Apps Script Configuration (REQUIRED)
+APPS_SCRIPT_URL=https://script.google.com/macros/s/YOUR_SCRIPT_ID_HERE/exec
+
+# Optional: API Base URL for different environments  
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
 ```
+
+**중요 보안 사항**:
+- `YOUR_SCRIPT_ID_HERE`를 실제 Google Apps Script ID로 교체
+- `.env.local` 파일은 절대 Git에 커밋하지 마세요 (이미 .gitignore에 포함됨)
+- 공개 저장소에는 실제 URL을 하드코딩하지 마세요
 
 ### 4단계: 개발 서버 실행
 ```bash

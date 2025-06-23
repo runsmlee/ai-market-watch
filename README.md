@@ -47,14 +47,19 @@ A modern, responsive dashboard for exploring and analyzing AI startup companies 
    ```
 
 3. **Set up environment variables**
-   ```bash
-   cp .env.local.example .env.local
+   Create a `.env.local` file in the root directory:
+   ```env
+   # Google Apps Script Configuration (REQUIRED)
+   APPS_SCRIPT_URL=https://script.google.com/macros/s/YOUR_SCRIPT_ID_HERE/exec
+   
+   # Optional: API Base URL for different environments
+   NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
    ```
    
-   Edit `.env.local` and add your Google Apps Script URL:
-   ```env
-   NEXT_PUBLIC_APPS_SCRIPT_URL=https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec
-   ```
+   ⚠️ **SECURITY IMPORTANT**: 
+   - Replace `YOUR_SCRIPT_ID_HERE` with your actual Google Apps Script deployment ID
+   - Never commit `.env.local` to version control
+   - The `.env.local` file is already in `.gitignore`
 
 4. **Run the development server**
    ```bash
