@@ -5,11 +5,11 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'AI Startups Intelligence Platform',
+  title: 'AI Market Watch - AI Startups Intelligence Platform',
   description: 'Lively insights into the global AI startup ecosystem',
   keywords: 'AI, startups, funding, technology, innovation',
   openGraph: {
-    title: 'AI Startups Intelligence Platform',
+    title: 'AI Market Watch - AI Startups Intelligence Platform',
     description: 'Lively insights into the global AI startup ecosystem',
     type: 'website',
   },

@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BarChart3, TrendingUp, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { TrendingUp, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 import { useDashboardStore } from '@/store/dashboardStore';
+import Image from 'next/image';
 
 export default function Header() {
   const [isVisible, setIsVisible] = useState(false);
@@ -52,30 +53,20 @@ export default function Header() {
       <div className={`transition-all duration-1000 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}>
-        {/* Icon and subtitle */}
-        <div className="flex items-center justify-center gap-3 mb-6">
-          <div className="relative">
-            <div className="absolute inset-0 bg-white/10 blur-lg rounded-full"></div>
-            <div className="relative w-12 h-12 bg-gradient-to-br from-white/20 to-white/5 
-                           rounded-2xl border border-white/10 flex items-center justify-center
-                           backdrop-blur-sm">
-              <BarChart3 className="w-6 h-6 text-white/90" />
-            </div>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-white/5 
-                         border border-white/10 rounded-full backdrop-blur-sm">
-            <TrendingUp className="w-4 h-4 text-white/60" />
-            <span className="text-sm font-medium text-white/70 tracking-wide">
-              INTELLIGENCE PLATFORM
-            </span>
-          </div>
+        {/* Logo and subtitle */}
+        <div className="flex flex-col items-center justify-center gap-4 mb-6">
+          <Image 
+            src="/ai-market-watch-logo.png" 
+            alt="AI Market Watch Logo" 
+            width={150} 
+            height={150}
+            className="opacity-100"
+          />
         </div>
-
+          
         {/* Main heading */}
         <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
-          <span className="text-gradient">AI Startups</span>
-          <br />
-          <span className="text-white/90 font-light">Intelligence</span>
+          <span className="text-gradient">AI Market Watch</span>
         </h1>
         
         {/* Description */}

@@ -1125,14 +1125,14 @@ const MemoizedCompanyCard = memo(CompanyCard, (prevProps, nextProps) => {
 ```typescript
 // app/layout.tsx
 export const metadata: Metadata = {
-  title: 'AI Startups Intelligence Platform',
+  title: 'AI Market Watch - AI Startups Intelligence Platform',
   description: 'Lively insights into the global AI startup ecosystem',
   keywords: 'AI, startups, funding, technology, innovation',
   openGraph: {
-    title: 'AI Startups Intelligence Platform',
+    title: 'AI Market Watch - AI Startups Intelligence Platform',
     description: 'Lively insights into the global AI startup ecosystem',
     type: 'website',
-    url: 'https://your-domain.com',
+    url: 'https://ai-market-watch.xyz',
   },
 };
 ```

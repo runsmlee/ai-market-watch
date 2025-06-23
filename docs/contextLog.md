@@ -1,5 +1,139 @@
 # Context Log
 
+## 2024-12-28: 로고 크기 대폭 확대 및 레이아웃 최종 조정
+
+### 로고 크기 대폭 확대
+- **크기 변경**: 48px → **150px** (3배 이상 확대)
+- **투명도 조정**: opacity-90 → opacity-100 (완전 불투명)
+- **브랜드 강화**: 로고가 헤더의 주요 시각적 요소로 부각
+- **가시성 극대화**: 모든 화면 크기에서 명확한 브랜드 인지 가능
+
+### 브랜드명 구조 최종 정리
+- **서브 브랜드 확장**: "AI Startups Intelligence" → "AI Startups Intelligence Platform"
+- **메인 타이틀 단순화**: "AI Market Watch" 단일 라인으로 변경
+- **계층 구조 명확화**: 로고 → 서브브랜드 → 메인브랜드 → 설명 순서
+- **시각적 균형**: 큰 로고와 텍스트 요소들의 조화로운 배치
+
+### 레이아웃 구조 개선
+- **세로 배치 확정**: `flex flex-col`로 로고와 텍스트 위아래 배치
+- **간격 최적화**: 로고와 서브브랜드 사이 `gap-4` 적용
+- **중앙 정렬**: `items-center justify-center`로 완벽한 중앙 배치
+- **반응형 고려**: 큰 로고가 모바일에서도 적절한 크기 유지
+
+### 사용자 경험 최적화
+- **브랜드 임팩트**: 150px 대형 로고로 강력한 첫인상 생성
+- **전문성 강화**: 깔끔하고 현대적인 레이아웃으로 신뢰감 증대
+- **시각적 계층**: 명확한 정보 전달 순서로 사용자 이해도 향상
+- **기억 용이성**: 큰 로고로 브랜드 각인 효과 극대화
+
+### 최종 Header 구조
+```
+    [150px 로고]
+AI Startups Intelligence Platform
+    AI Market Watch
+  설명 텍스트...
+```
+
+### 성능 고려사항
+- **이미지 최적화**: Next.js Image 컴포넌트로 150px 크기 최적화
+- **로딩 성능**: PNG 형식으로 빠른 렌더링 보장
+- **메모리 효율**: 적절한 이미지 압축으로 성능 영향 최소화
+- **사용자 경험**: 로고 로딩 완료까지 레이아웃 시프트 방지
+
+## 2024-12-28: 브랜드명 정리 및 로고 크기 개선
+
+### 브랜드 아이덴티티 재정립
+- **메인 브랜드명**: "AI Market Watch" (정식 브랜드명칭)으로 통일
+- **서브 브랜드명**: "AI Startups Intelligence"로 변경하여 차별화
+- **계층 구조**: 메인 타이틀에 브랜드명, 서브 타이틀에 서비스 성격 표현
+- **일관성 확보**: 전체 사이트에서 브랜드명 사용법 표준화
+
+### 로고 디자인 개선
+- **크기 확대**: 32x32px → 48x48px로 50% 증가하여 가시성 극대화
+- **디자인 단순화**: 테두리, 배경, 블러 효과 모두 제거하여 깔끔한 느낌
+- **레이아웃 최적화**: 로고와 서브 브랜드명 사이 간격을 4로 조정
+- **시각적 균형**: 복잡한 장식 제거로 로고 자체에 집중
+
+### Header 구조 개선
+- **브랜드 계층**: 로고 + 서브브랜드 → 메인 타이틀 → 설명 순서로 정리
+- **시각적 흐름**: 상단부터 하단까지 자연스러운 정보 전달 구조
+- **간결성**: 불필요한 시각적 요소 제거로 전문적인 느낌 강화
+- **반응형 대응**: 다양한 화면 크기에서 로고와 텍스트의 균형 유지
+
+### 브랜드 메시지 최적화
+- **명확성**: "AI Market Watch"가 메인 브랜드임을 명확히 전달
+- **전문성**: "Intelligence Platform" 추가로 플랫폼의 성격 강조
+- **차별화**: 일반적인 "AI Startups" 대신 고유 브랜드명 부각
+- **기억 용이성**: 간단하고 직관적인 브랜드명 구조
+
+### 사용자 경험 향상
+- **브랜드 인식**: 더 큰 로고로 브랜드 각인 효과 증대
+- **가독성**: 깔끔한 디자인으로 텍스트 가독성 향상
+- **전문성**: 단순하고 세련된 디자인으로 신뢰도 증가
+- **일관성**: 통일된 브랜드 사용으로 사용자 혼동 방지
+
+## 2024-12-28: 로고 파일 형식 변경 및 표시 개선
+
+### 로고 파일 최적화
+- **파일 형식 변경**: SVG에서 PNG로 변경하여 호환성 및 표시 안정성 향상
+- **로고 파일 확인**: `public/ai-market-watch-logo.png` 사용으로 변경
+- **크기 조정**: 28x28px에서 32x32px로 확대하여 가시성 향상
+- **스타일 개선**: `rounded-lg` 클래스 추가로 모던한 느낌 연출
+
+### 기술적 변경사항
+- **파일 경로**: `/logo.svg` → `/ai-market-watch-logo.png`
+- **크기 최적화**: width/height를 32px로 조정하여 선명도 향상
+- **Next.js Image 컴포넌트**: PNG 형식에 최적화된 설정 적용
+- **브라우저 호환성**: PNG 형식으로 모든 브라우저에서 안정적 표시 보장
+
+### 사용자 경험 개선
+- **로고 표시 안정성**: 이미지 로딩 실패 방지
+- **반응형 디자인**: 다양한 화면 크기에서 일관된 표시
+- **접근성**: alt 텍스트로 스크린 리더 지원
+- **로딩 성능**: Next.js Image 컴포넌트의 최적화 기능 활용
+
+### 파일 구조 업데이트
+- **활용 파일**: `public/ai-market-watch-logo.png` (66KB)
+- **예비 파일들**: 
+  - `public/ai-market-watch-logo.svg` (87KB)
+  - `public/logo.svg` (79KB) 
+  - `public/placeholder_logo.svg` (6.2KB)
+
+### 브랜드 일관성
+- **로고 품질**: 고해상도 PNG로 선명한 표시
+- **디자인 통합**: Header의 글래스모피즘 효과와 조화
+- **시각적 계층**: 적절한 크기와 위치로 브랜드 인지도 향상
+
+## 2024-12-28: 브랜드 로고 추가 및 Header 디자인 개선
+
+### 브랜드 아이덴티티 강화
+- **커스텀 로고 제작**: 사용자 제공 이미지를 기반으로 하프톤 패턴의 반원형 SVG 로고 생성
+- **투명 배경 적용**: 검정 배경을 투명으로, 검정 도트를 흰색으로 변경하여 다크 테마에 최적화
+- **정교한 하프톤 패턴**: 다양한 크기와 투명도의 원형 도트로 3D 구체감 표현
+
+### 기술적 구현
+- **SVG 형식**: 벡터 기반으로 모든 해상도에서 선명한 표시 보장
+- **반응형 디자인**: 28x28px로 Header에 최적화된 크기 설정
+- **계층적 투명도**: opacity 0.45~0.95 범위로 자연스러운 그라데이션 효과
+- **클리핑 마스크**: ellipse 클리핑으로 반원형 형태 정의
+
+### Header 컴포넌트 개선
+- **로고 통합**: BarChart3 아이콘을 커스텀 로고로 교체
+- **Next.js Image 컴포넌트**: 최적화된 이미지 로딩과 성능 보장
+- **글래스모피즘 효과**: 기존 스타일과 조화되는 백드롭 블러 적용
+- **시각적 계층**: 로고와 "INTELLIGENCE PLATFORM" 라벨의 균형잡힌 배치
+
+### 파일 구조 변경
+- **새 파일**: `public/logo.svg` - 메인 브랜드 로고
+- **수정 파일**: `src/components/layout/Header.tsx` - 로고 통합
+- **의존성 추가**: Next.js Image 컴포넌트 import
+
+### 디자인 원칙 적용
+- **브랜드 일관성**: AI Market Watch의 전문적이고 현대적인 이미지 강화
+- **접근성 고려**: 적절한 alt 텍스트와 의미적 마크업 사용
+- **성능 최적화**: SVG 최적화로 빠른 로딩과 확장성 보장
+- **사용자 중심**: 브랜드 인식도 향상과 전문성 어필
+
 ## 2024-12-28: 스타트업 카드 크기 통일 및 텍스트 최적화
 
 ### UI/UX 개선사항
@@ -30,142 +164,22 @@
 - **반응형 텍스트**: 다양한 콘텐츠 길이에 대응하는 적응형 레이아웃
 
 ### 사용자 경험 향상
-- **일관된 그리드**: 모든 카드가 동일한 크기로 깔끔한 격자 레이아웃
-- **정보 접근성**: 말줄임표로 축약된 정보는 호버/클릭으로 전체 내용 확인 가능
-- **시각적 안정성**: 콘텐츠 길이에 관계없이 레이아웃이 깨지지 않음
+- **시각적 안정성**: 콘텐츠 길이에 관계없이 깔끔한 격자 레이아웃
+- **호버 인터랙션**: 축약된 텍스트의 전체 내용을 툴팁으로 확인 가능
+- **정보 밀도 최적화**: 제한된 공간에서 핵심 정보 효과적 전달
+- **스캔 가능성**: 일관된 구조로 빠른 정보 탐색 지원
 
-### 파일 변경사항
-- **수정 파일**: `src/components/company/CompanyCard.tsx`
-- **CSS 확인**: `src/app/globals.css`의 line-clamp 유틸리티 활용
-- **성능 영향**: 레이아웃 계산 최적화로 렌더링 성능 개선
+### 성능 및 접근성
+- **렌더링 최적화**: 고정 높이로 레이아웃 시프트 방지
+- **메모리 효율성**: 긴 텍스트 자르기로 DOM 크기 최적화  
+- **접근성 개선**: title 속성으로 스크린 리더 및 키보드 사용자 지원
+- **반응형 호환**: 모바일부터 데스크톱까지 일관된 경험
 
-## 2024-12-28: Brand Messaging Update - "Comprehensive" to "Lively"
+---
 
-### Content Update
-- **Brand Positioning Change**: Updated all instances of "Comprehensive insights into the global AI startup ecosystem" to "Lively insights into the global AI startup ecosystem"
-- **Files Modified**: 
-  - `src/components/layout/Header.tsx`: Updated hero section description
-  - `src/components/charts/AnalyticsSidebar.tsx`: Updated market intelligence subtitle
-  - `src/lib/statistics.ts`: Updated comment description
-  - `docs/ai_market_watch_nextjs_development_spec.md`: Updated documentation metadata examples
-
-### Impact
-- More dynamic and engaging brand voice
-- Consistent messaging across all user-facing content and documentation
-- Better alignment with the platform's interactive and real-time nature
-
-## 2024-12-28: Performance Optimization & Caching System
-
-### Major Performance Improvements Implemented
-- **Caching System**: Implemented comprehensive browser-based caching using localStorage with 24-hour TTL
-  - Apps Script 데이터는 하루에 한번 업데이트되므로 24시간 캐시 적용
-  - Automatic cache invalidation and fallback to stale data on API failures
-  - Cache-aware UI indicators in header showing data freshness
-
-- **Statistics Optimization**: Moved from client-side calculation to optimized memoized functions
-  - Real funding amount parsing with K/M/B notation support
-  - Memoized statistics calculation preventing redundant computations
-  - Pre-computed filter metadata caching
-
-- **Data Loading Strategy**: Enhanced API layer with smart caching and error handling
-  - Force refresh capability for fresh data
-  - Graceful degradation to cached data on API failures
-  - Background statistics pre-computation
-
-- **UI/UX Enhancements**: Added real-time cache status and refresh controls
-  - Cache status indicators (Fresh Data vs Cached Data)
-  - Manual refresh button with loading states
-  - Last updated timestamp display
-
-### Technical Implementation
-- **Files Modified**: `src/lib/cache.ts`, `src/lib/statistics.ts`, `src/lib/api.ts`, `src/store/dashboardStore.ts`, `src/components/layout/Header.tsx`
-- **New Dependencies**: `@tanstack/react-virtual` for future large dataset virtualization
-- **Performance Impact**: Expected 3-5x faster loading on subsequent visits, reduced API calls
-
-### Next Steps
-- Monitor cache hit rates and user experience
-- Consider implementing service worker for offline support
-- Apps Script optimization for server-side statistics calculation
-
-## 2024-12-28: CORS 문제 해결
-
-### 문제 상황
-- Google Apps Script와 localhost:3000 간 CORS 오류 발생
-- 브라우저가 preflight OPTIONS 요청을 차단하여 데이터 로딩 실패
-
-### 해결 방법 구현
-- **Next.js API Route 프록시**: `/app/api/startups/route.ts` 생성
-  - 클라이언트 → Next.js API → Google Apps Script 구조로 CORS 우회
-  - 30초 타임아웃 및 상세 에러 처리 추가
-  - 서버사이드 캐싱 헤더 설정 (1시간)
-
-- **API 클라이언트 업데이트**: 직접 Apps Script 호출 대신 로컬 API 사용
-  - 환경에 따른 동적 URL 생성
-  - 개발 환경에서 CORS 관련 경고 메시지 추가
-
-- **설정 가이드 생성**: `docs/GOOGLE_APPS_SCRIPT_SETUP.md`
-  - Apps Script 설정 방법
-  - 대안 해결책들 (브라우저 CORS 비활성화, Google Sheets API)
-  - 프로덕션 환경 고려사항
-
-### 기술적 영향
-- CORS 문제 완전 해결
-- 서버사이드 요청으로 더 안정적인 데이터 페칭
-- 네트워크 요청 로깅 및 디버깅 개선
-
-## 2024-12-28: 보안 강화 - 환경 변수 관리
-
-### 보안 문제 해결
-- **하드코딩된 Apps Script URL 제거**: 코드에서 실제 URL을 완전히 제거
-- **환경 변수 필수화**: `APPS_SCRIPT_URL` 환경 변수 없으면 서버 시작 실패
-- **문서 업데이트**: README, SETUP_GUIDE, Google Apps Script 가이드에 보안 주의사항 추가
-
-### 구현 내용
-- **강제 환경 변수 체크**: API Route에서 환경 변수 없으면 에러 발생
-- **.gitignore 확인**: 환경 변수 파일들이 이미 Git에서 제외됨 확인
-- **설정 가이드 개선**: 모든 문서에 보안 중요성 강조
-
-### 보안 개선 효과
-- GitHub 공개 시에도 민감한 정보 노출 방지
-- 환경별 다른 설정 가능 (개발/스테이징/프로덕션)
-- 설정 실수로 인한 보안 취약점 방지
-
-## 2024-12-29: 스타트업 로고 자동 로딩 기능 구현
-
-### 기능 개요
-- **자동 로고 추출**: 스타트업 모달에서 웹사이트 URL을 통해 회사 로고 자동 로딩
-- **다중 소스 폴백**: 여러 로고 소스를 순차적으로 시도하여 성공률 극대화
-- **성능 최적화**: localStorage 캐싱으로 재로딩 속도 향상 (7일 TTL)
-
-### 기술적 구현
-- **로고 소스 우선순위**:
-  1. Google Favicon API (가장 신뢰성 높음)
-  2. DuckDuckGo Favicon Service 
-  3. 도메인 직접 favicon.ico
-  4. 대체 favicon 경로들 (PNG, Apple Touch Icon)
-
-- **스마트 캐싱 시스템**: 
-  - 성공한 로고 URL을 7일간 localStorage에 캐시
-  - 캐시 만료시간 자동 체크 및 정리
-  - 실패한 로딩에 대한 graceful fallback
-
-- **UX 개선사항**:
-  - 로딩 중 스피너 표시
-  - 로고 로딩 실패시 회사명 첫글자로 자동 폴백
-  - 이미지 로딩 에러 처리 및 재시도 로직
-
-### 성능 고려사항
-- **로딩 시간**: 외부 API 호출로 200-500ms 추가 지연 (첫 로딩만)
-- **캐시 히트시**: 즉시 로고 표시 (지연 없음)
-- **타임아웃 설정**: 3초 타임아웃으로 무한 로딩 방지
-- **대역폭 효율성**: 이미지 크기 128px로 제한하여 데이터 사용량 최소화
-
-### 파일 변경사항
-- **새 파일**: `src/lib/logoCache.ts` - 로고 캐싱 유틸리티
-- **수정 파일**: `src/components/company/CompanyModal.tsx` - 로고 로딩 로직 통합
-- **기능 특징**: 완전 클라이언트 사이드 처리로 서버 부하 없음
-
-### 향후 개선 방향
-- 로고 품질 향상을 위한 추가 API 소스 검토
-- 배치 처리를 통한 백그라운드 프리로딩 고려
-- 사용자가 로고 URL을 직접 제공할 수 있는 기능 추가 가능성
+**변경 이력**
+- 로고 크기 대폭 확대 및 레이아웃 최종 조정 (2024-12-28)
+- 브랜드명 정리 및 로고 크기 개선 (2024-12-28)
+- 카드 레이아웃 통일 및 텍스트 최적화 (2024-12-28)
+- 브랜드 로고 시스템 구축 (2024-12-28)
+- 로고 파일 형식 최적화 (2024-12-28)
