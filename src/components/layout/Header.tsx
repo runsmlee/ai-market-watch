@@ -32,7 +32,7 @@ export default function Header() {
   };
 
   return (
-    <header className="relative mb-20 text-center">
+    <header className="relative mb-16 text-center">
       {/* Subtle background gradient */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-40 left-1/2 transform -translate-x-1/2 
@@ -54,53 +54,74 @@ export default function Header() {
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}>
         {/* Logo and subtitle */}
-        <div className="flex flex-col items-center justify-center gap-4 mb-6">
-          <Image 
-            src="/ai-market-watch-logo.png" 
-            alt="AI Market Watch Logo" 
-            width={150} 
-            height={150}
-            className="opacity-100"
-          />
+        <div className="flex flex-col items-center justify-center gap-6 mb-8 pt-12">
+          <div className="relative group">
+            {/* Logo with subtle glow effect */}
+            <div className="absolute inset-0 bg-white/5 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <Image 
+              src="/ai-market-watch-logo.png" 
+              alt="AI Market Watch Logo" 
+              width={80} 
+              height={80}
+              className="opacity-90 relative z-10 hover:opacity-100 transition-opacity duration-300"
+            />
+          </div>
+          
+          {/* Elegant subtitle */}
+          <div className="text-center space-y-2">
+            <div className="hero-subtitle text-xs font-extralight text-white/50 tracking-[0.25em]">
+              AI Startups Intelligence Platform
+            </div>
+            <div className="elegant-divider w-12 mx-auto"></div>
+          </div>
         </div>
           
-        {/* Main heading */}
-        <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
-          <span className="text-gradient">AI Market Watch</span>
+        {/* Main heading with improved typography */}
+        <h1 className="hero-title text-4xl md:text-6xl mb-6 text-center">
+          <div className="text-gradient-elegant font-light">AI Market Watch</div>
         </h1>
         
-        {/* Description */}
-        <p className="text-xl md:text-2xl text-white/60 font-light mb-8 max-w-2xl mx-auto leading-relaxed">
-          Lively insights into the global 
-          <span className="text-white/80 font-medium"> AI startup ecosystem</span>
-        </p>
+        {/* Enhanced description */}
+        <div className="text-center max-w-2xl mx-auto mb-8">
+          <p className="text-lg md:text-xl text-white/70 font-light leading-relaxed mb-4">
+            Lively insights into the global 
+            <span className="text-white/90 font-normal"> AI startup ecosystem</span>
+          </p>
+          <div className="flex items-center justify-center gap-3 text-sm text-white/40 font-light">
+            <span>Real-time intelligence</span>
+            <div className="w-1 h-1 bg-white/30 rounded-full"></div>
+            <span>Market analysis</span>
+            <div className="w-1 h-1 bg-white/30 rounded-full"></div>
+            <span>Startup tracking</span>
+          </div>
+        </div>
 
         {/* Data status and refresh */}
-        <div className="flex items-center justify-center gap-6 text-sm text-white/50 mb-8 flex-wrap">
+        <div className="flex items-center justify-center gap-4 text-sm text-white/50 mb-6 flex-wrap">
           <div className="flex items-center gap-2">
             {isFromCache ? (
-              <Wifi className="w-4 h-4 text-orange-400" />
+              <Wifi className="w-3 h-3 text-orange-400" />
             ) : (
-              <WifiOff className="w-4 h-4 text-green-400" />
+              <WifiOff className="w-3 h-3 text-green-400" />
             )}
             <span className={isFromCache ? 'text-orange-400' : 'text-green-400'}>
               {isFromCache ? 'Cached Data' : 'Fresh Data'}
             </span>
           </div>
           
-          <div className="w-px h-4 bg-white/20"></div>
+          <div className="w-px h-3 bg-white/20"></div>
           
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse-subtle"></div>
+            <div className="w-1.5 h-1.5 bg-white/60 rounded-full animate-pulse-subtle"></div>
             <span>Updated {formatLastUpdated(lastUpdated)}</span>
           </div>
           
-          <div className="w-px h-4 bg-white/20"></div>
+          <div className="w-px h-3 bg-white/20"></div>
           
           <button
             onClick={handleRefresh}
             disabled={loading}
-            className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 
                        rounded-full hover:bg-white/10 hover:border-white/20 
                        transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -120,13 +141,13 @@ export default function Header() {
               href="https://weeklyventures.xyz" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="relative flex items-center gap-3 px-6 py-3 bg-white/[0.02] 
+              className="relative flex items-center gap-2 px-4 py-2 bg-white/[0.02] 
                          border border-white/[0.08] rounded-full backdrop-blur-sm
                          hover:bg-white/[0.05] hover:border-white/[0.15] 
                          transition-all duration-300 group"
             >
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-white/60 rounded-full"></div>
+                <div className="w-1 h-1 bg-white/60 rounded-full"></div>
                 <span className="text-xs font-medium text-white/60 group-hover:text-white/80 transition-colors">
                   Provided by
                 </span>
