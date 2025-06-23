@@ -116,13 +116,7 @@ async function tryMultipleLogoSources(domain: string, companyName: string): Prom
 // Validate if image URL is accessible and valid
 function validateImageUrl(url: string): Promise<boolean> {
   return new Promise((resolve) => {
-    // Check if we're in browser environment
-    if (typeof window === 'undefined') {
-      resolve(false);
-      return;
-    }
-
-    const img = new window.Image();
+    const img = new Image();
     const timeout = setTimeout(() => {
       resolve(false);
     }, 3000); // 3 second timeout

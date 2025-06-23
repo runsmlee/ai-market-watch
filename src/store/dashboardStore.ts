@@ -125,8 +125,13 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       isFromCache 
     });
     
-    // Apply current filters
-    get().applyFilters();
+    // Apply current filters immediately - use Promise to ensure execution
+    console.log('🔄 About to apply filters after setStartups...');
+    Promise.resolve().then(() => {
+      const store = get();
+      console.log('🔄 Calling applyFilters from setStartups with allStartups count:', store.allStartups.length);
+      store.applyFilters();
+    });
   },
 
   updateFilters: (newFilters) => {
@@ -143,19 +148,59 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   applyFilters: async () => {
     const { allStartups, filters, processDataInBackground, calculateStatsInBackground } = get();
     
-    if (allStartups.length === 0) {
-      console.log('⚠️ No startups to filter');
+    console.log('🔍 applyFilters called with:', {
+      allStartupsLength: allStartups.length,
+      filtersState: {
+        search: filters.search,
+        categoriesSize: filters.categories.size,
+        locationsSize: filters.locations.size,
+        yearRange: [filters.yearFrom, filters.yearTo],
+        sortBy: filters.sortBy
+      }
+    });
+    
+    if (!allStartups || allStartups.length === 0) {
+      console.log('⚠️ No startups to filter - allStartups is empty or undefined');
+      // Set empty filtered results explicitly
+      set({ 
+        filteredStartups: [],
+        stats: {
+          totalCompanies: 0,
+          totalCategories: 0,
+          totalFunding: 0,
+          filteredCount: 0,
+        }
+      });
       return;
     }
 
-    console.log('🔍 Applying filters:', {
-      totalStartups: allStartups.length,
-      search: filters.search,
-      categoriesCount: filters.categories.size,
-      locationsCount: filters.locations.size,
-      yearRange: [filters.yearFrom, filters.yearTo],
-      sortBy: filters.sortBy
+    // Sample some data for debugging
+    console.log('📊 Sample startup data:', {
+      sampleCount: Math.min(3, allStartups.length),
+      samples: allStartups.slice(0, 3).map(s => ({
+        companyName: s.companyName,
+        category: s.category,
+        location: s.location,
+        yearFounded: s.yearFounded,
+        description: s.description?.substring(0, 50) + '...'
+      }))
     });
+
+    // DEBUG MODE: Skip filtering temporarily to test data flow
+    const DEBUG_SKIP_FILTERS = false; // Set to true for debugging
+    
+    if (DEBUG_SKIP_FILTERS) {
+      console.log('🚨 DEBUG MODE: Skipping all filters, showing all data');
+      const sorted = get().sortStartups(allStartups, filters.sortBy);
+      const stats = calculateDashboardStats(allStartups, sorted);
+      set({ 
+        filteredStartups: sorted, 
+        stats,
+        isProcessing: false,
+        processingTask: null
+      });
+      return;
+    }
 
     try {
       set({ isProcessing: true, processingTask: 'Filtering companies...' });
@@ -164,48 +209,63 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       let filtered: Startup[];
       try {
         filtered = await get().filterInBackground(allStartups, filters);
-        console.log('🚀 Filtered using web worker');
+        console.log('🚀 Filtered using web worker:', filtered.length);
       } catch (error) {
-        console.log('⚠️ Web worker failed, falling back to main thread');
-        // Fallback to main thread filtering
-        filtered = allStartups.filter(startup => {
+        console.log('⚠️ Web worker failed, falling back to main thread:', error);
+        // Fallback to main thread filtering with more debugging
+        filtered = allStartups.filter((startup, index) => {
+          // Debug first few items in detail
+          const isDebugItem = index < 3;
+          
           // Search filter
           if (filters.search.trim()) {
             const searchTerm = filters.search.toLowerCase();
             const searchableText = [
-              startup.companyName,
-              startup.description,
-              startup.category,
-              startup.location,
-              startup.ceo
+              startup.companyName || '',
+              startup.description || '',
+              startup.category || '',
+              startup.location || '',
+              startup.ceo || ''
             ].join(' ').toLowerCase();
             
             if (!searchableText.includes(searchTerm)) {
+              if (isDebugItem) console.log(`🔍 FILTERED OUT (search): ${startup.companyName} - search term "${searchTerm}" not found in "${searchableText.substring(0, 100)}..."`);
               return false;
             }
           }
           
           // Category filter
-          if (filters.categories.size > 0 && !filters.categories.has(startup.category)) {
+          if (filters.categories.size > 0 && !filters.categories.has(startup.category || '')) {
+            if (isDebugItem) console.log(`🔍 FILTERED OUT (category): ${startup.companyName} - category "${startup.category}" not in selected categories`);
             return false;
           }
           
           // Location filter
           if (filters.locations.size > 0) {
-            const city = startup.location?.split(',')[0]?.trim();
+            const city = startup.location?.split(',')[0]?.trim() || '';
             if (!city || !filters.locations.has(city)) {
+              if (isDebugItem) console.log(`🔍 FILTERED OUT (location): ${startup.companyName} - city "${city}" not in selected locations`);
               return false;
             }
           }
           
-          // Year filter
-          if (startup.yearFounded < filters.yearFrom || startup.yearFounded > filters.yearTo) {
+          // Year filter - more forgiving
+          const yearFounded = startup.yearFounded || 0;
+          if (yearFounded > 0 && (yearFounded < filters.yearFrom || yearFounded > filters.yearTo)) {
+            if (isDebugItem) console.log(`🔍 FILTERED OUT (year): ${startup.companyName} - year ${yearFounded} not in range [${filters.yearFrom}, ${filters.yearTo}]`);
             return false;
           }
           
+          if (isDebugItem) console.log(`✅ PASSED ALL FILTERS: ${startup.companyName}`);
           return true;
         });
       }
+      
+      console.log('🎯 Filter results:', {
+        originalCount: allStartups.length,
+        filteredCount: filtered.length,
+        filterPercentage: ((filtered.length / allStartups.length) * 100).toFixed(1) + '%'
+      });
       
       // Sort the filtered results
       const sorted = get().sortStartups(filtered, filters.sortBy);

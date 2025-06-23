@@ -99,23 +99,28 @@ export default function DashboardContent() {
         
         console.log('📊 API Response received:', {
           dataLength: response.transformedData?.length || 0,
+          rawDataLength: response.data?.length || 0,
           lastUpdated: response.lastUpdated,
           hasError: !!response.error,
-          responseType: typeof response,
-          responseKeys: Object.keys(response || {})
+          fullResponse: response
         });
 
         if (response.error) {
-          console.error('❌ API response contains error:', response.error, response.message);
           throw new Error(response.message || 'Failed to fetch data');
         }
 
-        if (!response.transformedData || !Array.isArray(response.transformedData)) {
-          console.error('❌ Invalid API response structure:', response);
-          throw new Error('Invalid data format received from API');
-        }
-
         const startups = response.transformedData || [];
+        console.log('🏗️ About to set startups:', {
+          startupsCount: startups.length,
+          firstStartup: startups[0],
+          sampleData: startups.slice(0, 3).map(s => ({
+            id: s.id,
+            companyName: s.companyName,
+            category: s.category,
+            yearFounded: s.yearFounded
+          }))
+        });
+        
         setStartups(startups, response.lastUpdated, !!response.lastUpdated);
         setIsInitialized(true);
         
@@ -131,6 +136,17 @@ export default function DashboardContent() {
 
     initializeData();
   }, [mounted, isInitialized, setStartups, setLoading, setError]);
+
+  // Log current state for debugging
+  useEffect(() => {
+    console.log('🔄 Dashboard state changed:', {
+      allStartupsCount: filteredStartups.length,
+      loading,
+      error,
+      isInitialized,
+      stats
+    });
+  }, [filteredStartups.length, loading, error, isInitialized, stats]);
 
   // Don't render anything until mounted (prevents hydration mismatch)
   if (!mounted) {
@@ -183,6 +199,8 @@ export default function DashboardContent() {
         <div className={`transition-all duration-300 ${
           sidebarCollapsed ? 'mr-0' : 'mr-80'
         }`}>
+
+          
           <Suspense fallback={<GridSkeleton />}>
             <VirtualizedCompanyGrid 
               companies={filteredStartups} 

@@ -9,7 +9,7 @@ export default function Footer() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
           {/* Main Footer Content */}
           <div className="flex flex-col sm:flex-row items-center gap-2 text-white/50">
-            <span>© 2024 AI Market Watch</span>
+            <span>© 2025 AI Market Watch</span>
             <span className="hidden sm:inline text-white/30">•</span>
             <span>AI Startups Intelligence Platform</span>
           </div>
