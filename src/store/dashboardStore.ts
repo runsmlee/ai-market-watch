@@ -17,6 +17,10 @@ interface DashboardState {
   // Filters
   filters: StartupFilters;
   
+  // Performance
+  isProcessing: boolean;
+  processingTask: string | null;
+  
   // Actions
   setStartups: (startups: Startup[], lastUpdated?: string, isFromCache?: boolean) => void;
   updateFilters: (filters: Partial<StartupFilters>) => void;
@@ -29,15 +33,59 @@ interface DashboardState {
   getFilterMetadata: () => { categories: string[]; locations: string[] };
   sidebarCollapsed: boolean;
   toggleSidebar: () => void;
+  
+  // Web Worker actions
+  processDataInBackground: (data: any[]) => Promise<Startup[]>;
+  calculateStatsInBackground: (companies: Startup[]) => Promise<DashboardStats>;
+  filterInBackground: (companies: Startup[], filters: StartupFilters) => Promise<Startup[]>;
 }
 
-const initialFilters: StartupFilters = {
-  search: '',
-  categories: new Set(),
-  locations: new Set(),
-  yearFrom: 2010,
-  yearTo: 2025,
-  sortBy: 'recent',
+// Web Worker instance (singleton)
+let dataWorker: Worker | null = null;
+
+const initializeWorker = () => {
+  if (typeof window === 'undefined') return null;
+  
+  if (!dataWorker) {
+    try {
+      dataWorker = new Worker('/workers/dataProcessor.js');
+    } catch (error) {
+      console.warn('Web Worker not available, falling back to main thread:', error);
+      return null;
+    }
+  }
+  
+  return dataWorker;
+};
+
+const postWorkerMessage = (type: string, data: any): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    const worker = initializeWorker();
+    
+    if (!worker) {
+      // Fallback to main thread processing
+      reject(new Error('Worker not available'));
+      return;
+    }
+    
+    const handleMessage = (event: MessageEvent) => {
+      const { type: responseType, data: responseData, error } = event.data;
+      
+      if (error) {
+        worker.removeEventListener('message', handleMessage);
+        reject(new Error(error));
+        return;
+      }
+      
+      if (responseType === `${type}_SUCCESS`) {
+        worker.removeEventListener('message', handleMessage);
+        resolve(responseData);
+      }
+    };
+    
+    worker.addEventListener('message', handleMessage);
+    worker.postMessage({ type, data });
+  });
 };
 
 export const useDashboardStore = create<DashboardState>((set, get) => ({
@@ -54,145 +102,217 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   error: null,
   lastUpdated: null,
   isFromCache: false,
-  filters: initialFilters,
-  sidebarCollapsed: true, // 기본값을 숨김으로 변경
+  isProcessing: false,
+  processingTask: null,
+  
+  filters: {
+    search: '',
+    categories: new Set<string>(),
+    locations: new Set<string>(),
+    yearFrom: 2000,
+    yearTo: new Date().getFullYear(),
+    sortBy: 'recent' as SortOption,
+  },
+  
+  sidebarCollapsed: false,
 
-  // Actions
   setStartups: (startups, lastUpdated, isFromCache = false) => {
-    console.log('🏪 Store: Setting startups:', {
-      count: startups.length,
-      sampleStartup: startups[0],
-      lastUpdated,
-      isFromCache
-    });
+    console.log('📊 Setting startups:', { count: startups.length, lastUpdated, isFromCache });
     
     set({ 
-      allStartups: startups, 
-      lastUpdated: lastUpdated || null,
+      allStartups: startups,
+      lastUpdated: lastUpdated || new Date().toISOString(),
       isFromCache 
     });
+    
+    // Apply current filters
     get().applyFilters();
   },
 
   updateFilters: (newFilters) => {
+    console.log('🔧 Updating filters:', newFilters);
+    
     set((state) => ({
       filters: { ...state.filters, ...newFilters }
     }));
+    
+    // Apply filters immediately
     get().applyFilters();
   },
 
-  applyFilters: () => {
-    const { allStartups, filters } = get();
+  applyFilters: async () => {
+    const { allStartups, filters, processDataInBackground, calculateStatsInBackground } = get();
     
-    let filtered = allStartups.filter((startup) => {
-      // Search filter
-      if (filters.search) {
-        const searchText = [
-          startup.companyName,
-          startup.ceo,
-          startup.description,
-          startup.category,
-        ].join(' ').toLowerCase();
-        
-        if (!searchText.includes(filters.search.toLowerCase())) {
-          return false;
-        }
-      }
+    if (allStartups.length === 0) {
+      console.log('⚠️ No startups to filter');
+      return;
+    }
 
-      // Category filter
-      if (filters.categories.size > 0) {
-        if (!filters.categories.has(startup.category)) {
-          return false;
-        }
-      }
-
-      // Location filter
-      if (filters.locations.size > 0) {
-        const location = startup.location.split(',')[0].trim();
-        if (!filters.locations.has(location)) {
-          return false;
-        }
-      }
-
-      // Year filter
-      if (startup.yearFounded < filters.yearFrom || 
-          startup.yearFounded > filters.yearTo) {
-        return false;
-      }
-
-      return true;
+    console.log('🔍 Applying filters:', {
+      totalStartups: allStartups.length,
+      search: filters.search,
+      categoriesCount: filters.categories.size,
+      locationsCount: filters.locations.size,
+      yearRange: [filters.yearFrom, filters.yearTo],
+      sortBy: filters.sortBy
     });
 
-    // Apply sorting
-    filtered = get().sortStartups(filtered, filters.sortBy);
-
-    // Use optimized stats calculation
-    const stats = calculateDashboardStats(allStartups, filtered);
-
-    set({ 
-      filteredStartups: filtered,
-      stats 
-    });
+    try {
+      set({ isProcessing: true, processingTask: 'Filtering companies...' });
+      
+      // Use web worker for filtering if available
+      let filtered: Startup[];
+      try {
+        filtered = await get().filterInBackground(allStartups, filters);
+        console.log('🚀 Filtered using web worker');
+      } catch (error) {
+        console.log('⚠️ Web worker failed, falling back to main thread');
+        // Fallback to main thread filtering
+        filtered = allStartups.filter(startup => {
+          // Search filter
+          if (filters.search.trim()) {
+            const searchTerm = filters.search.toLowerCase();
+            const searchableText = [
+              startup.companyName,
+              startup.description,
+              startup.category,
+              startup.location,
+              startup.ceo
+            ].join(' ').toLowerCase();
+            
+            if (!searchableText.includes(searchTerm)) {
+              return false;
+            }
+          }
+          
+          // Category filter
+          if (filters.categories.size > 0 && !filters.categories.has(startup.category)) {
+            return false;
+          }
+          
+          // Location filter
+          if (filters.locations.size > 0) {
+            const city = startup.location?.split(',')[0]?.trim();
+            if (!city || !filters.locations.has(city)) {
+              return false;
+            }
+          }
+          
+          // Year filter
+          if (startup.yearFounded < filters.yearFrom || startup.yearFounded > filters.yearTo) {
+            return false;
+          }
+          
+          return true;
+        });
+      }
+      
+      // Sort the filtered results
+      const sorted = get().sortStartups(filtered, filters.sortBy);
+      
+      // Calculate stats in background
+      let stats: DashboardStats;
+      try {
+        stats = await calculateStatsInBackground(allStartups);
+        stats.filteredCount = sorted.length;
+      } catch (error) {
+        console.log('⚠️ Stats calculation in worker failed, using main thread');
+        stats = calculateDashboardStats(allStartups, sorted);
+      }
+      
+      set({ 
+        filteredStartups: sorted, 
+        stats,
+        isProcessing: false,
+        processingTask: null
+      });
+      
+      console.log('✅ Filters applied successfully:', {
+        filteredCount: sorted.length,
+        stats
+      });
+      
+    } catch (error) {
+      console.error('❌ Filter application failed:', error);
+      set({ 
+        error: `Filter application failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        isProcessing: false,
+        processingTask: null
+      });
+    }
   },
 
-  sortStartups: (startups: Startup[], sortBy: SortOption): Startup[] => {
-    return [...startups].sort((a, b) => {
-      switch (sortBy) {
-        case 'recent':
-          // Sort by updatedDate in descending order (most recent first)
-          if (!a.updatedDate && !b.updatedDate) return 0;
-          if (!a.updatedDate) return 1;
-          if (!b.updatedDate) return -1;
-          
-          const dateA = new Date(a.updatedDate);
-          const dateB = new Date(b.updatedDate);
-          
-          if (!isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) {
-            return dateB.getTime() - dateA.getTime();
-          }
-          
-          if (isNaN(dateA.getTime()) && isNaN(dateB.getTime())) return 0;
-          if (isNaN(dateA.getTime())) return 1;
-          if (isNaN(dateB.getTime())) return -1;
-          return 0;
-
-        case 'name':
-          return a.companyName.localeCompare(b.companyName);
-
-        case 'founded':
-          return b.yearFounded - a.yearFounded; // Most recent founded year first
-
-        case 'category':
-          const categoryCompare = a.category.localeCompare(b.category);
-          if (categoryCompare === 0) {
-            return a.companyName.localeCompare(b.companyName); // Secondary sort by name
-          }
-          return categoryCompare;
-
-        default:
-          return 0;
-      }
-    });
+  sortStartups: (startups, sortBy) => {
+    const sorted = [...startups];
+    
+    switch (sortBy) {
+      case 'name':
+        return sorted.sort((a, b) => (a.companyName || '').localeCompare(b.companyName || ''));
+      case 'founded':
+        return sorted.sort((a, b) => (b.yearFounded || 0) - (a.yearFounded || 0));
+      case 'category':
+        return sorted.sort((a, b) => (a.category || '').localeCompare(b.category || ''));
+      case 'recent':
+      default:
+        return sorted.sort((a, b) => 
+          new Date(b.updatedDate || 0).getTime() - new Date(a.updatedDate || 0).getTime()
+        );
+    }
   },
 
   clearFilters: () => {
-    set({ filters: initialFilters });
+    console.log('🧹 Clearing all filters');
+    
+    set({
+      filters: {
+        search: '',
+        categories: new Set<string>(),
+        locations: new Set<string>(),
+        yearFrom: 2000,
+        yearTo: new Date().getFullYear(),
+        sortBy: 'recent' as SortOption,
+      }
+    });
+    
     get().applyFilters();
   },
 
   setLoading: (loading) => set({ loading }),
-  setError: (error) => set({ error }),
+  
+  setError: (error) => {
+    console.log(error ? '❌ Error set:' : '✅ Error cleared:', error);
+    set({ error });
+  },
 
   refreshData: async () => {
+    const { setStartups, setLoading, setError } = get();
+    
     try {
-      set({ loading: true, error: null });
-      const response = await fetchStartups({}, { forceRefresh: true, includeStats: true });
+      setLoading(true);
+      setError(null);
+      
+      console.log('🔄 Refreshing data...');
+      
+      const response = await fetchStartups(undefined, { 
+        useCache: false, 
+        forceRefresh: true,
+        includeStats: true 
+      });
+      
+      if (response.error) {
+        throw new Error(response.message || 'Failed to refresh data');
+      }
+
       const startups = response.transformedData || [];
-      get().setStartups(startups, response.lastUpdated, false);
-    } catch (error: any) {
-      set({ error: error.message || 'Failed to refresh data' });
+      setStartups(startups, response.lastUpdated, false);
+      
+      console.log('✅ Data refreshed successfully');
+      
+    } catch (error) {
+      console.error('❌ Data refresh failed:', error);
+      setError(error instanceof Error ? error.message : 'Failed to refresh data');
     } finally {
-      set({ loading: false });
+      setLoading(false);
     }
   },
 
@@ -260,6 +380,41 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   toggleSidebar: () => set((state) => ({ 
     sidebarCollapsed: !state.sidebarCollapsed 
   })),
+  
+  // Web Worker methods
+  processDataInBackground: async (data: any[]): Promise<Startup[]> => {
+    try {
+      return await postWorkerMessage('PROCESS_STARTUPS', data);
+    } catch (error) {
+      throw new Error(`Background processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  },
+  
+  calculateStatsInBackground: async (companies: Startup[]): Promise<DashboardStats> => {
+    try {
+      return await postWorkerMessage('CALCULATE_STATISTICS', companies);
+    } catch (error) {
+      throw new Error(`Background stats calculation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  },
+  
+  filterInBackground: async (companies: Startup[], filters: StartupFilters): Promise<Startup[]> => {
+    try {
+      // Convert Set to Array for worker
+      const serializedFilters = {
+        ...filters,
+        categories: Array.from(filters.categories),
+        locations: Array.from(filters.locations)
+      };
+      
+      return await postWorkerMessage('FILTER_COMPANIES', {
+        companies,
+        filters: serializedFilters
+      });
+    } catch (error) {
+      throw new Error(`Background filtering failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
 }));
 
  

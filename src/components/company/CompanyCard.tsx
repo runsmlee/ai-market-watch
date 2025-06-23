@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
-import { MapPin, DollarSign, Calendar, Users, ExternalLink } from 'lucide-react';
+import React, { memo } from 'react';
+import Image from 'next/image';
+import { MapPin, DollarSign, Calendar, Users, ExternalLink, Building2 } from 'lucide-react';
 import { Startup } from '../../types/startup';
+import { getCachedLogo, setCachedLogo } from '../../lib/logoCache';
 
 interface CompanyCardProps {
   company: Startup;
@@ -19,7 +21,75 @@ const truncateText = (text: string, maxLength: number): string => {
   return text.substring(0, maxLength) + '...';
 };
 
-const CompanyCard = ({ company, onClick }: CompanyCardProps) => {
+// Extract domain from company name or website for logo fetching
+const getCompanyDomain = (company: Startup): string => {
+  if (company.webpage) {
+    try {
+      const url = new URL(company.webpage.startsWith('http') ? company.webpage : `https://${company.webpage}`);
+      return url.hostname.replace('www.', '');
+    } catch {
+      // If website URL is invalid, fallback to company name
+    }
+  }
+  
+  // Generate a domain-like string from company name
+  return company.companyName
+    ?.toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+    .substring(0, 20) + '.com' || 'unknown.com';
+};
+
+// Logo component with fallback
+const CompanyLogo = memo(({ company }: { company: Startup }) => {
+  const domain = getCompanyDomain(company);
+  const cachedLogo = getCachedLogo(domain);
+  
+  // Try to get logo from various sources
+  const logoSources = [
+    cachedLogo,
+    `https://logo.clearbit.com/${domain}`,
+    `https://www.google.com/s2/favicons?domain=${domain}&sz=64`,
+  ].filter(Boolean);
+
+  const handleLogoLoad = (src: string) => {
+    if (!cachedLogo && src) {
+      setCachedLogo(domain, src);
+    }
+  };
+
+  const handleLogoError = () => {
+    // Could implement fallback logic here
+  };
+
+  if (logoSources.length === 0) {
+    return (
+      <div className="w-10 h-10 bg-white/[0.06] border border-white/[0.1] 
+                     rounded-lg flex items-center justify-center flex-shrink-0">
+        <Building2 className="w-5 h-5 text-white/70" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-10 h-10 bg-white/[0.06] border border-white/[0.1] 
+                   rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+      <Image
+        src={logoSources[0]}
+        alt={`${company.companyName} logo`}
+        width={32}
+        height={32}
+        className="object-contain"
+        onLoad={() => handleLogoLoad(logoSources[0])}
+        onError={handleLogoError}
+        unoptimized // For external logos that might not work with Next.js optimization
+      />
+    </div>
+  );
+});
+
+CompanyLogo.displayName = 'CompanyLogo';
+
+const CompanyCard = memo(({ company, onClick }: CompanyCardProps) => {
   return (
     <div 
       className="group relative overflow-hidden cursor-pointer h-[400px]"
@@ -32,20 +102,23 @@ const CompanyCard = ({ company, onClick }: CompanyCardProps) => {
         
         {/* Header section */}
         <div className="flex items-start justify-between mb-4">
-          <div className="flex-1 pr-3">
-            <h3 className="text-base font-semibold text-white mb-2 
-                          group-hover:text-white/90 transition-colors duration-300 leading-tight
-                          line-clamp-2 min-h-[2.5rem]" 
-                title={safeString(company.companyName)}>
-              {safeString(company.companyName)}
-            </h3>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-2 py-1 bg-white/[0.08] border border-white/[0.12] 
-                              rounded text-xs font-medium text-white/80 
-                              backdrop-blur-sm truncate max-w-[120px]"
-                    title={safeString(company.category)}>
-                {truncateText(safeString(company.category), 15)}
-              </span>
+          <div className="flex items-start gap-3 flex-1 pr-3">
+            <CompanyLogo company={company} />
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-semibold text-white mb-2 
+                            group-hover:text-white/90 transition-colors duration-300 leading-tight
+                            line-clamp-2 min-h-[2.5rem]" 
+                  title={safeString(company.companyName)}>
+                {safeString(company.companyName)}
+              </h3>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="px-2 py-1 bg-white/[0.08] border border-white/[0.12] 
+                                rounded text-xs font-medium text-white/80 
+                                backdrop-blur-sm truncate max-w-[120px]"
+                      title={safeString(company.category)}>
+                  {truncateText(safeString(company.category), 15)}
+                </span>
+              </div>
             </div>
           </div>
           
@@ -58,7 +131,7 @@ const CompanyCard = ({ company, onClick }: CompanyCardProps) => {
 
         {/* Description */}
         <div className="mb-4 flex-shrink-0">
-          <p className="text-sm text-white/70 line-clamp-3 leading-relaxed min-h-[3.5rem]"
+          <p className="text-sm text-white/75 line-clamp-3 leading-relaxed min-h-[3.5rem]"
              title={safeString(company.description)}>
             {safeString(company.description)}
           </p>
@@ -72,7 +145,7 @@ const CompanyCard = ({ company, onClick }: CompanyCardProps) => {
               <Calendar className="w-3.5 h-3.5 text-white/50" />
               <span className="text-xs text-white/60 font-medium">Founded</span>
             </div>
-            <div className="text-sm font-semibold text-white/90 truncate"
+            <div className="text-sm font-semibold text-white/95 truncate"
                  title={safeString(company.yearFounded)}>
               {safeString(company.yearFounded)}
             </div>
@@ -134,6 +207,8 @@ const CompanyCard = ({ company, onClick }: CompanyCardProps) => {
       </div>
     </div>
   );
-};
+});
+
+CompanyCard.displayName = 'CompanyCard';
 
 export default CompanyCard; 

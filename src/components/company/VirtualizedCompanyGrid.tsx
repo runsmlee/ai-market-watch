@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useCallback, useState, useEffect } from 'react';
+import { useMemo, useCallback, useState, useEffect, useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Startup } from '@/types/startup';
 import { useDashboardStore } from '@/store/dashboardStore';
@@ -19,6 +19,7 @@ export default function VirtualizedCompanyGrid({
   const [selectedCompany, setSelectedCompany] = useState<Startup | null>(null);
   const [isClient, setIsClient] = useState(false);
   const { sidebarCollapsed } = useDashboardStore();
+  const parentRef = useRef<HTMLDivElement>(null);
 
   // Ensure client-side only rendering for responsive behavior
   useEffect(() => {
@@ -27,8 +28,6 @@ export default function VirtualizedCompanyGrid({
 
   // Calculate grid dimensions based on screen size and sidebar state
   const getColumnsPerRow = useCallback(() => {
-    // Default server-side value (prevents hydration mismatch)
-    // Use the collapsed state's desktop value for SSR consistency
     if (!isClient || typeof window === 'undefined') {
       return sidebarCollapsed ? 3 : 2;
     }
@@ -38,31 +37,20 @@ export default function VirtualizedCompanyGrid({
     // Mobile: always 1 column
     if (width < 768) return 1;
     
-    // Tablet: always 2 columns
+    // Tablet: 2 columns regardless of sidebar
     if (width < 1024) return 2;
     
-    // Desktop and larger: adjust based on sidebar state
+    // Desktop: More generous spacing with sidebar open
     if (width < 1280) {
-      // For smaller desktop screens
-      return sidebarCollapsed ? 3 : 2;
+      return sidebarCollapsed ? 3 : 2; // Keep 2 columns when sidebar is open for better readability
+    } else if (width < 1536) {
+      return sidebarCollapsed ? 4 : 3; // Allow 3 columns on larger screens
     } else {
-      // For larger screens (xl and above)
-      return sidebarCollapsed ? 4 : 3;
+      return sidebarCollapsed ? 5 : 4; // Even more columns on very large screens
     }
   }, [sidebarCollapsed, isClient]);
 
-  // Dynamic grid classes based on sidebar state (consistent server/client)
-  const getGridClasses = () => {
-    const baseClasses = "grid gap-6";
-    
-    if (sidebarCollapsed) {
-      return `${baseClasses} grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`;
-    } else {
-      return `${baseClasses} grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3`;
-    }
-  };
-
-  // Group companies into rows
+  // Group companies into rows for virtualization
   const rows = useMemo(() => {
     const columnsPerRow = getColumnsPerRow();
     const grouped: Startup[][] = [];
@@ -74,21 +62,25 @@ export default function VirtualizedCompanyGrid({
     return grouped;
   }, [companies, getColumnsPerRow]);
 
-  // Create parent ref for virtualizer
-  const parentRef = useMemo(() => {
-    if (typeof document !== 'undefined') {
-      return document.createElement('div');
-    }
-    return null;
-  }, []);
-
-  // Virtual row renderer
+  // Virtual row renderer with proper scroll element
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
-    getScrollElement: () => parentRef,
-    estimateSize: () => 420, // Estimated height of each row (card height + gap)
-    overscan: 3, // Render 3 extra rows for smooth scrolling
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 420,
+    overscan: 3,
   });
+
+  // Dynamic grid classes based on sidebar state
+  const getGridClasses = () => {
+    const baseClasses = "grid gap-6";
+    
+    if (sidebarCollapsed) {
+      return `${baseClasses} grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5`;
+    } else {
+      // More generous spacing when sidebar is open - prioritize card readability
+      return `${baseClasses} grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4`;
+    }
+  };
 
   if (loading) {
     return (
@@ -132,6 +124,91 @@ export default function VirtualizedCompanyGrid({
     );
   }
 
+  // Use virtualization for large datasets
+  if (companies.length > 50) {
+    return (
+      <>
+        <div className="space-y-8">
+          {/* Results info with grid status */}
+          <div className="flex items-center justify-between">
+            <div className="text-white/70">
+              Showing <span className="text-white font-medium">{companies.length}</span> companies
+              {isClient && (
+                <span className="text-white/50 text-sm ml-2">
+                  • {getColumnsPerRow()} columns • Virtualized
+                </span>
+              )}
+            </div>
+            
+            {/* Performance indicator */}
+            <div className="text-xs text-white/50 bg-white/5 px-3 py-1 rounded-full border border-white/10">
+              🚀 Virtualized rendering
+            </div>
+          </div>
+
+          {/* Virtualized container */}
+          <div
+            ref={parentRef}
+            className="h-[80vh] overflow-auto"
+            style={{
+              contain: 'strict',
+            }}
+          >
+            <div
+              style={{
+                height: `${rowVirtualizer.getTotalSize()}px`,
+                width: '100%',
+                position: 'relative',
+              }}
+            >
+              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const row = rows[virtualRow.index];
+                if (!row) return null;
+
+                return (
+                  <div
+                    key={virtualRow.index}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: `${virtualRow.size}px`,
+                      transform: `translateY(${virtualRow.start}px)`,
+                    }}
+                  >
+                    <div className={getGridClasses()}>
+                      {row.map((company) => (
+                        <CompanyCard 
+                          key={company.id} 
+                          company={company}
+                          onClick={() => setSelectedCompany(company)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Performance note */}
+          <div className="text-center text-xs text-white/40 bg-white/[0.02] px-4 py-2 rounded-lg border border-white/5">
+            💡 Large dataset optimized with virtual scrolling ({companies.length} items)
+          </div>
+        </div>
+
+        {/* Company Modal */}
+        <CompanyModal
+          company={selectedCompany}
+          isOpen={!!selectedCompany}
+          onClose={() => setSelectedCompany(null)}
+        />
+      </>
+    );
+  }
+
+  // Regular grid for smaller datasets
   return (
     <>
       <div className="space-y-8">
@@ -162,13 +239,6 @@ export default function VirtualizedCompanyGrid({
             />
           ))}
         </div>
-
-        {/* Performance note */}
-        {companies.length > 100 && (
-          <div className="text-center text-xs text-white/40 bg-white/[0.02] px-4 py-2 rounded-lg border border-white/5">
-            💡 Large dataset optimized with smart rendering and caching
-          </div>
-        )}
       </div>
 
       {/* Company Modal */}
