@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Startup, StartupFilters, DashboardStats } from '@/types/startup';
+import { Startup, StartupFilters, DashboardStats, SortOption } from '@/types/startup';
 import { calculateDashboardStats } from '@/lib/statistics';
 import { DataCache, CACHE_KEYS } from '@/lib/cache';
 
@@ -20,6 +20,7 @@ interface DashboardState {
   setStartups: (startups: Startup[], lastUpdated?: string, isFromCache?: boolean) => void;
   updateFilters: (filters: Partial<StartupFilters>) => void;
   applyFilters: () => void;
+  sortStartups: (startups: Startup[], sortBy: SortOption) => Startup[];
   clearFilters: () => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -33,6 +34,7 @@ const initialFilters: StartupFilters = {
   locations: new Set(),
   yearFrom: 2010,
   yearTo: 2025,
+  sortBy: 'recent',
 };
 
 export const useDashboardStore = create<DashboardState>((set, get) => ({
@@ -117,12 +119,55 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       return true;
     });
 
+    // Apply sorting
+    filtered = get().sortStartups(filtered, filters.sortBy);
+
     // Use optimized stats calculation
     const stats = calculateDashboardStats(allStartups, filtered);
 
     set({ 
       filteredStartups: filtered,
       stats 
+    });
+  },
+
+  sortStartups: (startups: Startup[], sortBy: SortOption): Startup[] => {
+    return [...startups].sort((a, b) => {
+      switch (sortBy) {
+        case 'recent':
+          // Sort by updatedDate in descending order (most recent first)
+          if (!a.updatedDate && !b.updatedDate) return 0;
+          if (!a.updatedDate) return 1;
+          if (!b.updatedDate) return -1;
+          
+          const dateA = new Date(a.updatedDate);
+          const dateB = new Date(b.updatedDate);
+          
+          if (!isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) {
+            return dateB.getTime() - dateA.getTime();
+          }
+          
+          if (isNaN(dateA.getTime()) && isNaN(dateB.getTime())) return 0;
+          if (isNaN(dateA.getTime())) return 1;
+          if (isNaN(dateB.getTime())) return -1;
+          return 0;
+
+        case 'name':
+          return a.companyName.localeCompare(b.companyName);
+
+        case 'founded':
+          return b.yearFounded - a.yearFounded; // Most recent founded year first
+
+        case 'category':
+          const categoryCompare = a.category.localeCompare(b.category);
+          if (categoryCompare === 0) {
+            return a.companyName.localeCompare(b.companyName); // Secondary sort by name
+          }
+          return categoryCompare;
+
+        default:
+          return 0;
+      }
     });
   },
 

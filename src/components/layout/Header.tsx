@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { TrendingUp, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { TrendingUp, RefreshCw, Wifi, WifiOff, ArrowUpDown } from 'lucide-react';
 import { useDashboardStore } from '@/store/dashboardStore';
+import { SortOption } from '@/types/startup';
 import Image from 'next/image';
 
 export default function Header() {
   const [isVisible, setIsVisible] = useState(false);
-  const { lastUpdated, isFromCache, loading, refreshData } = useDashboardStore();
+  const { lastUpdated, isFromCache, loading, refreshData, filters, updateFilters } = useDashboardStore();
 
   useEffect(() => {
     setIsVisible(true);
@@ -16,6 +17,17 @@ export default function Header() {
   const handleRefresh = async () => {
     await refreshData();
   };
+
+  const handleSortChange = (sortBy: SortOption) => {
+    updateFilters({ sortBy });
+  };
+
+  const sortOptions: { value: SortOption; label: string }[] = [
+    { value: 'recent', label: '최신순' },
+    { value: 'name', label: '회사명순' },
+    { value: 'founded', label: '설립연도순' },
+    { value: 'category', label: '카테고리순' },
+  ];
 
   const formatLastUpdated = (dateStr: string | null) => {
     if (!dateStr) return 'Never';
@@ -96,7 +108,7 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Data status and refresh */}
+        {/* Data status, sorting, and refresh */}
         <div className="flex items-center justify-center gap-4 text-sm text-white/50 mb-6 flex-wrap">
           <div className="flex items-center gap-2">
             {isFromCache ? (
@@ -114,6 +126,32 @@ export default function Header() {
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 bg-white/60 rounded-full animate-pulse-subtle"></div>
             <span>Updated {formatLastUpdated(lastUpdated)}</span>
+          </div>
+          
+          <div className="w-px h-3 bg-white/20"></div>
+          
+          {/* Sort selector */}
+          <div className="flex items-center gap-2">
+            <ArrowUpDown className="w-3 h-3 text-white/40" />
+            <select
+              value={filters.sortBy}
+              onChange={(e) => handleSortChange(e.target.value as SortOption)}
+              className="bg-white/5 border border-white/10 rounded-full px-2.5 py-1 
+                         text-xs font-medium text-white/80 
+                         hover:bg-white/10 hover:border-white/20 
+                         focus:outline-none focus:bg-white/10 focus:border-white/30
+                         transition-all duration-200 cursor-pointer"
+            >
+              {sortOptions.map((option) => (
+                <option 
+                  key={option.value} 
+                  value={option.value}
+                  className="bg-gray-900 text-white"
+                >
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
           
           <div className="w-px h-3 bg-white/20"></div>

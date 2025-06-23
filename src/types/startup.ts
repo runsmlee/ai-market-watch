@@ -33,12 +33,15 @@ export interface Startup {
   postingStatus?: string;
 }
 
+export type SortOption = 'recent' | 'name' | 'founded' | 'category';
+
 export interface StartupFilters {
   search: string;
   categories: Set<string>;
   locations: Set<string>;
   yearFrom: number;
   yearTo: number;
+  sortBy: SortOption;
 }
 
 export interface DashboardStats {
