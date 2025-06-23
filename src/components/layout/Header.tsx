@@ -23,10 +23,10 @@ export default function Header() {
   };
 
   const sortOptions: { value: SortOption; label: string }[] = [
-    { value: 'recent', label: '최신순' },
-    { value: 'name', label: '회사명순' },
-    { value: 'founded', label: '설립연도순' },
-    { value: 'category', label: '카테고리순' },
+    { value: 'recent', label: 'Recent' },
+    { value: 'name', label: 'Name' },
+    { value: 'founded', label: 'Founded' },
+    { value: 'category', label: 'Category' },
   ];
 
   const formatLastUpdated = (dateStr: string | null) => {
