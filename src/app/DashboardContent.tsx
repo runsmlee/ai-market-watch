@@ -189,15 +189,15 @@ export default function DashboardContent() {
                       ${sidebarCollapsed ? 'translate-x-full' : 'translate-x-0'}`}>
         
         {/* Sidebar Background with Blur */}
-        <div className="h-full bg-black/20 backdrop-blur-xl border-l border-white/10">
+        <div className="h-full bg-black/40 backdrop-blur-xl border-l border-white/[0.15]">
           
           {/* Toggle Button */}
           <button
             onClick={toggleSidebar}
             className="absolute -left-12 top-1/2 -translate-y-1/2 w-10 h-16 
-                     bg-black/20 backdrop-blur-xl border border-white/10 border-r-0
+                     bg-black/40 backdrop-blur-xl border border-white/[0.15] border-r-0
                      rounded-l-lg flex items-center justify-center
-                     hover:bg-black/30 transition-colors duration-200
+                     hover:bg-black/50 transition-colors duration-200
                      text-white/70 hover:text-white/90"
             aria-label={sidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
           >
