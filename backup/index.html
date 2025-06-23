@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Startups Intelligence Platform</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>AI Startups Intelligence</h1>
+            <p>Comprehensive insights into the global AI startup ecosystem</p>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="stat-number" id="totalCompanies">-</div>
+                <div class="stat-label">Total Companies</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-tags"></i>
+                </div>
+                <div class="stat-number" id="totalCategories">-</div>
+                <div class="stat-label">AI Categories</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="stat-number" id="totalFunding">-</div>
+                <div class="stat-label">Total Funding</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-filter"></i>
+                </div>
+                <div class="stat-number" id="filteredCount">-</div>
+                <div class="stat-label">Filtered Results</div>
+            </div>
+        </div>
+
+        <!-- Advanced Filters -->
+        <div class="filters-section">
+            <div class="filters-header">
+                <h2 class="filters-title">
+                    <i class="fas fa-sliders-h"></i>
+                    Advanced Filters
+                </h2>
+                <button class="clear-filters" onclick="clearAllFilters()">
+                    <i class="fas fa-times"></i>
+                    Clear All
+                </button>
+            </div>
+            
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-search"></i>
+                        Search Companies
+                    </label>
+                    <input type="text" class="search-input" id="searchInput" 
+                           placeholder="Search by name, CEO, description...">
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Location
+                    </label>
+                    <div class="filter-tags" id="locationTags">
+                        <!-- Dynamic location tags -->
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-calendar"></i>
+                        Founded Year
+                    </label>
+                    <div class="funding-range">
+                        <input type="range" class="range-slider" id="yearRange" 
+                               min="2010" max="2025" value="2010">
+                        <div class="range-values">
+                            <span>2010</span>
+                            <span id="yearValue">2010+</span>
+                            <span>2025</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-robot"></i>
+                        AI Categories
+                    </label>
+                    <div class="filter-tags" id="categoryTags">
+                        <!-- Dynamic category tags -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Companies Section -->
+            <div class="companies-section">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-rocket"></i>
+                        Startups Directory
+                    </h2>
+                    <div class="view-toggle">
+                        <button class="view-btn active" data-view="grid">
+                            <i class="fas fa-th"></i>
+                            Grid
+                        </button>
+                        <button class="view-btn" data-view="list">
+                            <i class="fas fa-list"></i>
+                            List
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="companies-grid" id="companiesGrid">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        Loading startup data...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Sidebar -->
+            <div class="analytics-sidebar">
+                <div class="chart-card">
+                    <h3 class="chart-title">
+                        <i class="fas fa-chart-pie"></i>
+                        Category Distribution
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3 class="chart-title">
+                        <i class="fas fa-chart-bar"></i>
+                        Geographic Distribution
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="locationChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3 class="chart-title">
+                        <i class="fas fa-chart-line"></i>
+                        Funding Trends
+                    </h3>
+                    <div class="chart-container">
+                        <canvas id="fundingChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Company Detail Modal -->
+    <div class="modal-overlay" id="companyModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Company Details</h2>
+                <button class="modal-close" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Dynamic content will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
