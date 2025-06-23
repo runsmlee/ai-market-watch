@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { X, ExternalLink, Building2 } from 'lucide-react';
 import { Startup } from '@/types/startup';
+import { getCachedLogo, setCachedLogo } from '@/lib/logoCache';
 
 interface CompanyModalProps {
   company: Startup | null;
@@ -10,7 +11,114 @@ interface CompanyModalProps {
   onClose: () => void;
 }
 
+// Logo loading hook
+function useCompanyLogo(webpage: string | undefined, companyName: string) {
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    if (!webpage) return;
+
+    setIsLoading(true);
+    setHasError(false);
+    setLogoUrl(null);
+
+    const domain = extractDomain(webpage);
+    if (!domain) {
+      setIsLoading(false);
+      setHasError(true);
+      return;
+    }
+
+    // Check cache first
+    const cachedLogo = getCachedLogo(domain);
+    if (cachedLogo) {
+      setLogoUrl(cachedLogo);
+      setIsLoading(false);
+      return;
+    }
+
+    // Try multiple logo sources with fallbacks
+    tryMultipleLogoSources(domain, companyName)
+      .then(url => {
+        setLogoUrl(url);
+        setCachedLogo(domain, url); // Cache the successful result
+        setIsLoading(false);
+      })
+      .catch(() => {
+        setHasError(true);
+        setIsLoading(false);
+      });
+  }, [webpage, companyName]);
+
+  return { logoUrl, isLoading, hasError };
+}
+
+// Extract domain from URL
+function extractDomain(url: string): string | null {
+  try {
+    const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
+    return urlObj.hostname.replace('www.', '');
+  } catch {
+    return null;
+  }
+}
+
+// Try multiple logo sources with fallbacks
+async function tryMultipleLogoSources(domain: string, companyName: string): Promise<string> {
+  const sources = [
+    // Google's high-quality favicon service (most reliable)
+    `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
+    // DuckDuckGo favicon service (good fallback)
+    `https://icons.duckduckgo.com/ip3/${domain}.ico`,
+    // Direct favicon from domain
+    `https://${domain}/favicon.ico`,
+    // Alternative favicon paths
+    `https://${domain}/favicon.png`,
+    `https://${domain}/apple-touch-icon.png`,
+  ];
+
+  for (const source of sources) {
+    try {
+      const isValid = await validateImageUrl(source);
+      if (isValid) return source;
+    } catch {
+      continue;
+    }
+  }
+
+  throw new Error('No valid logo found');
+}
+
+// Validate if image URL is accessible and valid
+function validateImageUrl(url: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const timeout = setTimeout(() => {
+      resolve(false);
+    }, 3000); // 3 second timeout
+
+    img.onload = () => {
+      clearTimeout(timeout);
+      resolve(img.width > 16 && img.height > 16); // Ensure it's not a tiny placeholder
+    };
+    
+    img.onerror = () => {
+      clearTimeout(timeout);
+      resolve(false);
+    };
+    
+    img.src = url;
+  });
+}
+
 export default function CompanyModal({ company, isOpen, onClose }: CompanyModalProps) {
+  const { logoUrl, isLoading: logoLoading, hasError: logoError } = useCompanyLogo(
+    company?.webpage, 
+    company?.companyName || ''
+  );
+
   // Handle escape key press
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -69,8 +177,25 @@ export default function CompanyModal({ company, isOpen, onClose }: CompanyModalP
               <div className="absolute inset-0 bg-white/20 blur-2xl rounded-2xl"></div>
               <div className="relative w-24 h-24 bg-gradient-to-br from-white/20 to-white/10 
                              rounded-2xl border border-white/15 flex items-center justify-center 
-                             text-4xl font-bold text-white backdrop-blur-sm">
-                {company.companyName.charAt(0).toUpperCase()}
+                             backdrop-blur-sm overflow-hidden">
+                {logoLoading ? (
+                  <div className="w-6 h-6 border-2 border-white/30 border-t-white/80 rounded-full animate-spin" />
+                ) : logoUrl && !logoError ? (
+                  <img 
+                    src={logoUrl} 
+                    alt={`${company.companyName} logo`}
+                    className="w-full h-full object-contain p-2"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      target.nextElementSibling?.classList.remove('hidden');
+                    }}
+                  />
+                ) : null}
+                {/* Fallback to letter */}
+                <div className={`text-4xl font-bold text-white ${logoUrl && !logoError ? 'hidden' : ''}`}>
+                  {company.companyName.charAt(0).toUpperCase()}
+                </div>
               </div>
             </div>
             
