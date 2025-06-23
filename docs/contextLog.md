@@ -680,3 +680,30 @@ Related files: `src/store/dashboardStore.ts`, `src/components/charts/AnalyticsSi
 - **자동 최적화**: 사용 패턴 기반 자동 최적화 시스템
 
 **Impact**: 전반적인 성능 50-90% 향상, 사용자 경험 대폭 개선, 확장성 확보
+
+## 2025-01-23 - WeeklyVentures 크레딧 푸터 추가
+
+### 브랜드 크레딧 구현
+- **새 Footer 컴포넌트**: `src/components/layout/Footer.tsx` 생성
+- **WeeklyVentures 크레딧**: "Powered by WeeklyVentures" 링크 추가
+- **외부 링크**: https://weeklyventures.xyz 로 연결되는 하이퍼링크
+- **시각적 디자인**: 오렌지 색상과 외부 링크 아이콘으로 강조
+
+### 기술적 구현
+- **반응형 레이아웃**: 모바일에서는 세로 정렬, 데스크톱에서는 가로 정렬
+- **사이드바 대응**: 사이드바 상태에 따라 푸터 너비 자동 조정
+- **글래스모피즘**: 백드롭 블러와 반투명 배경으로 모던한 느낌
+- **호버 효과**: 마우스 오버시 색상 변화와 부드러운 전환
+
+### 푸터 구성 요소
+- **저작권 정보**: "© 2024 AI Market Watch. All rights reserved."
+- **플랫폼 설명**: "AI Startups Intelligence Platform"
+- **WeeklyVentures 크레딧**: 별도 박스로 강조 표시
+- **외부 링크 아이콘**: Lucide의 ExternalLink 아이콘 사용
+
+### 배치 및 스타일링
+- **위치**: DashboardContent 하단, 메인 콘텐츠 영역 내부
+- **여백**: 상단 16 (mt-16)으로 충분한 공간 확보
+- **테두리**: 상단 테두리로 콘텐츠와 구분
+- **배경**: 반투명 배경으로 깔끔한 분리감 연출
+- **사이드바 반응형**: 사이드바 열림/닫힘에 따른 너비 자동 조정

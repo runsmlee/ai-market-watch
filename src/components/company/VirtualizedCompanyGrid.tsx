@@ -206,7 +206,7 @@ export default function VirtualizedCompanyGrid({
                 );
               })}
             </div>
-          </div>
+            </div>
           </div>
 
           {/* Performance note */}

@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense, lazy } from 'react';
 import { ChevronLeft, ChevronRight, BarChart3 } from 'lucide-react';
 import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 import StatsGrid from '@/components/layout/StatsGrid';
 import AdvancedFilters from '@/components/filters/AdvancedFilters';
 import { useDashboardStore } from '@/store/dashboardStore';
@@ -180,6 +181,13 @@ export default function DashboardContent() {
               loading={loading}
             />
           </Suspense>
+        </div>
+        
+        {/* Footer */}
+        <div className={`transition-all duration-300 ${
+          sidebarCollapsed ? 'mr-0' : 'mr-80'
+        }`}>
+          <Footer />
         </div>
       </div>
 
