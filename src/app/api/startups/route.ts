@@ -3,18 +3,12 @@ import { NextRequest, NextResponse } from 'next/server';
 // Google Apps Script URL - MUST be set in environment variables
 const APPS_SCRIPT_URL = process.env.APPS_SCRIPT_URL;
 
-// Only throw error during runtime, not build time
-function validateEnvironment() {
-  if (!APPS_SCRIPT_URL) {
-    throw new Error('APPS_SCRIPT_URL environment variable is not set. Please check your .env.local file.');
-  }
+if (!APPS_SCRIPT_URL) {
+  throw new Error('APPS_SCRIPT_URL environment variable is not set. Please check your .env.local file.');
 }
 
 export async function GET(request: NextRequest) {
   try {
-    // Validate environment variables at runtime
-    validateEnvironment();
-    
     console.log('🚀 API Route called');
     console.log('📍 Environment check:', {
       NODE_ENV: process.env.NODE_ENV,

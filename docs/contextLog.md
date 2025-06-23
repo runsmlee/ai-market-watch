@@ -696,7 +696,7 @@ Related files: `src/store/dashboardStore.ts`, `src/components/charts/AnalyticsSi
 - **호버 효과**: 마우스 오버시 색상 변화와 부드러운 전환
 
 ### 푸터 구성 요소
-- **저작권 정보**: "© 2024 AI Market Watch. All rights reserved."
+- **저작권 정보**: "© 2025 AI Market Watch. All rights reserved."
 - **플랫폼 설명**: "AI Startups Intelligence Platform"
 - **WeeklyVentures 크레딧**: 별도 박스로 강조 표시
 - **외부 링크 아이콘**: Lucide의 ExternalLink 아이콘 사용

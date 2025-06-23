@@ -125,13 +125,11 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       isFromCache 
     });
     
-    // Apply current filters immediately - use Promise to ensure execution
+    // Apply current filters immediately - call directly without Promise
     console.log('🔄 About to apply filters after setStartups...');
-    Promise.resolve().then(() => {
-      const store = get();
-      console.log('🔄 Calling applyFilters from setStartups with allStartups count:', store.allStartups.length);
-      store.applyFilters();
-    });
+    const store = get();
+    console.log('🔄 Calling applyFilters from setStartups with allStartups count:', store.allStartups.length);
+    store.applyFilters();
   },
 
   updateFilters: (newFilters) => {
@@ -205,61 +203,46 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     try {
       set({ isProcessing: true, processingTask: 'Filtering companies...' });
       
-      // Use web worker for filtering if available
-      let filtered: Startup[];
-      try {
-        filtered = await get().filterInBackground(allStartups, filters);
-        console.log('🚀 Filtered using web worker:', filtered.length);
-      } catch (error) {
-        console.log('⚠️ Web worker failed, falling back to main thread:', error);
-        // Fallback to main thread filtering with more debugging
-        filtered = allStartups.filter((startup, index) => {
-          // Debug first few items in detail
-          const isDebugItem = index < 3;
+      // Use main thread filtering for reliability
+      console.log('🔍 Starting main thread filtering...');
+      const filtered = allStartups.filter((startup) => {
+        // Search filter
+        if (filters.search.trim()) {
+          const searchTerm = filters.search.toLowerCase();
+          const searchableText = [
+            startup.companyName || '',
+            startup.description || '',
+            startup.category || '',
+            startup.location || '',
+            startup.ceo || ''
+          ].join(' ').toLowerCase();
           
-          // Search filter
-          if (filters.search.trim()) {
-            const searchTerm = filters.search.toLowerCase();
-            const searchableText = [
-              startup.companyName || '',
-              startup.description || '',
-              startup.category || '',
-              startup.location || '',
-              startup.ceo || ''
-            ].join(' ').toLowerCase();
-            
-            if (!searchableText.includes(searchTerm)) {
-              if (isDebugItem) console.log(`🔍 FILTERED OUT (search): ${startup.companyName} - search term "${searchTerm}" not found in "${searchableText.substring(0, 100)}..."`);
-              return false;
-            }
-          }
-          
-          // Category filter
-          if (filters.categories.size > 0 && !filters.categories.has(startup.category || '')) {
-            if (isDebugItem) console.log(`🔍 FILTERED OUT (category): ${startup.companyName} - category "${startup.category}" not in selected categories`);
+          if (!searchableText.includes(searchTerm)) {
             return false;
           }
-          
-          // Location filter
-          if (filters.locations.size > 0) {
-            const city = startup.location?.split(',')[0]?.trim() || '';
-            if (!city || !filters.locations.has(city)) {
-              if (isDebugItem) console.log(`🔍 FILTERED OUT (location): ${startup.companyName} - city "${city}" not in selected locations`);
-              return false;
-            }
-          }
-          
-          // Year filter - more forgiving
-          const yearFounded = startup.yearFounded || 0;
-          if (yearFounded > 0 && (yearFounded < filters.yearFrom || yearFounded > filters.yearTo)) {
-            if (isDebugItem) console.log(`🔍 FILTERED OUT (year): ${startup.companyName} - year ${yearFounded} not in range [${filters.yearFrom}, ${filters.yearTo}]`);
+        }
+        
+        // Category filter
+        if (filters.categories.size > 0 && !filters.categories.has(startup.category || '')) {
+          return false;
+        }
+        
+        // Location filter
+        if (filters.locations.size > 0) {
+          const city = startup.location?.split(',')[0]?.trim() || '';
+          if (!city || !filters.locations.has(city)) {
             return false;
           }
-          
-          if (isDebugItem) console.log(`✅ PASSED ALL FILTERS: ${startup.companyName}`);
-          return true;
-        });
-      }
+        }
+        
+        // Year filter - more forgiving
+        const yearFounded = startup.yearFounded || 0;
+        if (yearFounded > 0 && (yearFounded < filters.yearFrom || yearFounded > filters.yearTo)) {
+          return false;
+        }
+        
+        return true;
+      });
       
       console.log('🎯 Filter results:', {
         originalCount: allStartups.length,
@@ -270,15 +253,8 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       // Sort the filtered results
       const sorted = get().sortStartups(filtered, filters.sortBy);
       
-      // Calculate stats in background
-      let stats: DashboardStats;
-      try {
-        stats = await calculateStatsInBackground(allStartups);
-        stats.filteredCount = sorted.length;
-      } catch (error) {
-        console.log('⚠️ Stats calculation in worker failed, using main thread');
-        stats = calculateDashboardStats(allStartups, sorted);
-      }
+      // Calculate stats on main thread for reliability
+      const stats = calculateDashboardStats(allStartups, sorted);
       
       set({ 
         filteredStartups: sorted, 
@@ -314,9 +290,19 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
         return sorted.sort((a, b) => (a.category || '').localeCompare(b.category || ''));
       case 'recent':
       default:
-        return sorted.sort((a, b) => 
-          new Date(b.updatedDate || 0).getTime() - new Date(a.updatedDate || 0).getTime()
-        );
+        return sorted.sort((a, b) => {
+          const aTime = new Date(a.updatedDate || 0).getTime();
+          const bTime = new Date(b.updatedDate || 0).getTime();
+          
+          // If both dates are invalid, maintain original order
+          if (isNaN(aTime) && isNaN(bTime)) return 0;
+          // If a is invalid, put it at the end
+          if (isNaN(aTime)) return 1;
+          // If b is invalid, put it at the end
+          if (isNaN(bTime)) return -1;
+          
+          return bTime - aTime; // b - a = newest first
+        });
     }
   },
 

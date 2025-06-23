@@ -48,9 +48,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-// Force dynamic rendering for all company pages
-export const dynamic = 'force-dynamic'
-export const revalidate = 3600 // Revalidate every hour
+// Generate static params for known companies
+export async function generateStaticParams() {
+  try {
+    const data = await fetchStartups({}, { useCache: true })
+    const startups = data.transformedData || data.data || []
+    
+    return startups.map((startup: any) => ({
+      id: startup.id || startup.companyName?.toLowerCase().replace(/\s+/g, '-'),
+    }))
+  } catch (error) {
+    console.error('Error generating static params:', error)
+    return []
+  }
+}
 
 export default async function CompanyPage({ params }: Props) {
   try {

@@ -64,12 +64,23 @@ export async function fetchStartups(
 
     const data = await response.json();
     
+    console.log('🔍 Raw API Response:', {
+      hasError: !!data.error,
+      hasData: !!data.data,
+      dataLength: Array.isArray(data.data) ? data.data.length : 'Not an array'
+    });
+    
     if (data.error) {
       throw new Error(data.message || 'API Error');
     }
 
     // Transform and cache the data
     const transformedStartups = transformApiDataToStartups(data.data || []);
+    
+    console.log('🔄 Data transformed successfully:', {
+      originalLength: (data.data || []).length,
+      transformedLength: transformedStartups.length
+    });
     
     const apiResponse: ApiResponse = {
       ...data,
@@ -157,4 +168,4 @@ export function formatFunding(amount: number): string {
     return `$${(amount / 1e3).toFixed(1)}K`;
   }
   return `$${amount}`;
-} 
+}

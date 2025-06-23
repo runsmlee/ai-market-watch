@@ -92,8 +92,8 @@ export default function DashboardContent() {
         console.log('🚀 Initializing dashboard data...');
         
         const response = await fetchStartups(undefined, { 
-          useCache: true, 
-          forceRefresh: false,
+          useCache: false, 
+          forceRefresh: true,
           includeStats: true 
         });
         
@@ -102,6 +102,9 @@ export default function DashboardContent() {
           rawDataLength: response.data?.length || 0,
           lastUpdated: response.lastUpdated,
           hasError: !!response.error,
+          responseKeys: Object.keys(response),
+          hasTransformedData: !!response.transformedData,
+          transformedDataSample: response.transformedData?.slice(0, 1),
           fullResponse: response
         });
 

@@ -16,7 +16,7 @@ export default function NotFound() {
             Company Not Found
           </h2>
           <p className="text-gray-400 mb-8">
-            Sorry, we couldn&apos;t find the company profile you&apos;re looking for. 
+            Sorry, we couldn't find the company profile you're looking for. 
             It may have been removed or the URL might be incorrect.
           </p>
         </div>
