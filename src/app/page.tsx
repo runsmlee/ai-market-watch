@@ -79,6 +79,72 @@ const demoData: Startup[] = [
     webpage: 'https://stability.ai',
     updatedDate: '2024-01-01',
   },
+  {
+    id: '4',
+    companyName: 'Perplexity AI',
+    ceo: 'Aravind Srinivas',
+    location: 'New York, NY',
+    yearFounded: 2022,
+    description: 'AI-powered search engine that provides accurate answers with citations.',
+    category: 'AI Search',
+    mainValueProposition: 'Conversational search with accurate, cited answers',
+    keyProducts: 'Perplexity Search, Perplexity Pro',
+    technologicalAdvantage: 'Real-time web search with LLM reasoning',
+    targetCustomer: 'General consumers, researchers, professionals',
+    totalFundingRaised: '$100M',
+    latestFundingRound: 'Series B',
+    keyInvestors: 'NEA, IVP, Databricks Ventures',
+    competitors: 'Google Search, Bing Chat, You.com',
+    keyPartnerships: 'Various content providers and publishers',
+    majorMilestones: 'Reaching 10M monthly users, mobile app launch',
+    teamSize: '50+',
+    webpage: 'https://perplexity.ai',
+    updatedDate: '2024-01-01',
+  },
+  {
+    id: '5',
+    companyName: 'Hugging Face',
+    ceo: 'Clement Delangue',
+    location: 'Paris, France',
+    yearFounded: 2016,
+    description: 'Open-source platform for machine learning models and datasets.',
+    category: 'ML Platform',
+    mainValueProposition: 'Democratizing machine learning through open-source tools',
+    keyProducts: 'Transformers library, Model Hub, Datasets',
+    technologicalAdvantage: 'Largest open-source ML community and model repository',
+    targetCustomer: 'ML researchers, developers, enterprises',
+    totalFundingRaised: '$235M',
+    latestFundingRound: 'Series C',
+    keyInvestors: 'Coatue, Sequoia, Google',
+    competitors: 'GitHub, GitLab, AWS SageMaker',
+    keyPartnerships: 'AWS, Google Cloud, Microsoft Azure',
+    majorMilestones: '100K+ models, 1M+ monthly users',
+    teamSize: '200+',
+    webpage: 'https://huggingface.co',
+    updatedDate: '2024-01-01',
+  },
+  {
+    id: '6',
+    companyName: 'Midjourney',
+    ceo: 'David Holz',
+    location: 'Boston, MA',
+    yearFounded: 2021,
+    description: 'AI image generation platform creating high-quality art from text prompts.',
+    category: 'AI Art',
+    mainValueProposition: 'Professional-quality AI-generated artwork and images',
+    keyProducts: 'Midjourney Bot, Midjourney Web App',
+    technologicalAdvantage: 'Superior image quality and artistic style',
+    targetCustomer: 'Artists, designers, content creators',
+    totalFundingRaised: 'Bootstrapped',
+    latestFundingRound: 'Self-funded',
+    keyInvestors: 'Self-funded',
+    competitors: 'DALL-E, Stable Diffusion, Adobe Firefly',
+    keyPartnerships: 'Discord integration',
+    majorMilestones: '15M+ users, profitable operations',
+    teamSize: '20+',
+    webpage: 'https://midjourney.com',
+    updatedDate: '2024-01-01',
+  },
 ];
 
 export default function Dashboard() {
@@ -115,13 +181,18 @@ export default function Dashboard() {
         });
         
         const startups = data.transformedData || transformApiDataToStartups(data.data);
-        setStartups(startups, data.lastUpdated, !!data.transformedData);
         
-        console.log(`✅ Loaded ${startups.length} companies`);
+        if (startups && startups.length > 0) {
+          setStartups(startups, data.lastUpdated, !!data.transformedData);
+          console.log(`✅ Loaded ${startups.length} companies from API`);
+        } else {
+          throw new Error('No data received from API');
+        }
       } catch (error) {
         console.warn('Failed to fetch real data, using demo data:', error);
         // Fallback to demo data
         setStartups(demoData, new Date().toISOString(), false);
+        console.log(`✅ Loaded ${demoData.length} demo companies`);
       } finally {
         setLoading(false);
         setIsInitialized(true);
@@ -133,10 +204,33 @@ export default function Dashboard() {
     }
   }, [isInitialized, setStartups, setLoading, setError]);
 
-  // Get filter metadata efficiently
-  const { categories, locations } = getFilterMetadata();
+  // Get filter metadata efficiently (only after data is loaded)
+  const { categories, locations } = isInitialized ? getFilterMetadata() : { categories: [], locations: [] };
+  
+  console.log('🏠 Dashboard render - Filter metadata:', {
+    categoriesCount: categories.length,
+    locationsCount: locations.length,
+    categories: categories.slice(0, 5),
+    locations: locations.slice(0, 5),
+    filteredStartupsCount: filteredStartups.length,
+    isInitialized,
+    loading
+  });
 
-  if (error) {
+  // Show loading state only if we haven't initialized and there's no error
+  if (loading && !isInitialized && !error) {
+    return (
+      <div className="min-h-screen bg-primary-950 text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white/60">Loading AI Market Data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state only if there's a critical error AND no data at all
+  if (error && filteredStartups.length === 0) {
     return (
       <div className="min-h-screen bg-gray-900 text-white p-8">
         <div className="max-w-4xl mx-auto text-center">

@@ -19,8 +19,16 @@ export default function AdvancedFilters({
   locations 
 }: AdvancedFiltersProps) {
   const [searchValue, setSearchValue] = useState(filters.search);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false); // Start expanded to see filters
   const debouncedSearch = useDebounce(searchValue, 300);
+
+  console.log('🎛️ AdvancedFilters render:', {
+    categoriesCount: categories.length,
+    locationsCount: locations.length,
+    categories: categories.slice(0, 3),
+    locations: locations.slice(0, 3),
+    isCollapsed
+  });
 
   // Update filters when debounced search changes
   useEffect(() => {
@@ -133,17 +141,21 @@ export default function AdvancedFilters({
               <div className="space-y-4">
                 <label className="flex items-center gap-3 text-white font-semibold text-lg">
                   <MapPin className="w-5 h-5 text-white/60" />
-                  Location
+                  Location ({locations.length})
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {locations.slice(0, 6).map((location) => (
-                    <FilterTag
-                      key={location}
-                      label={location}
-                      active={filters.locations.has(location)}
-                      onClick={() => handleLocationToggle(location)}
-                    />
-                  ))}
+                  {locations.length === 0 ? (
+                    <div className="text-white/50 text-sm">No locations available</div>
+                  ) : (
+                    locations.slice(0, 6).map((location) => (
+                      <FilterTag
+                        key={location}
+                        label={location}
+                        active={filters.locations.has(location)}
+                        onClick={() => handleLocationToggle(location)}
+                      />
+                    ))
+                  )}
                 </div>
               </div>
 
@@ -187,17 +199,21 @@ export default function AdvancedFilters({
               <div className="space-y-4">
                 <label className="flex items-center gap-3 text-white font-semibold text-lg">
                   <Bot className="w-5 h-5 text-white/60" />
-                  AI Categories
+                  AI Categories ({categories.length})
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {categories.slice(0, 8).map((category) => (
-                    <FilterTag
-                      key={category}
-                      label={category}
-                      active={filters.categories.has(category)}
-                      onClick={() => handleCategoryToggle(category)}
-                    />
-                  ))}
+                  {categories.length === 0 ? (
+                    <div className="text-white/50 text-sm">No categories available</div>
+                  ) : (
+                    categories.slice(0, 8).map((category) => (
+                      <FilterTag
+                        key={category}
+                        label={category}
+                        active={filters.categories.has(category)}
+                        onClick={() => handleCategoryToggle(category)}
+                      />
+                    ))
+                  )}
                 </div>
               </div>
             </div>

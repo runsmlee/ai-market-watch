@@ -13,6 +13,11 @@ class DataCache {
   private static readonly DEFAULT_TTL = 60 * 60 * 1000; // 1 hour
 
   static set<T>(config: CacheConfig, data: T): void {
+    // Check if we're in the browser environment
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return; // Skip caching on server side
+    }
+
     const ttl = config.ttl || this.DEFAULT_TTL;
     const cacheItem: CacheItem<T> = {
       data,
@@ -28,6 +33,11 @@ class DataCache {
   }
 
   static get<T>(config: CacheConfig): T | null {
+    // Check if we're in the browser environment
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return null; // No cache on server side
+    }
+
     try {
       const cached = localStorage.getItem(config.key);
       if (!cached) return null;

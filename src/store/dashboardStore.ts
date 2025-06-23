@@ -53,6 +53,13 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
 
   // Actions
   setStartups: (startups, lastUpdated, isFromCache = false) => {
+    console.log('🏪 Store: Setting startups:', {
+      count: startups.length,
+      sampleStartup: startups[0],
+      lastUpdated,
+      isFromCache
+    });
+    
     set({ 
       allStartups: startups, 
       lastUpdated: lastUpdated || null,
@@ -144,22 +151,60 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   getFilterMetadata: () => {
     const { allStartups } = get();
     
+    console.log('🔍 getFilterMetadata called with:', {
+      allStartupsCount: allStartups.length,
+      sampleStartup: allStartups[0],
+      sampleCategory: allStartups[0]?.category,
+      sampleLocation: allStartups[0]?.location
+    });
+    
+    // If no startups loaded yet, return empty arrays
+    if (!allStartups || allStartups.length === 0) {
+      console.log('⚠️ No startups loaded yet, returning empty metadata');
+      return { categories: [], locations: [] };
+    }
+    
     // Try to get from cache first
     const cached = DataCache.get<{ categories: string[]; locations: string[] }>({ 
       key: CACHE_KEYS.FILTERS_META 
     });
-    if (cached) return cached;
+    if (cached && cached.categories.length > 0 && cached.locations.length > 0) {
+      console.log('📋 Using cached filter metadata:', JSON.stringify(cached, null, 2));
+      return cached;
+    } else if (cached) {
+      console.log('⚠️ Found cached metadata but it was empty, clearing cache:', JSON.stringify(cached, null, 2));
+      DataCache.remove(CACHE_KEYS.FILTERS_META);
+    }
 
     // Calculate fresh metadata
+    console.log('🔬 Analyzing startup data for metadata:');
+    console.log('First 5 startups categories:', allStartups.slice(0, 5).map(s => s.category));
+    console.log('First 5 startups locations:', allStartups.slice(0, 5).map(s => s.location));
+    
     const categories = Array.from(new Set(allStartups.map(s => s.category))).filter(Boolean) as string[];
     const locations = Array.from(new Set(
-      allStartups.map(s => s.location ? s.location.split(',')[0].trim() : 'Unknown')
-    )).filter(Boolean) as string[];
+      allStartups.map(s => {
+        if (!s.location) return 'Unknown';
+        // Extract city from "City, State/Country" format
+        const city = s.location.split(',')[0].trim();
+        return city || 'Unknown';
+      })
+    )).filter(location => location !== 'Unknown') as string[];
+    
+    console.log('🏷️ Extracted categories:', categories.slice(0, 10));
+    console.log('📍 Extracted locations:', locations.slice(0, 10));
 
     const metadata = { categories, locations };
     
-    // Cache for 1 hour
-    DataCache.set({ key: CACHE_KEYS.FILTERS_META, ttl: 60 * 60 * 1000 }, metadata);
+    console.log('📊 Generated fresh filter metadata:', JSON.stringify(metadata, null, 2));
+    
+    // Cache for 1 hour (only in browser) and only if we have data
+    if (categories.length > 0 && locations.length > 0) {
+      DataCache.set({ key: CACHE_KEYS.FILTERS_META, ttl: 60 * 60 * 1000 }, metadata);
+      console.log('✅ Cached non-empty filter metadata');
+    } else {
+      console.log('⚠️ Not caching empty filter metadata');
+    }
     
     return metadata;
   },
