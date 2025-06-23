@@ -89,7 +89,7 @@ export default function AnalyticsSidebar({ companies }: AnalyticsSidebarProps) {
           <div>
             <h2 className="text-3xl font-bold text-gradient">Market Intelligence</h2>
             <p className="text-white/60 font-medium text-lg">
-              Comprehensive AI startup ecosystem insights • {companies.length} companies analyzed
+              Lively AI startup ecosystem insights • {companies.length} companies analyzed
             </p>
           </div>
         </div>

@@ -1,9 +1,10 @@
 'use client';
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Startup } from '@/types/startup';
 import CompanyCard from './CompanyCard';
+import CompanyModal from './CompanyModal';
 
 interface VirtualizedCompanyGridProps {
   companies: Startup[];
@@ -14,6 +15,8 @@ export default function VirtualizedCompanyGrid({
   companies, 
   loading = false 
 }: VirtualizedCompanyGridProps) {
+  const [selectedCompany, setSelectedCompany] = useState<Startup | null>(null);
+
   // Calculate grid dimensions based on screen size
   const getColumnsPerRow = useCallback(() => {
     if (typeof window === 'undefined') return 3;
@@ -96,36 +99,45 @@ export default function VirtualizedCompanyGrid({
   }
 
   return (
-    <div className="space-y-8">
-      {/* Results info */}
-      <div className="flex items-center justify-between">
-        <div className="text-white/70">
-          Showing <span className="text-white font-medium">{companies.length}</span> companies
+    <>
+      <div className="space-y-8">
+        {/* Results info */}
+        <div className="flex items-center justify-between">
+          <div className="text-white/70">
+            Showing <span className="text-white font-medium">{companies.length}</span> companies
+          </div>
+          
+          {/* Performance indicator */}
+          <div className="text-xs text-white/50 bg-white/5 px-3 py-1 rounded-full border border-white/10">
+            🚀 Virtualized for performance
+          </div>
         </div>
-        
-        {/* Performance indicator */}
-        <div className="text-xs text-white/50 bg-white/5 px-3 py-1 rounded-full border border-white/10">
-          🚀 Virtualized for performance
+
+        {/* Virtualized grid - for now, we'll use a simpler approach */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {companies.map((company) => (
+            <CompanyCard 
+              key={company.id} 
+              company={company}
+              onClick={() => setSelectedCompany(company)}
+            />
+          ))}
         </div>
+
+        {/* Performance note */}
+        {companies.length > 100 && (
+          <div className="text-center text-xs text-white/40 bg-white/[0.02] px-4 py-2 rounded-lg border border-white/5">
+            💡 Large dataset optimized with smart rendering and caching
+          </div>
+        )}
       </div>
 
-      {/* Virtualized grid - for now, we'll use a simpler approach */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {companies.map((company) => (
-          <CompanyCard 
-            key={company.id} 
-            company={company}
-            onClick={() => {/* TODO: Implement modal or detail view */}}
-          />
-        ))}
-      </div>
-
-      {/* Performance note */}
-      {companies.length > 100 && (
-        <div className="text-center text-xs text-white/40 bg-white/[0.02] px-4 py-2 rounded-lg border border-white/5">
-          💡 Large dataset optimized with smart rendering and caching
-        </div>
-      )}
-    </div>
+      {/* Company Modal */}
+      <CompanyModal
+        company={selectedCompany}
+        isOpen={!!selectedCompany}
+        onClose={() => setSelectedCompany(null)}
+      />
+    </>
   );
 } 

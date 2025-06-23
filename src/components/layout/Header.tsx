@@ -80,7 +80,7 @@ export default function Header() {
         
         {/* Description */}
         <p className="text-xl md:text-2xl text-white/60 font-light mb-8 max-w-2xl mx-auto leading-relaxed">
-          Comprehensive insights into the global 
+          Lively insights into the global 
           <span className="text-white/80 font-medium"> AI startup ecosystem</span>
         </p>
 

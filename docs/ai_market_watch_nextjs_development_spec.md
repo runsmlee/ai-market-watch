@@ -207,7 +207,7 @@ export default function Header() {
         AI Startups Intelligence
       </h1>
       <p className="text-xl text-text-secondary font-medium">
-        Comprehensive insights into the global AI startup ecosystem
+        Lively insights into the global AI startup ecosystem
       </p>
     </motion.header>
   );
@@ -1126,11 +1126,11 @@ const MemoizedCompanyCard = memo(CompanyCard, (prevProps, nextProps) => {
 // app/layout.tsx
 export const metadata: Metadata = {
   title: 'AI Startups Intelligence Platform',
-  description: 'Comprehensive insights into the global AI startup ecosystem',
+  description: 'Lively insights into the global AI startup ecosystem',
   keywords: 'AI, startups, funding, technology, innovation',
   openGraph: {
     title: 'AI Startups Intelligence Platform',
-    description: 'Comprehensive insights into the global AI startup ecosystem',
+    description: 'Lively insights into the global AI startup ecosystem',
     type: 'website',
     url: 'https://your-domain.com',
   },

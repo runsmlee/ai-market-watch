@@ -43,7 +43,7 @@ export function calculateTotalFunding(startups: Startup[]): number {
   }, 0);
 }
 
-// Calculate comprehensive statistics with memoization
+  // Calculate lively statistics with memoization
 export function calculateDashboardStats(
   allStartups: Startup[], 
   filteredStartups: Startup[]
