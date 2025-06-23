@@ -19,25 +19,8 @@ export default function AdvancedFilters({
   locations 
 }: AdvancedFiltersProps) {
   const [searchValue, setSearchValue] = useState(filters.search);
-  const [isCollapsed, setIsCollapsed] = useState(true); // Start collapsed by default
+  const [isCollapsed, setIsCollapsed] = useState(true); // Always start collapsed
   const debouncedSearch = useDebounce(searchValue, 300);
-
-  // Set responsive default state based on screen size
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 1024) { // lg breakpoint
-        setIsCollapsed(false); // Expanded on desktop
-      } else {
-        setIsCollapsed(true); // Collapsed on mobile/tablet
-      }
-    };
-
-    // Set initial state
-    handleResize();
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   console.log('🎛️ AdvancedFilters render:', {
     categoriesCount: categories.length,
@@ -84,6 +67,18 @@ export default function AdvancedFilters({
     });
   };
 
+  // Calculate active filters count
+  const getActiveFiltersCount = () => {
+    let count = 0;
+    if (filters.search.trim()) count++;
+    if (filters.categories.size > 0) count += filters.categories.size;
+    if (filters.locations.size > 0) count += filters.locations.size;
+    if (filters.yearFrom > 2010 || filters.yearTo < 2025) count++;
+    return count;
+  };
+
+  const activeFiltersCount = getActiveFiltersCount();
+
   return (
     <div className="relative mb-6 sm:mb-8">
       {/* Background glow - 통일된 스타일 */}
@@ -105,6 +100,11 @@ export default function AdvancedFilters({
               <Filter className="w-3 h-3 sm:w-4 sm:h-4 text-white/70" />
             </div>
             <span>Filters</span>
+            {activeFiltersCount > 0 && (
+              <div className="px-1.5 py-0.5 bg-white/90 text-gray-900 rounded text-xs font-semibold min-w-[1.25rem] text-center">
+                {activeFiltersCount}
+              </div>
+            )}
             <div className="transition-transform duration-200">
               {isCollapsed ? (
                 <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-white/50" />
@@ -114,16 +114,18 @@ export default function AdvancedFilters({
             </div>
           </button>
           
-          <button
-            onClick={clearAllFilters}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 
-                     bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/[0.12]
-                     rounded-md text-xs sm:text-sm font-medium text-white/70 hover:text-white/90
-                     transition-all duration-200"
-          >
-            <X className="w-3 h-3" />
-            Clear
-          </button>
+          {activeFiltersCount > 0 && (
+            <button
+              onClick={clearAllFilters}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 
+                       bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/[0.12]
+                       rounded-md text-xs sm:text-sm font-medium text-white/70 hover:text-white/90
+                       transition-all duration-200"
+            >
+              <X className="w-3 h-3" />
+              Clear ({activeFiltersCount})
+            </button>
+          )}
         </div>
 
         {/* Collapsible Filters Content */}
