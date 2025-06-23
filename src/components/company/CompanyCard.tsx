@@ -14,10 +14,15 @@ const safeString = (value: any): string => {
   return String(value);
 };
 
+const truncateText = (text: string, maxLength: number): string => {
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
+};
+
 const CompanyCard = ({ company, onClick }: CompanyCardProps) => {
   return (
     <div 
-      className="group relative overflow-hidden cursor-pointer"
+      className="group relative overflow-hidden cursor-pointer h-[420px]"
       onClick={onClick}
     >
       {/* Background glow effect */}
@@ -27,20 +32,23 @@ const CompanyCard = ({ company, onClick }: CompanyCardProps) => {
       {/* Main card */}
       <div className="relative glass rounded-2xl p-6 hover:bg-white/[0.02] 
                      transition-all duration-500 hover:scale-[1.02] hover:shadow-glow
-                     border-white/[0.06] group-hover:border-white/[0.1]">
+                     border-white/[0.06] group-hover:border-white/[0.1] h-full flex flex-col">
         
         {/* Header section */}
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start justify-between mb-4 min-h-[80px]">
           <div className="flex-1 pr-3">
             <h3 className="text-lg font-semibold text-white mb-2 
-                          group-hover:text-gradient transition-all duration-300 leading-tight">
+                          group-hover:text-gradient transition-all duration-300 leading-tight
+                          line-clamp-2 min-h-[3.5rem]" 
+                title={safeString(company.companyName)}>
               {safeString(company.companyName)}
             </h3>
             <div className="flex items-center gap-2 mb-2">
               <span className="px-2.5 py-1 bg-white/10 border border-white/10 
                               rounded-full text-xs font-medium text-white/70 
-                              backdrop-blur-sm">
-                {safeString(company.category)}
+                              backdrop-blur-sm truncate max-w-[120px]"
+                    title={safeString(company.category)}>
+                {truncateText(safeString(company.category), 15)}
               </span>
             </div>
           </div>
@@ -56,19 +64,23 @@ const CompanyCard = ({ company, onClick }: CompanyCardProps) => {
         </div>
 
         {/* Description */}
-        <p className="text-sm text-white/60 mb-4 line-clamp-2 leading-relaxed">
-          {safeString(company.description)}
-        </p>
+        <div className="mb-4 flex-shrink-0">
+          <p className="text-sm text-white/60 line-clamp-3 leading-relaxed min-h-[4rem]"
+             title={safeString(company.description)}>
+            {safeString(company.description)}
+          </p>
+        </div>
 
         {/* Key metrics grid */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="grid grid-cols-2 gap-3 mb-4 flex-shrink-0">
           <div className="bg-white/[0.02] border border-white/[0.08] rounded-lg p-3
                          hover:bg-white/[0.04] transition-colors duration-300">
             <div className="flex items-center gap-1.5 mb-1">
               <Calendar className="w-3.5 h-3.5 text-white/40" />
               <span className="text-xs text-white/50 font-medium uppercase tracking-wide">Founded</span>
             </div>
-            <div className="text-base font-semibold text-white">
+            <div className="text-base font-semibold text-white truncate"
+                 title={safeString(company.yearFounded)}>
               {safeString(company.yearFounded)}
             </div>
           </div>
@@ -79,37 +91,40 @@ const CompanyCard = ({ company, onClick }: CompanyCardProps) => {
               <Users className="w-3.5 h-3.5 text-white/40" />
               <span className="text-xs text-white/50 font-medium uppercase tracking-wide">Team</span>
             </div>
-            <div className="text-base font-semibold text-white">
-              {safeString(company.teamSize)}
+            <div className="text-base font-semibold text-white truncate"
+                 title={safeString(company.teamSize)}>
+              {truncateText(safeString(company.teamSize), 20)}
             </div>
           </div>
         </div>
 
-        {/* Footer section */}
-        <div className="pt-4 border-t border-white/[0.06]">
+        {/* Footer section - push to bottom */}
+        <div className="pt-4 border-t border-white/[0.06] mt-auto">
           <div className="flex items-center justify-between mb-3">
             {/* Funding info */}
-            <div className="flex items-center gap-2.5">
-              <div className="relative">
+            <div className="flex items-center gap-2.5 flex-1 min-w-0">
+              <div className="relative flex-shrink-0">
                 <div className="absolute inset-0 bg-white/10 blur-md rounded-lg"></div>
                 <div className="relative w-8 h-8 bg-gradient-to-br from-white/10 to-white/5 
                                rounded-lg border border-white/10 flex items-center justify-center">
                   <DollarSign className="w-4 h-4 text-white/70" />
                 </div>
               </div>
-              <div>
-                <div className="text-sm text-white font-semibold">
-                  {safeString(company.totalFundingRaised)}
+              <div className="min-w-0 flex-1">
+                <div className="text-sm text-white font-semibold truncate"
+                     title={safeString(company.totalFundingRaised)}>
+                  {truncateText(safeString(company.totalFundingRaised), 25)}
                 </div>
-                <div className="text-xs text-white/50">
-                  {safeString(company.latestFundingRound)}
+                <div className="text-xs text-white/50 truncate"
+                     title={safeString(company.latestFundingRound)}>
+                  {truncateText(safeString(company.latestFundingRound), 20)}
                 </div>
               </div>
             </div>
 
             {/* Action indicator */}
             <div className="flex items-center gap-1.5 text-white/40 
-                           group-hover:text-white/70 transition-colors duration-300">
+                           group-hover:text-white/70 transition-colors duration-300 flex-shrink-0">
               <span className="text-xs font-medium">View Details</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </div>
@@ -117,9 +132,10 @@ const CompanyCard = ({ company, onClick }: CompanyCardProps) => {
 
           {/* Location */}
           <div className="flex items-center gap-1.5 text-white/50">
-            <MapPin className="w-3.5 h-3.5" />
-            <span className="text-sm">
-              {safeString(company.location)}
+            <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="text-sm truncate"
+                  title={safeString(company.location)}>
+              {truncateText(safeString(company.location), 30)}
             </span>
           </div>
         </div>
