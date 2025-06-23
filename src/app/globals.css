@@ -233,4 +233,105 @@ body {
 .btn-ghost {
   @apply btn-base bg-transparent text-gray-400 border-transparent;
   @apply hover:text-white hover:bg-white/5;
+}
+
+/* SEO 및 성능 최적화 */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* 폰트 최적화 */
+  body {
+    font-display: swap;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  
+  /* 이미지 최적화 */
+  img {
+    image-rendering: optimizeQuality;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+  
+  /* 접근성 향상 */
+  :focus {
+    outline: 2px solid #0099ff;
+    outline-offset: 2px;
+  }
+  
+  /* 다크 모드 색상 최적화 */
+  @media (prefers-color-scheme: dark) {
+    html {
+      color-scheme: dark;
+    }
+  }
+  
+  /* 애니메이션 최적화 */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* 커스텀 스크롤바 */
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #1a1a1a;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+}
+
+/* 구조화된 데이터 숨김 */
+script[type="application/ld+json"] {
+  display: none;
+}
+
+/* 로딩 최적화 */
+.loading-skeleton {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+/* Critical CSS for above-the-fold content */
+.hero-section {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* Layout shift prevention */
+.aspect-ratio-16-9 {
+  aspect-ratio: 16 / 9;
+}
+
+.aspect-ratio-1-1 {
+  aspect-ratio: 1 / 1;
 } 

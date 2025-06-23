@@ -252,40 +252,70 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-950 to-gray-900">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-        {/* Header */}
-        <Header />
-        
-        {/* Stats Grid */}
-        <StatsGrid stats={stats} />
-        
-        {/* Filters */}
-        <AdvancedFilters 
-          filters={filters}
-          onFiltersChange={updateFilters}
-          categories={getFilterMetadata().categories}
-          locations={getFilterMetadata().locations}
-        />
-        
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 lg:gap-8">
-          {/* Companies Grid - Takes up 3 columns on xl screens */}
-          <div className="xl:col-span-3">
-            <VirtualizedCompanyGrid 
-              companies={filteredStartups} 
-              loading={loading}
-            />
-          </div>
+    <>
+      {/* SEO를 위한 구조화된 데이터 */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebPage',
+            name: 'AI Market Watch - Dashboard',
+            description: 'Real-time dashboard tracking AI startups, funding, and market trends',
+            url: 'https://ai-market-watch.com',
+            mainEntity: {
+              '@type': 'ItemList',
+              name: 'AI Startups Directory',
+              numberOfItems: filteredStartups.length,
+              itemListElement: filteredStartups.slice(0, 10).map((startup, index) => ({
+                '@type': 'Organization',
+                position: index + 1,
+                name: startup.companyName,
+                description: startup.description,
+                url: startup.webpage,
+                foundingDate: startup.yearFounded?.toString(),
+                location: startup.location
+              }))
+            }
+          })
+        }}
+      />
+      
+      <div className="min-h-screen bg-gradient-to-b from-gray-950 to-gray-900">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+          {/* Header */}
+          <Header />
           
-          {/* Analytics Sidebar - Takes up 1 column on xl screens */}
-          <div className="xl:col-span-1">
-            <AnalyticsSidebar 
-              companies={filteredStartups}
-            />
+          {/* Stats Grid */}
+          <StatsGrid stats={stats} />
+          
+          {/* Filters */}
+          <AdvancedFilters 
+            filters={filters}
+            onFiltersChange={updateFilters}
+            categories={getFilterMetadata().categories}
+            locations={getFilterMetadata().locations}
+          />
+          
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 lg:gap-8">
+            {/* Companies Grid - Takes up 3 columns on xl screens */}
+            <div className="xl:col-span-3">
+              <VirtualizedCompanyGrid 
+                companies={filteredStartups} 
+                loading={loading}
+              />
+            </div>
+            
+            {/* Analytics Sidebar - Takes up 1 column on xl screens */}
+            <div className="xl:col-span-1">
+              <AnalyticsSidebar 
+                companies={filteredStartups}
+              />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 } 
