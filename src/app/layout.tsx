@@ -10,6 +10,10 @@ export const metadata: Metadata = {
   title: 'AI Market Watch - AI Startups Intelligence Platform',
   description: 'Comprehensive intelligence platform tracking global AI startups, funding rounds, and market trends. Get real-time insights into the AI ecosystem with detailed company profiles, VC analysis, and investment data.',
   keywords: 'AI startups, artificial intelligence, startup funding, VC analysis, tech investment, AI companies, startup intelligence, market research, funding rounds, AI ecosystem, venture capital, technology trends',
+  icons: {
+    icon: '/icon.svg',
+    apple: '/icon.svg',
+  },
 }
 
 const jsonLd = {

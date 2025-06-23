@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense, lazy } from 'react';
+import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { ChevronLeft, ChevronRight, BarChart3 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
