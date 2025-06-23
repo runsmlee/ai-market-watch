@@ -19,6 +19,14 @@ import {
   Tooltip
 } from 'recharts';
 
+// TypeScript workaround for Recharts components
+const PolarAngleAxisTyped = PolarAngleAxis as any;
+const PolarRadiusAxisTyped = PolarRadiusAxis as any;
+const RadarTyped = Radar as any;
+const XAxisTyped = XAxis as any;
+const YAxisTyped = YAxis as any;
+const BarTyped = Bar as any;
+
 interface CompanyModalProps {
   company: Startup | null;
   isOpen: boolean;
@@ -510,16 +518,16 @@ export default function CompanyModal({ company, isOpen, onClose }: CompanyModalP
       />
       
       {/* Modal container */}
-      <div className="relative z-10 h-full flex items-start justify-center pt-8 pb-8">
+      <div className="relative z-10 h-full flex items-center justify-center p-4 sm:p-8">
         <div 
-          className="glass-strong w-full max-w-6xl mx-4 rounded-2xl border-white/[0.08] 
-                     max-h-[calc(100vh-4rem)] overflow-hidden flex flex-col"
+          className="glass-strong w-full max-w-6xl rounded-xl sm:rounded-2xl border-white/[0.08] 
+                     max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Compact Header */}
-          <div className="flex items-center justify-between p-4 border-b border-white/[0.06] bg-white/[0.02]">
-            <div className="flex items-center gap-3">
-              <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-white/[0.05] border border-white/[0.08] flex-shrink-0">
+          <div className="flex items-center justify-between p-3 sm:p-4 border-b border-white/[0.06] bg-white/[0.02] flex-shrink-0">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+              <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl overflow-hidden bg-white/[0.05] border border-white/[0.08] flex-shrink-0">
                 {logoUrl ? (
                   <img 
                     src={logoUrl} 
@@ -537,18 +545,18 @@ export default function CompanyModal({ company, isOpen, onClose }: CompanyModalP
                            flex items-center justify-center"
                   style={{ display: logoUrl ? 'none' : 'flex' }}
                 >
-                  <Building2 className="w-5 h-5 text-white/60" />
+                  <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-white/60" />
                 </div>
               </div>
               
-              <div>
-                <h2 className="text-lg font-bold text-white">{company.companyName}</h2>
-                <div className="flex items-center gap-2 text-xs text-white/60">
-                  <span className="px-2 py-0.5 bg-white/[0.08] rounded-full">
+              <div className="min-w-0 flex-1">
+                <h2 className="text-base sm:text-lg font-bold text-white truncate">{company.companyName}</h2>
+                <div className="flex items-center gap-1 sm:gap-2 text-xs text-white/60">
+                  <span className="px-1.5 sm:px-2 py-0.5 bg-white/[0.08] rounded-full truncate max-w-[100px] sm:max-w-none">
                     {company.category}
                   </span>
                   {company.totalFundingRaised && (
-                    <span className="px-2 py-0.5 bg-orange-500/[0.15] text-orange-300 rounded-full">
+                    <span className="hidden sm:inline px-2 py-0.5 bg-orange-500/[0.15] text-orange-300 rounded-full">
                       {company.totalFundingRaised}
                     </span>
                   )}
@@ -560,29 +568,29 @@ export default function CompanyModal({ company, isOpen, onClose }: CompanyModalP
               onClick={onClose}
               className="w-8 h-8 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] 
                        border border-white/[0.08] flex items-center justify-center
-                       transition-colors duration-200"
+                       transition-colors duration-200 flex-shrink-0"
             >
               <X className="w-4 h-4 text-white/70" />
             </button>
           </div>
 
           {/* Compact Tab Navigation */}
-          <div className="flex border-b border-white/[0.06] bg-white/[0.01]">
+          <div className="flex border-b border-white/[0.06] bg-white/[0.01] flex-shrink-0">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium
-                            transition-all duration-200 ${
+                  className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-4 sm:px-4 py-4 sm:py-4 text-sm sm:text-sm font-medium whitespace-nowrap
+                            transition-all duration-200 min-w-0 flex-1 ${
                             activeTab === tab.id
                               ? 'text-white bg-white/[0.06] border-b-2 border-orange-400'
                               : 'text-white/60 hover:text-white/80 hover:bg-white/[0.02]'
                           }`}
                 >
-                  <Icon className="w-4 h-4" />
-                  {tab.label}
+                  <Icon className="w-4 h-4 sm:w-4 sm:h-4 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm leading-tight">{tab.label}</span>
                 </button>
               );
             })}
@@ -590,7 +598,7 @@ export default function CompanyModal({ company, isOpen, onClose }: CompanyModalP
 
           {/* Content Area */}
           <div 
-            className="flex-1 overflow-auto p-4"
+            className="flex-1 overflow-auto p-3 sm:p-4 min-h-0"
             onWheel={(e) => {
               // 모달 내부에서만 스크롤 허용
               e.stopPropagation();
@@ -609,9 +617,9 @@ export default function CompanyModal({ company, isOpen, onClose }: CompanyModalP
 // Compact Overview Tab
 function OverviewTab({ company }: { company: Startup }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {/* Key Metrics Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
         <CompactMetricCard
           icon={Users}
           label="Team Size"
@@ -635,26 +643,26 @@ function OverviewTab({ company }: { company: Startup }) {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         {/* Company Description */}
-        <div className="glass rounded-xl p-4 border-white/[0.06]">
-          <h3 className="text-base font-semibold text-white mb-2 flex items-center gap-2">
+        <div className="glass rounded-xl p-3 sm:p-4 border-white/[0.06]">
+          <h3 className="text-sm sm:text-base font-semibold text-white mb-2 flex items-center gap-2">
             <Building2 className="w-4 h-4 text-white/70" />
             Company Overview
           </h3>
-          <p className="text-sm text-white/80 leading-relaxed mb-3">
+          <p className="text-xs sm:text-sm text-white/80 leading-relaxed mb-3">
             {company.description}
           </p>
           {company.mainValueProposition && (
-            <div className="bg-white/[0.04] rounded-lg p-3">
+            <div className="bg-white/[0.04] rounded-lg p-2 sm:p-3">
               <p className="text-xs text-orange-300 font-medium mb-1">Value Proposition</p>
-              <p className="text-sm text-white/80">{company.mainValueProposition}</p>
+              <p className="text-xs sm:text-sm text-white/80">{company.mainValueProposition}</p>
             </div>
           )}
         </div>
 
         {/* Key Details */}
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {company.keyProducts && (
             <CompactDetailCard title="Key Products" content={company.keyProducts} />
           )}
@@ -750,13 +758,13 @@ function VCAnalysisTab({ company, radarData }: { company: Startup; radarData: an
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={radarData}>
                 <PolarGrid stroke="#ffffff20" />
-                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: '#ffffff80' }} />
-                <PolarRadiusAxis 
+                <PolarAngleAxisTyped dataKey="subject" tick={{ fontSize: 10, fill: '#ffffff80' }} />
+                <PolarRadiusAxisTyped 
                   angle={90} 
                   domain={[0, 100]} 
                   tick={{ fontSize: 10, fill: '#ffffff60' }}
                 />
-                <Radar
+                <RadarTyped
                   name="Investment Score"
                   dataKey="A"
                   stroke="#f97316"
@@ -858,8 +866,8 @@ function FundingTab({ company, timelineData }: { company: Startup; timelineData:
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={timelineData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
-                <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#ffffff80' }} />
-                <YAxis tick={{ fontSize: 10, fill: '#ffffff80' }} />
+                <XAxisTyped dataKey="name" tick={{ fontSize: 10, fill: '#ffffff80' }} />
+                <YAxisTyped tick={{ fontSize: 10, fill: '#ffffff80' }} />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: '#1a1a1a', 
@@ -868,7 +876,7 @@ function FundingTab({ company, timelineData }: { company: Startup; timelineData:
                     fontSize: '12px'
                   }}
                 />
-                <Bar dataKey="amount" fill="#f97316" radius={[2, 2, 0, 0]} />
+                <BarTyped dataKey="amount" fill="#f97316" radius={[2, 2, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -919,12 +927,14 @@ function CompactMetricCard({
   value: string; 
 }) {
   return (
-    <div className="glass rounded-lg p-3 border-white/[0.06] hover:bg-white/[0.02] transition-colors duration-200">
-      <div className="flex items-center gap-2 mb-1">
-        <Icon className="w-3 h-3 text-white/60" />
-        <span className="text-xs text-white/60 font-medium">{label}</span>
+    <div className="glass rounded-lg p-2 sm:p-3 border-white/[0.06] hover:bg-white/[0.04] transition-colors duration-200">
+      <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+        <Icon className="w-3 h-3 sm:w-4 sm:h-4 text-white/60" />
+        <span className="text-xs font-medium text-white/50 uppercase tracking-wide truncate">
+          {label}
+        </span>
       </div>
-      <div className="text-sm font-semibold text-white truncate" title={value}>
+      <div className="text-sm sm:text-base font-semibold text-white truncate" title={value}>
         {value}
       </div>
     </div>
@@ -936,12 +946,11 @@ function CompactDetailCard({ title, content }: { title: string; content?: string
   if (!content) return null;
   
   return (
-    <div className="glass rounded-lg p-3 border-white/[0.06]">
-      <div className="flex items-center gap-2 mb-2">
-        <ChevronRight className="w-3 h-3 text-orange-400" />
-        <h4 className="text-xs font-semibold text-orange-300">{title}</h4>
-      </div>
-      <p className="text-xs text-white/80 leading-relaxed">{content}</p>
+    <div className="glass rounded-lg p-2 sm:p-3 border-white/[0.06]">
+      <h4 className="text-xs sm:text-sm font-semibold text-white/80 mb-1 sm:mb-2">{title}</h4>
+      <p className="text-xs sm:text-sm text-white/70 leading-relaxed" title={content}>
+        {content}
+      </p>
     </div>
   );
 } 

@@ -252,24 +252,39 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-primary-950 text-white">
-      <div className="max-w-7xl mx-auto px-6 py-8">
+    <div className="min-h-screen bg-gradient-to-b from-gray-950 to-gray-900">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        {/* Header */}
         <Header />
         
-        {/* Integrated Analytics Dashboard */}
-        <div className="mb-16">
-          <AnalyticsSidebar companies={filteredStartups} />
-        </div>
+        {/* Stats Grid */}
+        <StatsGrid stats={stats} />
         
-        <AdvancedFilters
+        {/* Filters */}
+        <AdvancedFilters 
           filters={filters}
           onFiltersChange={updateFilters}
-          categories={categories}
-          locations={locations}
+          categories={getFilterMetadata().categories}
+          locations={getFilterMetadata().locations}
         />
         
-        {/* Full width company grid */}
-        <VirtualizedCompanyGrid companies={filteredStartups} loading={loading} />
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 lg:gap-8">
+          {/* Companies Grid - Takes up 3 columns on xl screens */}
+          <div className="xl:col-span-3">
+            <VirtualizedCompanyGrid 
+              companies={filteredStartups} 
+              loading={loading}
+            />
+          </div>
+          
+          {/* Analytics Sidebar - Takes up 1 column on xl screens */}
+          <div className="xl:col-span-1">
+            <AnalyticsSidebar 
+              companies={filteredStartups}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

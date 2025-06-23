@@ -14,81 +14,61 @@ export default function StatsGrid({ stats }: StatsGridProps) {
       value: stats.totalCompanies.toLocaleString(), 
       label: 'Total Companies',
       icon: Building2,
-      gradient: 'from-white/10 to-white/5',
     },
     { 
       value: stats.totalCategories, 
       label: 'AI Categories',
       icon: Tag,
-      gradient: 'from-white/8 to-white/3',
     },
     { 
       value: formatFunding(stats.totalFunding), 
       label: 'Total Funding',
       icon: DollarSign,
-      gradient: 'from-white/12 to-white/4',
     },
     { 
       value: stats.filteredCount.toLocaleString(), 
       label: 'Filtered Results',
       icon: Filter,
-      gradient: 'from-white/9 to-white/2',
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-16">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-8 lg:mb-12">
       {statItems.map((item, index) => (
         <div
           key={item.label}
-          className="group relative overflow-hidden"
+          className="group relative"
           style={{ animationDelay: `${index * 0.1}s` }}
         >
-          {/* Background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent rounded-2xl"></div>
-          
-          {/* Glass card */}
-          <div className="relative glass-strong rounded-2xl p-8 hover:bg-white/[0.02] 
-                         transition-all duration-500 hover:scale-[1.02] hover:shadow-glow
-                         border-white/[0.08] group-hover:border-white/[0.12]">
+          {/* Minimal glass card */}
+          <div className="relative bg-white/[0.02] border border-white/[0.06] rounded-lg sm:rounded-xl p-3 sm:p-5 
+                         hover:bg-white/[0.03] hover:border-white/[0.08]
+                         transition-all duration-300 backdrop-blur-sm">
             
-            {/* Icon container */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="relative">
-                <div className="absolute inset-0 bg-white/10 blur-md rounded-xl"></div>
-                <div className={`relative w-14 h-14 bg-gradient-to-br ${item.gradient} 
-                               rounded-xl border border-white/10 flex items-center justify-center
-                               group-hover:scale-110 transition-transform duration-300`}>
-                  <item.icon className="w-7 h-7 text-white/80" />
+            {/* Header with icon and value */}
+            <div className="flex items-start justify-between mb-2 sm:mb-3">
+              <div className="flex-1 min-w-0">
+                {/* Value - more restrained size */}
+                <div className="text-lg sm:text-2xl font-semibold text-white tracking-tight mb-1">
+                  {item.value}
+                </div>
+                {/* Label - subtle and elegant */}
+                <div className="text-xs font-medium text-white/50 tracking-wide uppercase leading-tight">
+                  {item.label}
                 </div>
               </div>
               
-              {/* Decorative dots */}
-              <div className="flex gap-1">
-                <div className="w-1.5 h-1.5 bg-white/20 rounded-full"></div>
-                <div className="w-1.5 h-1.5 bg-white/10 rounded-full"></div>
-                <div className="w-1.5 h-1.5 bg-white/5 rounded-full"></div>
+              {/* Minimal icon */}
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white/[0.04] border border-white/[0.08] 
+                             rounded-md sm:rounded-lg flex items-center justify-center ml-2 sm:ml-3
+                             group-hover:bg-white/[0.06] transition-colors duration-300 flex-shrink-0">
+                <item.icon className="w-3 h-3 sm:w-4 sm:h-4 text-white/60" />
               </div>
             </div>
             
-            {/* Value */}
-            <div className="mb-3">
-              <div className="text-3xl md:text-4xl font-bold text-white mb-1 
-                             tracking-tight leading-none">
-                {item.value}
-              </div>
-            </div>
-            
-            {/* Label */}
-            <div className="text-white/60 font-medium text-sm tracking-wide uppercase">
-              {item.label}
-            </div>
-
-            {/* Subtle hover line */}
+            {/* Subtle accent line */}
             <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r 
-                           from-white/20 via-white/40 to-white/20 
-                           scale-x-0 group-hover:scale-x-100 
-                           transition-transform duration-500 origin-center"></div>
+                           from-transparent via-white/10 to-transparent"></div>
           </div>
         </div>
       ))}

@@ -28,7 +28,7 @@ export default function CompanyGrid({ companies, loading }: CompanyGridProps) {
         {/* Main container */}
         <div className="relative glass-strong rounded-2xl border-white/[0.08] overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between p-8 border-b border-white/[0.06]">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 lg:gap-0 p-6 lg:p-8 border-b border-white/[0.06]">
             <div className="flex items-center gap-4">
               <div className="relative">
                 <div className="absolute inset-0 bg-white/10 blur-lg rounded-xl"></div>
@@ -38,44 +38,44 @@ export default function CompanyGrid({ companies, loading }: CompanyGridProps) {
                 </div>
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gradient mb-1">
+                <h1 className="text-2xl lg:text-3xl font-bold text-gradient mb-1">
                   Startups Directory
                 </h1>
-                <p className="text-white/60 font-medium">
+                <p className="text-sm lg:text-base text-white/60 font-medium">
                   Discover and explore innovative AI startups
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center gap-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full lg:w-auto">
               {/* View Mode Toggle */}
               <div className="flex items-center bg-white/[0.02] border border-white/[0.08] 
-                             rounded-xl p-1 backdrop-blur-sm">
+                             rounded-xl p-1 backdrop-blur-sm w-full sm:w-auto">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-3 rounded-lg transition-all duration-300 ${
+                  className={`flex-1 sm:flex-none px-4 py-3 rounded-lg transition-all duration-300 ${
                     viewMode === 'grid' 
                       ? 'bg-white text-black shadow-glow' 
                       : 'text-white/60 hover:text-white hover:bg-white/[0.05]'
                   }`}
                 >
-                  <Grid3X3 className="w-4 h-4" />
+                  <Grid3X3 className="w-4 h-4 mx-auto sm:mx-0" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-3 rounded-lg transition-all duration-300 ${
+                  className={`flex-1 sm:flex-none px-4 py-3 rounded-lg transition-all duration-300 ${
                     viewMode === 'list' 
                       ? 'bg-white text-black shadow-glow' 
                       : 'text-white/60 hover:text-white hover:bg-white/[0.05]'
                   }`}
                 >
-                  <List className="w-4 h-4" />
+                  <List className="w-4 h-4 mx-auto sm:mx-0" />
                 </button>
               </div>
               
               {/* Company Count */}
               <div className="flex items-center gap-2 px-4 py-2 bg-white/[0.05] 
-                             border border-white/[0.1] rounded-full backdrop-blur-sm">
+                             border border-white/[0.1] rounded-full backdrop-blur-sm w-full sm:w-auto justify-center sm:justify-start">
                 <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse-subtle"></div>
                 <span className="text-sm font-medium text-white/70">
                   {companies.length} companies
@@ -85,7 +85,7 @@ export default function CompanyGrid({ companies, loading }: CompanyGridProps) {
           </div>
 
           {/* Companies Grid */}
-          <div className="p-8">
+          <div className="p-4 lg:p-8">
             {companies.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20">
                 <div className="relative mb-6">

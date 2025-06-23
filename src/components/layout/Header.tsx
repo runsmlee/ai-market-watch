@@ -66,40 +66,40 @@ export default function Header() {
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}>
         {/* Logo and subtitle */}
-        <div className="flex flex-col items-center justify-center gap-6 mb-8 pt-12">
+        <div className="flex flex-col items-center justify-center gap-4 sm:gap-6 mb-6 sm:mb-8 pt-8 sm:pt-12">
           <div className="relative group">
             {/* Logo with subtle glow effect */}
             <div className="absolute inset-0 bg-white/5 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <Image 
               src="/ai-market-watch-logo.png" 
               alt="AI Market Watch Logo" 
-              width={80} 
-              height={80}
-              className="opacity-90 relative z-10 hover:opacity-100 transition-opacity duration-300"
+              width={60} 
+              height={60}
+              className="sm:w-20 sm:h-20 opacity-90 relative z-10 hover:opacity-100 transition-opacity duration-300"
             />
           </div>
           
           {/* Elegant subtitle */}
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-1.5 sm:space-y-2">
             <div className="hero-subtitle text-xs font-extralight text-white/50 tracking-[0.25em]">
               AI Startups Intelligence Platform
             </div>
-            <div className="elegant-divider w-12 mx-auto"></div>
+            <div className="elegant-divider w-8 sm:w-12 mx-auto"></div>
           </div>
         </div>
           
         {/* Main heading with improved typography */}
-        <h1 className="hero-title text-4xl md:text-6xl mb-6 text-center">
+        <h1 className="hero-title text-3xl sm:text-4xl lg:text-6xl mb-4 sm:mb-6 text-center">
           <div className="text-gradient-elegant font-light">AI Market Watch</div>
         </h1>
         
         {/* Enhanced description */}
-        <div className="text-center max-w-2xl mx-auto mb-8">
-          <p className="text-lg md:text-xl text-white/70 font-light leading-relaxed mb-4">
+        <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
+          <p className="text-base sm:text-lg lg:text-xl text-white/70 font-light leading-relaxed mb-3 sm:mb-4">
             Lively insights into the global 
             <span className="text-white/90 font-normal"> AI startup ecosystem</span>
           </p>
-          <div className="flex items-center justify-center gap-3 text-sm text-white/40 font-light">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 text-xs sm:text-sm text-white/40 font-light flex-wrap">
             <span>Real-time intelligence</span>
             <div className="w-1 h-1 bg-white/30 rounded-full"></div>
             <span>Market analysis</span>
@@ -109,7 +109,7 @@ export default function Header() {
         </div>
 
         {/* Data status, sorting, and refresh */}
-        <div className="flex items-center justify-center gap-4 text-sm text-white/50 mb-6 flex-wrap">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-sm text-white/50 mb-6">
           <div className="flex items-center gap-2">
             {isFromCache ? (
               <Wifi className="w-3 h-3 text-orange-400" />
@@ -121,14 +121,14 @@ export default function Header() {
             </span>
           </div>
           
-          <div className="w-px h-3 bg-white/20"></div>
+          <div className="hidden sm:block w-px h-3 bg-white/20"></div>
           
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 bg-white/60 rounded-full animate-pulse-subtle"></div>
             <span>Updated {formatLastUpdated(lastUpdated)}</span>
           </div>
           
-          <div className="w-px h-3 bg-white/20"></div>
+          <div className="hidden sm:block w-px h-3 bg-white/20"></div>
           
           {/* Sort selector */}
           <div className="flex items-center gap-2">
@@ -154,7 +154,7 @@ export default function Header() {
             </select>
           </div>
           
-          <div className="w-px h-3 bg-white/20"></div>
+          <div className="hidden sm:block w-px h-3 bg-white/20"></div>
           
           <button
             onClick={handleRefresh}

@@ -75,64 +75,64 @@ export default function AnalyticsSidebar({ companies }: AnalyticsSidebarProps) {
       <div className="absolute inset-0 bg-gradient-to-br from-white/[0.01] to-transparent rounded-2xl"></div>
       
       {/* Main Dashboard Container */}
-      <div className="relative glass-strong rounded-2xl border-white/[0.08] p-8">
+      <div className="relative glass-strong rounded-xl sm:rounded-2xl border-white/[0.08] p-4 sm:p-6 lg:p-8">
         
         {/* Dashboard Header */}
-        <div className="flex items-center gap-4 mb-10">
+        <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8 lg:mb-10">
           <div className="relative">
             <div className="absolute inset-0 bg-white/15 blur-lg rounded-xl"></div>
-            <div className="relative w-16 h-16 bg-gradient-to-br from-white/15 to-white/8 
-                           rounded-xl border border-white/15 flex items-center justify-center">
-              <PieChart className="w-8 h-8 text-white/90" />
+            <div className="relative w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-gradient-to-br from-white/15 to-white/8 
+                           rounded-lg sm:rounded-xl border border-white/15 flex items-center justify-center">
+              <PieChart className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white/90" />
             </div>
           </div>
           <div>
-            <h2 className="text-3xl font-bold text-gradient">Market Intelligence</h2>
-            <p className="text-white/60 font-medium text-lg">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gradient">Market Intelligence</h2>
+            <p className="text-white/60 font-medium text-sm sm:text-base lg:text-lg">
               Lively AI startup ecosystem insights • {companies.length} companies analyzed
             </p>
           </div>
         </div>
 
         {/* Key Metrics Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 mb-10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8 lg:mb-10">
           <MetricCard 
-            icon={<Zap className="w-6 h-6" />}
+            icon={<Zap className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />}
             label="Total Companies"
             value={companies.length.toString()}
             color="from-white/15 to-white/8"
             trend="+12% this month"
           />
           <MetricCard 
-            icon={<BarChart3 className="w-6 h-6" />}
+            icon={<BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />}
             label="AI Categories"
             value={Object.keys(categoryStats).length.toString()}
             color="from-white/12 to-white/6"
             trend="8 new sectors"
           />
           <MetricCard 
-            icon={<Globe className="w-6 h-6" />}
+            icon={<Globe className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />}
             label="Global Presence"
             value={Object.keys(locationStats).length.toString()}
             color="from-white/10 to-white/5"
             trend="cities worldwide"
           />
           <MetricCard 
-            icon={<DollarSign className="w-6 h-6" />}
+            icon={<DollarSign className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />}
             label="Total Funding"
             value={formatFunding(totalFunding)}
             color="from-white/14 to-white/7"
             trend="aggregated value"
           />
           <MetricCard 
-            icon={<Calendar className="w-6 h-6" />}
+            icon={<Calendar className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />}
             label="Recent Startups"
             value={recentCompanies.toString()}
             color="from-white/13 to-white/6"
             trend="since 2020"
           />
           <MetricCard 
-            icon={<Users className="w-6 h-6" />}
+            icon={<Users className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />}
             label="Avg Team Size"
             value={avgTeamSize > 0 ? avgTeamSize.toString() : 'N/A'}
             color="from-white/11 to-white/5"
@@ -141,7 +141,7 @@ export default function AnalyticsSidebar({ companies }: AnalyticsSidebarProps) {
         </div>
 
         {/* Analytics Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
           
           {/* Top Categories */}
           <AnalyticsChart
@@ -202,34 +202,45 @@ interface MetricCardProps {
 
 function MetricCard({ icon, label, value, color, trend }: MetricCardProps) {
   return (
-    <div className="relative group">
-      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.01] to-transparent rounded-xl"></div>
-      <div className="relative glass rounded-xl p-6 border-white/[0.06] 
-                     hover:bg-white/[0.02] transition-all duration-500 hover:scale-105">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="relative">
-            <div className="absolute inset-0 bg-white/10 blur-lg rounded-lg"></div>
-            <div className={`relative w-12 h-12 bg-gradient-to-br ${color} 
-                           rounded-lg border border-white/10 flex items-center justify-center
-                           group-hover:scale-110 transition-transform duration-300`}>
-              <div className="text-white/90">
-                {icon}
-              </div>
+    <div className="group relative">
+      {/* Subtle background glow */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent 
+                     rounded-lg sm:rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      
+      {/* Main card */}
+      <div className={`relative bg-gradient-to-br ${color} rounded-lg sm:rounded-xl p-3 sm:p-4 lg:p-6
+                      border border-white/10 backdrop-blur-sm
+                      hover:scale-105 transition-all duration-300 hover:border-white/20`}>
+        
+        {/* Header with icon and value */}
+        <div className="flex items-start justify-between mb-2 sm:mb-3">
+          <div className="flex-1 min-w-0">
+            {/* Value */}
+            <div className="text-lg sm:text-xl lg:text-2xl font-bold text-white tracking-tight mb-1">
+              {value}
             </div>
+            {/* Label */}
+            <div className="text-xs sm:text-sm font-medium text-white/70 leading-tight">
+              {label}
+            </div>
+          </div>
+          
+          {/* Icon */}
+          <div className="text-white/80 flex-shrink-0 ml-2">
+            {icon}
           </div>
         </div>
         
-        <div className="text-2xl md:text-3xl font-bold text-white mb-1 tracking-tight">
-          {value}
-        </div>
-        <div className="text-white/60 text-sm font-medium mb-1">
-          {label}
-        </div>
+        {/* Trend indicator */}
         {trend && (
-          <div className="text-white/40 text-xs font-medium">
+          <div className="text-xs text-white/50 font-medium mt-1 sm:mt-2 truncate">
             {trend}
           </div>
         )}
+        
+        {/* Subtle accent line */}
+        <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r 
+                       from-transparent via-white/20 to-transparent"></div>
       </div>
     </div>
   );
