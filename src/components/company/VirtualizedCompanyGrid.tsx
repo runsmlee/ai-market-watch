@@ -62,19 +62,19 @@ export default function VirtualizedCompanyGrid({
     return grouped;
   }, [companies, getColumnsPerRow]);
 
-  // Virtual row renderer with proper scroll element
+  // Virtual row renderer with window scroll
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
-    getScrollElement: () => parentRef.current,
+    getScrollElement: () => null,
     estimateSize: () => 420,
     overscan: 3,
   });
 
-  // Dynamic grid classes based on sidebar state
   const getGridClasses = () => {
-    const baseClasses = "grid gap-6";
+    const baseClasses = 'grid gap-6 auto-rows-max';
     
     if (sidebarCollapsed) {
+      // More columns when sidebar is collapsed
       return `${baseClasses} grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5`;
     } else {
       // More generous spacing when sidebar is open - prioritize card readability
@@ -133,7 +133,7 @@ export default function VirtualizedCompanyGrid({
     );
   }
 
-  // Use virtualization for large datasets
+  // Use virtualization for large datasets with window scroll
   if (companies.length > 50) {
     return (
       <>
@@ -144,74 +144,65 @@ export default function VirtualizedCompanyGrid({
               Showing <span className="text-white font-medium">{companies.length}</span> companies
               {isClient && (
                 <span className="text-white/50 text-sm ml-2">
-                  • {getColumnsPerRow()} columns • Virtualized
+                  • {getColumnsPerRow()} columns • Scroll to explore
                 </span>
               )}
             </div>
             
             {/* Performance indicator */}
             <div className="text-xs text-white/50 bg-white/5 px-3 py-1 rounded-full border border-white/10">
-              🚀 Virtualized rendering
+              🚀 Smooth scrolling
             </div>
           </div>
 
-          {/* Virtualized container */}
+          {/* Virtualized container with window scroll */}
           <div className="relative">
-            {/* Scroll hint indicator */}
-            <div className="absolute top-2 right-2 z-10 text-xs text-white/40 bg-black/30 px-2 py-1 rounded-full border border-white/10">
-              ↕ Scroll to explore
-            </div>
-            
             <div
               ref={parentRef}
-              className="h-[80vh] overflow-auto bg-black/20 backdrop-blur-sm border border-white/[0.05] rounded-xl p-6
-                         custom-scrollbar relative"
-              style={{
-                contain: 'strict',
-              }}
+              className="bg-black/20 backdrop-blur-sm border border-white/[0.05] rounded-xl p-6 relative"
             >
-            <div
-              style={{
-                height: `${rowVirtualizer.getTotalSize()}px`,
-                width: '100%',
-                position: 'relative',
-              }}
-            >
-              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const row = rows[virtualRow.index];
-                if (!row) return null;
+              <div
+                style={{
+                  height: `${rowVirtualizer.getTotalSize()}px`,
+                  width: '100%',
+                  position: 'relative',
+                }}
+              >
+                {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                  const row = rows[virtualRow.index];
+                  if (!row) return null;
 
-                return (
-                  <div
-                    key={virtualRow.index}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: `${virtualRow.size}px`,
-                      transform: `translateY(${virtualRow.start}px)`,
-                    }}
-                  >
-                    <div className={getGridClasses()}>
-                      {row.map((company) => (
-                        <CompanyCard 
-                          key={company.id} 
-                          company={company}
-                          onClick={() => setSelectedCompany(company)}
-                        />
-                      ))}
+                  return (
+                    <div
+                      key={virtualRow.index}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: `${virtualRow.size}px`,
+                        transform: `translateY(${virtualRow.start}px)`,
+                      }}
+                    >
+                      <div className={getGridClasses()}>
+                        {row.map((company) => (
+                          <CompanyCard 
+                            key={company.id} 
+                            company={company}
+                            onClick={() => setSelectedCompany(company)}
+                          />
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
           {/* Performance note */}
           <div className="text-center text-xs text-white/40 bg-white/[0.02] px-4 py-2 rounded-lg border border-white/5">
-            💡 Large dataset optimized with virtual scrolling ({companies.length} items)
+            💡 Optimized for smooth scrolling ({companies.length} items)
           </div>
         </div>
 
@@ -225,7 +216,7 @@ export default function VirtualizedCompanyGrid({
     );
   }
 
-  // Regular grid for smaller datasets
+  // Regular grid for smaller datasets - full page scroll
   return (
     <>
       <div className="space-y-8">
@@ -242,11 +233,11 @@ export default function VirtualizedCompanyGrid({
           
           {/* Performance indicator */}
           <div className="text-xs text-white/50 bg-white/5 px-3 py-1 rounded-full border border-white/10">
-            🚀 Optimized grid
+            📋 Full page scroll
           </div>
         </div>
 
-        {/* Dynamic grid based on sidebar state */}
+        {/* Dynamic grid based on sidebar state - no height limit */}
         <div className="relative">
           {/* Visual indicator for grid container */}
           <div className="absolute top-2 right-2 z-10 text-xs text-white/40 bg-black/30 px-2 py-1 rounded-full border border-white/10">
