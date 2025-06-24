@@ -123,40 +123,53 @@ export async function fetchStartups(
 }
 
 export function transformApiDataToStartups(apiData: any[]): Startup[] {
-  return apiData.map((item, index) => ({
-    id: `startup-${index}`,
-    companyName: String(item['Company Name'] || ''),
-    ceo: String(item['CEO'] || ''),
-    previousExperience: String(item['Previous experience of CEO'] || ''),
-    keyMembers: String(item['Key members'] || ''),
-    teamSize: String(item['Team size'] || ''),
-    webpage: String(item['Webpage'] || ''),
-    location: String(item['Location'] || ''),
-    yearFounded: parseInt(String(item['Year Founded'] || '0')) || 0,
-    description: String(item['One-line description'] || ''),
-    currentStage: String(item['Current stage/status'] || ''),
-    targetCustomer: String(item['Target customer'] || ''),
-    mainValueProposition: String(item['Main value proposition'] || ''),
-    keyProducts: String(item['Key products/solutions portfolio'] || ''),
-    industryVerticals: String(item['Industry verticals served'] || ''),
-    uvp: String(item['UVP'] || ''),
-    technologicalAdvantage: String(item['Key technological/business advantage'] || ''),
-    patents: String(item['Patents/IP (if public)'] || ''),
-    keyPartnerships: String(item['Key partnerships/collaborations'] || ''),
-    competitors: String(item['2-3 main competitors'] || ''),
-    differentiation: String(item['How they differentiate'] || ''),
-    marketPositioning: String(item['Market positioning'] || ''),
-    geographicFocus: String(item['Geographic competition focus'] || ''),
-    totalFundingRaised: String(item['Total funding raised'] || ''),
-    latestFundingRound: String(item['Latest funding round'] || ''),
-    keyInvestors: String(item['Key investors'] || ''),
-    growthMetrics: String(item['Basic growth metrics'] || ''),
-    notableCustomers: String(item['Notable customers'] || ''),
-    majorMilestones: String(item['Major milestones'] || ''),
-    category: String(item['Category'] || 'Other'),
-    updatedDate: String(item['Updated Date'] || ''),
-    postingStatus: String(item['Posting'] || ''),
-  }));
+  return apiData
+    .map((item, index) => ({
+      id: `startup-${index}`,
+      companyName: String(item['Company Name'] || ''),
+      ceo: String(item['CEO'] || ''),
+      previousExperience: String(item['Previous experience of CEO'] || ''),
+      keyMembers: String(item['Key members'] || ''),
+      teamSize: String(item['Team size'] || ''),
+      webpage: String(item['Webpage'] || ''),
+      location: String(item['Location'] || ''),
+      yearFounded: parseInt(String(item['Year Founded'] || '0')) || 0,
+      description: String(item['One-line description'] || ''),
+      currentStage: String(item['Current stage/status'] || ''),
+      targetCustomer: String(item['Target customer'] || ''),
+      mainValueProposition: String(item['Main value proposition'] || ''),
+      keyProducts: String(item['Key products/solutions portfolio'] || ''),
+      industryVerticals: String(item['Industry verticals served'] || ''),
+      uvp: String(item['UVP'] || ''),
+      technologicalAdvantage: String(item['Key technological/business advantage'] || ''),
+      patents: String(item['Patents/IP (if public)'] || ''),
+      keyPartnerships: String(item['Key partnerships/collaborations'] || ''),
+      competitors: String(item['2-3 main competitors'] || ''),
+      differentiation: String(item['How they differentiate'] || ''),
+      marketPositioning: String(item['Market positioning'] || ''),
+      geographicFocus: String(item['Geographic competition focus'] || ''),
+      totalFundingRaised: String(item['Total funding raised'] || ''),
+      latestFundingRound: String(item['Latest funding round'] || ''),
+      keyInvestors: String(item['Key investors'] || ''),
+      growthMetrics: String(item['Basic growth metrics'] || ''),
+      notableCustomers: String(item['Notable customers'] || ''),
+      majorMilestones: String(item['Major milestones'] || ''),
+      category: String(item['Category'] || 'Other'),
+      updatedDate: String(item['Updated Date'] || ''),
+      postingStatus: String(item['Posting'] || ''),
+    }))
+    .filter((startup) => {
+      // Filter out companies with invalid or empty names
+      const companyName = startup.companyName.trim();
+      
+      // Only filter out if company name is truly empty or null
+      if (!companyName || companyName === '') {
+        console.log(`🚫 Filtered out company with empty name`);
+        return false;
+      }
+      
+      return true;
+    });
 }
 
 export function formatFunding(amount: number): string {

@@ -183,6 +183,7 @@ export default function DashboardContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-950 to-gray-900">
+      {/* Header, Stats, Filters - Keep container margins */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Header */}
         <Header />
@@ -197,13 +198,13 @@ export default function DashboardContent() {
           categories={getFilterMetadata().categories}
           locations={getFilterMetadata().locations}
         />
-        
-        {/* Main Content - Responsive to Sidebar */}
-        <div className={`transition-all duration-300 ${
-          sidebarCollapsed ? 'mr-0' : 'mr-80'
-        }`}>
+      </div>
 
-          
+      {/* Main Content - Full width with internal padding */}
+      <div className={`w-full transition-all duration-300 ${
+        sidebarCollapsed ? 'pr-0' : 'pr-80'
+      }`}>
+        <div className="px-4 sm:px-6 lg:px-8">
           <Suspense fallback={<GridSkeleton />}>
             <VirtualizedCompanyGrid 
               companies={filteredStartups} 
@@ -211,8 +212,10 @@ export default function DashboardContent() {
             />
           </Suspense>
         </div>
-        
-        {/* Footer */}
+      </div>
+      
+      {/* Footer - Keep container margins */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className={`transition-all duration-300 ${
           sidebarCollapsed ? 'mr-0' : 'mr-80'
         }`}>
