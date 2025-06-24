@@ -3,6 +3,8 @@ const nextConfig = {
   experimental: {
     optimizeCss: true,
   },
+  output: 'standalone',
+  trailingSlash: false,
   images: {
     domains: ['images.unsplash.com', 'via.placeholder.com'],
     remotePatterns: [

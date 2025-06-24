@@ -1,14 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Google Apps Script URL - MUST be set in environment variables
-const APPS_SCRIPT_URL = process.env.APPS_SCRIPT_URL;
-
-if (!APPS_SCRIPT_URL) {
-  throw new Error('APPS_SCRIPT_URL environment variable is not set. Please check your .env.local file.');
-}
-
 export async function GET(request: NextRequest) {
   try {
+    // Google Apps Script URL - Check at runtime
+    const APPS_SCRIPT_URL = process.env.APPS_SCRIPT_URL;
+    
+    if (!APPS_SCRIPT_URL) {
+      console.error('❌ APPS_SCRIPT_URL environment variable is not set');
+      return NextResponse.json(
+        { 
+          error: true, 
+          message: 'APPS_SCRIPT_URL environment variable is not set. Please check your .env.local file.',
+          type: 'config_error',
+          timestamp: new Date().toISOString()
+        },
+        { status: 500 }
+      );
+    }
+
     console.log('🚀 API Route called');
     console.log('📍 Environment check:', {
       NODE_ENV: process.env.NODE_ENV,
@@ -102,7 +111,7 @@ export async function GET(request: NextRequest) {
         debug: process.env.NODE_ENV === 'development' ? {
           errorName: error instanceof Error ? error.name : 'Unknown',
           errorStack: error instanceof Error ? error.stack?.split('\n').slice(0, 5).join('\n') : 'No stack trace',
-          appsScriptUrl: APPS_SCRIPT_URL?.substring(0, 50) + '...',
+          appsScriptUrl: process.env.APPS_SCRIPT_URL?.substring(0, 50) + '...',
         } : undefined
       },
       { 
