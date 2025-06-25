@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         siteName: 'AI Market Watch',
         images: [
           {
-            url: '/page_image.png',
+            url: '/main-og-image.png',
             width: 1200,
             height: 630,
             alt: `${company.companyName} - AI Startup Profile`,
@@ -62,7 +62,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         card: 'summary_large_image',
         title,
         description,
-        images: ['/page_image.png'],
+        images: ['/main-og-image.png'],
       },
       alternates: {
         canonical: `/company/${params.id}`,
@@ -106,15 +106,15 @@ export default async function CompanyPage({ params }: Props) {
       notFound()
     }
 
-          return (
+    return (
         <div className="min-h-screen bg-gray-950 text-white">
           <CompanyModal 
             company={company} 
             isOpen={true} 
             onClose={() => window.history.back()} 
           />
-        </div>
-      )
+      </div>
+    )
   } catch (error) {
     console.error('Error loading company:', error)
     notFound()

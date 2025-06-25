@@ -9,9 +9,9 @@ export const metadata: Metadata = {
     description: 'Lively insights into the global AI startup ecosystem. Real-time intelligence, market analysis, and startup tracking.',
     images: [
       {
-        url: '/page_image.png',
-        width: 1200,
-        height: 630,
+        url: 'https://www.ai-market-watch.xyz/main-og-image.png',
+        width: 2852,
+        height: 1362,
         alt: 'AI Market Watch Dashboard - AI Startups Intelligence Platform',
       },
     ],
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   twitter: {
     title: 'AI Market Watch - AI Startups Intelligence Platform',
     description: 'Lively insights into the global AI startup ecosystem. Real-time intelligence, market analysis, and startup tracking.',
-    images: ['/page_image.png'],
+    images: ['https://www.ai-market-watch.xyz/main-og-image.png'],
   },
 };
 

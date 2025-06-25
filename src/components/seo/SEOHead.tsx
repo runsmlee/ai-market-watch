@@ -20,7 +20,7 @@ export default function SEOHead({
   title = 'AI Market Watch - AI Startups Intelligence Platform',
   description = 'Lively insights into the global AI startup ecosystem. Real-time intelligence, market analysis, and startup tracking.',
   keywords = 'AI startups, artificial intelligence, startup funding, VC analysis, tech investment, AI companies, startup intelligence, market research, funding rounds, AI ecosystem, venture capital, technology trends',
-  image = '/page_image.png',
+  image = '/main-og-image.png',
   url = 'https://ai-market-watch.com',
   type = 'website',
   publishedTime,

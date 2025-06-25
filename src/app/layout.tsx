@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   authors: [{ name: 'AI Market Watch Team' }],
   creator: 'AI Market Watch',
   publisher: 'AI Market Watch',
-  metadataBase: new URL('https://ai-market-watch.com'),
+  metadataBase: new URL('https://www.ai-market-watch.xyz'),
   alternates: {
     canonical: '/',
   },
@@ -31,15 +31,15 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://ai-market-watch.com',
+    url: 'https://www.ai-market-watch.xyz',
     title: 'AI Market Watch - AI Startups Intelligence Platform',
     description: 'Lively insights into the global AI startup ecosystem. Real-time intelligence, market analysis, and startup tracking.',
     siteName: 'AI Market Watch',
     images: [
       {
-        url: '/page_image.png',
-        width: 1200,
-        height: 630,
+        url: 'https://www.ai-market-watch.xyz/main-og-image.png',
+        width: 2852,
+        height: 1362,
         alt: 'AI Market Watch - AI Startups Intelligence Platform Dashboard',
       },
     ],
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     title: 'AI Market Watch - AI Startups Intelligence Platform',
     description: 'Lively insights into the global AI startup ecosystem. Real-time intelligence, market analysis, and startup tracking.',
     creator: '@aimarketwatch',
-    images: ['/page_image.png'],
+    images: ['https://www.ai-market-watch.xyz/main-og-image.png'],
   },
   robots: {
     index: true,
@@ -72,20 +72,20 @@ const jsonLd = {
   '@type': 'WebSite',
   name: 'AI Market Watch',
   description: 'Comprehensive intelligence platform tracking global AI startups, funding rounds, and market trends.',
-  url: 'https://ai-market-watch.com',
-  image: 'https://ai-market-watch.com/page_image.png',
+  url: 'https://www.ai-market-watch.xyz',
+  image: 'https://www.ai-market-watch.xyz/main-og-image.png',
   potentialAction: {
     '@type': 'SearchAction',
-    target: 'https://ai-market-watch.com/search?q={search_term_string}',
+    target: 'https://www.ai-market-watch.xyz/search?q={search_term_string}',
     'query-input': 'required name=search_term_string',
   },
   publisher: {
     '@type': 'Organization',
     name: 'AI Market Watch',
-    url: 'https://ai-market-watch.com',
+    url: 'https://www.ai-market-watch.xyz',
     logo: {
       '@type': 'ImageObject',
-      url: 'https://ai-market-watch.com/logo.png',
+      url: 'https://www.ai-market-watch.xyz/logo.png',
       width: 200,
       height: 200,
     },

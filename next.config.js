@@ -61,7 +61,7 @@ const nextConfig = {
         ],
       },
       {
-        source: '/page_image.png',
+        source: '/main-og-image.png',
         headers: [
           {
             key: 'Cache-Control',
@@ -69,15 +69,15 @@ const nextConfig = {
           },
         ],
       },
-              {
+      {
           source: '/(.*)\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2)',
-          headers: [
-            {
-              key: 'Cache-Control',
-              value: 'public, max-age=31536000, immutable',
-            },
-          ],
-        },
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
     ]
   },
   async redirects() {

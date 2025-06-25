@@ -3,7 +3,7 @@
 ## 2024-12-28 - SEO 최적화 및 링크 공유 이미지 설정
 
 ### Open Graph 및 Twitter Card 최적화
-- **메인 이미지 설정**: `/page_image.png`를 링크 공유용 메인 이미지로 설정
+- **메인 이미지 설정**: `/main-og-image.png`를 링크 공유용 메인 이미지로 설정
 - **이미지 최적화**: 1200x630 해상도로 소셜 미디어 표준 규격 적용
 - **메타데이터 강화**: title, description, keywords 최적화로 검색 엔진 가시성 향상
 - **소셜 미디어 대응**: Facebook, Twitter, LinkedIn 등 모든 플랫폼 호환성 확보
