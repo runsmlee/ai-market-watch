@@ -17,6 +17,17 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/icon.svg', sizes: '32x32' },
+      { url: '/icon.svg', sizes: '16x16' },
+    ],
+    apple: [
+      { url: '/icon.svg', sizes: '180x180' },
+    ],
+    shortcut: '/icon.svg',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
@@ -118,9 +129,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
         
-        {/* Favicons */}
-        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/logo.png" />
+        {/* PWA Manifest */}
         <link rel="manifest" href="/manifest.json" />
         
         <script

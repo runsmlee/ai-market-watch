@@ -13,28 +13,28 @@ export function GET(): Response {
     categories: ['business', 'finance', 'productivity'],
     icons: [
       {
-        src: '/icon-192x192.png',
-        sizes: '192x192',
-        type: 'image/png',
+        src: '/icon.svg',
+        sizes: 'any',
+        type: 'image/svg+xml',
+        purpose: 'any',
+      },
+      {
+        src: '/icon.svg',
+        sizes: 'any',
+        type: 'image/svg+xml',
         purpose: 'maskable',
       },
       {
-        src: '/icon-512x512.png',
-        sizes: '512x512',
-        type: 'image/png',
-        purpose: 'maskable',
-      },
-      {
-        src: '/icon-192x192.png',
+        src: '/ai-market-watch-logo.png',
         sizes: '192x192',
         type: 'image/png',
         purpose: 'any',
       },
       {
-        src: '/icon-512x512.png',
+        src: '/ai-market-watch-logo.png',
         sizes: '512x512',
         type: 'image/png',
-        purpose: 'any',
+        purpose: 'maskable',
       },
     ],
     shortcuts: [
@@ -45,8 +45,9 @@ export function GET(): Response {
         url: '/?filter=latest',
         icons: [
           {
-            src: '/icon-96x96.png',
+            src: '/icon.svg',
             sizes: '96x96',
+            type: 'image/svg+xml',
           },
         ],
       },
@@ -57,8 +58,9 @@ export function GET(): Response {
         url: '/analytics',
         icons: [
           {
-            src: '/icon-96x96.png',
+            src: '/ai-market-watch-logo.png',
             sizes: '96x96',
+            type: 'image/png',
           },
         ],
       },

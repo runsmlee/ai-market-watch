@@ -759,3 +759,42 @@ Related files: `src/store/dashboardStore.ts`, `src/components/charts/AnalyticsSi
 - **테두리**: 상단 테두리로 콘텐츠와 구분
 - **배경**: 반투명 배경으로 깔끔한 분리감 연출
 - **사이드바 반응형**: 사이드바 열림/닫힘에 따른 너비 자동 조정
+
+## 2025-01-23 - Favicon 및 앱 아이콘 최적화 완료
+
+### SVG Favicon 통합 구현
+- **메인 아이콘**: `icon.svg`를 통합 favicon으로 설정
+- **Next.js Metadata API**: 최신 Next.js 13+ icons 메타데이터 API 활용
+- **자동 인식**: `src/app/icon.svg` 복사로 Next.js 자동 favicon 인식
+- **다중 플랫폼 지원**: shortcut icon, apple-touch-icon 모든 브라우저 호환
+- **벡터 기반**: SVG로 모든 해상도에서 선명한 아이콘 표시
+
+### PWA 매니페스트 최적화
+- **SVG 우선**: manifest.json에서 SVG 아이콘을 primary로 설정
+- **PNG 폴백**: `ai-market-watch-logo.png`를 PNG 필요 시 사용
+- **다목적 지원**: maskable, any purpose 모두 지원
+- **shortcuts 아이콘**: 바로가기 메뉴에도 SVG/PNG 적절히 배치
+- **크기별 최적화**: 96x96, 192x192, 512x512 등 다양한 크기 지원
+
+### 기술적 구현 세부사항
+- **Metadata API 활용**: layout.tsx에서 icons 객체로 통합 관리
+- **중복 제거**: head 섹션의 수동 link 태그 제거로 코드 정리
+- **타입 안전성**: TypeScript로 아이콘 설정 타입 검증
+- **캐싱 최적화**: 브라우저 캐싱 헤더로 아이콘 로딩 성능 향상
+- **호환성 보장**: 구형 브라우저부터 최신 브라우저까지 완벽 지원
+
+### 파일 구조 최적화
+- **public/icon.svg**: 원본 SVG 아이콘 파일
+- **src/app/icon.svg**: Next.js 자동 인식용 복사본
+- **public/ai-market-watch-logo.png**: PNG 폴백 아이콘
+- **manifest.json/route.ts**: PWA 매니페스트 동적 생성
+- **layout.tsx**: 통합 메타데이터 및 아이콘 설정
+
+### 브라우저 지원 범위
+- **모던 브라우저**: SVG favicon 완벽 지원
+- **Safari**: Apple touch icon 최적화
+- **PWA**: 홈 화면 추가 시 고품질 아이콘
+- **구형 브라우저**: PNG 폴백으로 호환성 보장
+- **모바일**: 모든 모바일 플랫폼 완벽 지원
+
+**Impact**: 브랜드 일관성 향상, 모든 플랫폼에서 고품질 아이콘 표시, PWA 기능 완전 지원
