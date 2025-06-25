@@ -3,7 +3,12 @@ const nextConfig = {
   output: 'standalone',
   trailingSlash: false,
   images: {
-    domains: ['images.unsplash.com', 'via.placeholder.com'],
+    domains: [
+      'www.google.com',
+      'icons.duckduckgo.com',
+      'logo.clearbit.com',
+      'unavatar.io',
+    ],
     remotePatterns: [
       {
         protocol: 'https',
@@ -38,34 +43,25 @@ const nextConfig = {
         source: '/(.*)',
         headers: [
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
           },
           {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+          {
             key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin',
-          },
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=()',
+            value: 'strict-origin-when-cross-origin',
           },
         ],
       },
       {
-        source: '/api/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, s-maxage=60, stale-while-revalidate=300',
-          },
-        ],
-      },
-      {
-        source: '/:path*.ico',
+        source: '/page_image.png',
         headers: [
           {
             key: 'Cache-Control',
@@ -73,30 +69,26 @@ const nextConfig = {
           },
         ],
       },
-      {
-        source: '/:path*.(png|jpg|jpeg|gif|webp|svg)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      {
-        source: '/:path*.(css|js)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
+              {
+          source: '/(.*)\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2)',
+          headers: [
+            {
+              key: 'Cache-Control',
+              value: 'public, max-age=31536000, immutable',
+            },
+          ],
+        },
     ]
   },
   async redirects() {
     return [
       {
         source: '/home',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/companies',
         destination: '/',
         permanent: true,
       },

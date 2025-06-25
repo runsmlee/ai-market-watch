@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import CompanyModal from '@/components/company/CompanyModal'
 import { fetchStartups } from '@/lib/api'
 import { Startup } from '@/types/startup'
 import StructuredData from '@/components/seo/StructuredData'
@@ -11,32 +12,60 @@ interface Props {
 // Generate metadata for each company page
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
-    const data = await fetchStartups({}, { useCache: true })
-    const startups = data.transformedData || data.data || []
+    const startupsData = await fetchStartups({}, { useCache: true })
+    const startups = startupsData.transformedData || startupsData.data || []
     
-    const startup = startups.find((s: any) => 
-      s.id === params.id || 
-      s.companyName?.toLowerCase().replace(/\s+/g, '-') === params.id.toLowerCase()
+    const company = startups.find((startup: Startup) => 
+      startup.id === params.id || 
+      startup.companyName?.toLowerCase().replace(/\s+/g, '-') === params.id
     )
 
-    if (!startup) {
+    if (!company) {
       return {
-        title: 'Company Not Found | AI Market Watch',
-        description: 'The requested company profile could not be found.',
+        title: 'Company Not Found - AI Market Watch',
+        description: 'The requested AI startup company could not be found in our database.',
       }
     }
 
-    const title = `${startup.companyName} - AI Startup Profile | AI Market Watch`
-    const description = `${startup.description} Founded in ${startup.yearFounded} by ${startup.ceo}. Total funding: ${startup.totalFundingRaised}. Category: ${startup.category}. Get detailed insights into this ${startup.category} startup.`
+    const title = `${company.companyName} - AI Startup Profile | AI Market Watch`
+    const description = `${company.description || 'AI startup company'} Founded in ${company.yearFounded || 'N/A'} by ${company.ceo || 'N/A'}. ${company.totalFundingRaised ? `Total funding: ${company.totalFundingRaised}.` : ''} Category: ${company.category || 'AI'}.`
 
     return {
       title,
       description,
-      keywords: `${startup.companyName}, ${startup.category}, ${startup.ceo}, AI startup, artificial intelligence, funding, venture capital, tech company`,
+      keywords: [
+        company.companyName,
+        company.category,
+        company.ceo,
+        'AI startup',
+        'artificial intelligence',
+        'funding',
+        'tech company',
+        company.location,
+      ].filter(Boolean).join(', '),
       openGraph: {
         title,
         description,
         type: 'article',
+        url: `https://ai-market-watch.com/company/${params.id}`,
+        siteName: 'AI Market Watch',
+        images: [
+          {
+            url: '/page_image.png',
+            width: 1200,
+            height: 630,
+            alt: `${company.companyName} - AI Startup Profile`,
+          },
+        ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: ['/page_image.png'],
+      },
+      alternates: {
+        canonical: `/company/${params.id}`,
       },
     }
   } catch (error) {
@@ -65,123 +94,29 @@ export async function generateStaticParams() {
 
 export default async function CompanyPage({ params }: Props) {
   try {
-    const data = await fetchStartups({}, { useCache: true })
-    const startups = data.transformedData || data.data || []
+    const startupsData = await fetchStartups({}, { useCache: true })
+    const startups = startupsData.transformedData || startupsData.data || []
     
-    const startup = startups.find((s: any) => 
-      s.id === params.id || 
-      s.companyName?.toLowerCase().replace(/\s+/g, '-') === params.id.toLowerCase()
+    const company = startups.find((startup: Startup) => 
+      startup.id === params.id || 
+      startup.companyName?.toLowerCase().replace(/\s+/g, '-') === params.id
     )
 
-    if (!startup) {
+    if (!company) {
       notFound()
     }
 
-    return (
-      <div className="min-h-screen bg-black">
-        <StructuredData startup={startup} type="organization" />
-        <StructuredData startup={startup} type="article" />
-        
-        {/* Company Profile Page */}
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto">
-            <header className="mb-8">
-              <h1 className="text-4xl font-bold text-white mb-4">
-                {startup.companyName}
-              </h1>
-              <p className="text-xl text-gray-400 mb-6">
-                {startup.description}
-              </p>
-              <div className="flex flex-wrap gap-4 text-sm text-gray-500">
-                <span>Founded: {startup.yearFounded}</span>
-                <span>CEO: {startup.ceo}</span>
-                <span>Location: {startup.location}</span>
-                <span>Category: {startup.category}</span>
-              </div>
-            </header>
-
-            {/* Company Details */}
-            <section className="grid md:grid-cols-2 gap-8 mb-8">
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-2xl font-semibold text-white mb-3">
-                    Company Overview
-                  </h2>
-                  <div className="space-y-3 text-gray-300">
-                    <p><strong>Value Proposition:</strong> {startup.mainValueProposition}</p>
-                    <p><strong>Key Products:</strong> {startup.keyProducts}</p>
-                    <p><strong>Target Customer:</strong> {startup.targetCustomer}</p>
-                    <p><strong>Team Size:</strong> {startup.teamSize}</p>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-xl font-semibold text-white mb-3">
-                    Technology & Advantage
-                  </h3>
-                  <p className="text-gray-300">{startup.technologicalAdvantage}</p>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-2xl font-semibold text-white mb-3">
-                    Funding & Investment
-                  </h2>
-                  <div className="space-y-3 text-gray-300">
-                    <p><strong>Total Funding:</strong> {startup.totalFundingRaised}</p>
-                    <p><strong>Latest Round:</strong> {startup.latestFundingRound}</p>
-                    <p><strong>Key Investors:</strong> {startup.keyInvestors}</p>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-xl font-semibold text-white mb-3">
-                    Market Position
-                  </h3>
-                  <div className="space-y-3 text-gray-300">
-                    <p><strong>Competitors:</strong> {startup.competitors}</p>
-                    <p><strong>Partnerships:</strong> {startup.keyPartnerships}</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Milestones */}
-            <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-white mb-3">
-                Major Milestones
-              </h2>
-              <p className="text-gray-300">{startup.majorMilestones}</p>
-            </section>
-
-            {/* External Links */}
-            {startup.webpage && (
-              <section className="mb-8">
-                <a
-                  href={startup.webpage}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center px-6 py-3 bg-white text-black font-medium rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  Visit Company Website
-                  <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </a>
-              </section>
-            )}
-
-            {/* Last Updated */}
-            <footer className="text-sm text-gray-500 border-t border-gray-800 pt-4">
-              Last updated: {new Date(startup.updatedDate || Date.now()).toISOString().split('T')[0]}
-            </footer>
-          </div>
+          return (
+        <div className="min-h-screen bg-gray-950 text-white">
+          <CompanyModal 
+            company={company} 
+            isOpen={true} 
+            onClose={() => window.history.back()} 
+          />
         </div>
-      </div>
-    )
+      )
   } catch (error) {
-    console.error('Error loading company page:', error)
+    console.error('Error loading company:', error)
     notFound()
   }
 } 
