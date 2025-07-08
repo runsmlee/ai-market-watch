@@ -6,14 +6,14 @@
 
 :root {
   --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 8, 8, 12;
-  --background-end-rgb: 12, 12, 16;
+  --background-start-rgb: 0, 0, 0;
+  --background-end-rgb: 10, 10, 10;
   --accent-primary: 255, 255, 255;
   --accent-secondary: 156, 163, 175;
-  --surface-primary: 17, 17, 20;
-  --surface-secondary: 24, 24, 27;
-  --border-primary: 39, 39, 42;
-  --border-secondary: 63, 63, 70;
+  --surface-primary: 10, 10, 10;
+  --surface-secondary: 18, 18, 18;
+  --border-primary: 30, 30, 30;
+  --border-secondary: 50, 50, 50;
 }
 
 * {
@@ -33,7 +33,7 @@ body {
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: radial-gradient(ellipse at top, rgba(24, 24, 27, 0.4) 0%, transparent 50%),
+  background: radial-gradient(ellipse at top, rgba(10, 10, 10, 0.4) 0%, transparent 50%),
               linear-gradient(180deg, rgb(var(--background-start-rgb)) 0%, rgb(var(--background-end-rgb)) 100%);
   min-height: 100vh;
   font-weight: 400;
@@ -134,13 +134,13 @@ body {
 
 /* Subtle glass morphism effect */
 .glass {
-  background: rgba(24, 24, 27, 0.8);
+  background: rgba(10, 10, 10, 0.8);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .glass-strong {
-  background: rgba(24, 24, 27, 0.95);
+  background: rgba(10, 10, 10, 0.95);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }

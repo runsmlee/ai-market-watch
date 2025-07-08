@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useEffect, useState, Suspense, lazy } from 'react';
+import React, { useEffect, useState, Suspense, lazy, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, BarChart3 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import StatsGrid from '@/components/layout/StatsGrid';
 import AdvancedFilters from '@/components/filters/AdvancedFilters';
+import DNAMatchFloatingButton from '@/components/dna/DNAMatchFloatingButton';
+import DNAMatchModal from '@/components/dna/DNAMatchModal';
 import { useDashboardStore } from '@/store/dashboardStore';
 import { fetchStartups, transformApiDataToStartups } from '@/lib/api';
 import { Startup } from '@/types/startup';
@@ -56,6 +58,7 @@ const SidebarSkeleton = () => (
 export default function DashboardContent() {
   const [mounted, setMounted] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [showDNAModal, setShowDNAModal] = useState(false);
 
   // Ensure component is mounted on client side
   useEffect(() => {
@@ -151,6 +154,11 @@ export default function DashboardContent() {
     });
   }, [filteredStartups.length, loading, error, isInitialized, stats]);
 
+  // Memoize filter metadata to prevent infinite loops
+  const filterMetadata = useMemo(() => {
+    return getFilterMetadata();
+  }, [filteredStartups.length]);
+
   // Don't render anything until mounted (prevents hydration mismatch)
   if (!mounted) {
     return null;
@@ -159,7 +167,7 @@ export default function DashboardContent() {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-950 to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-black to-gray-950 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-6">
           <div className="w-16 h-16 mx-auto mb-6 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center justify-center">
             <AlertTriangle className="w-8 h-8 text-red-400" />
@@ -182,7 +190,7 @@ export default function DashboardContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-950 to-gray-900">
+    <div className="min-h-screen bg-gradient-to-b from-black to-gray-950">
       {/* Header, Stats, Filters - Keep container margins */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Header */}
@@ -195,8 +203,8 @@ export default function DashboardContent() {
         <AdvancedFilters 
           filters={filters}
           onFiltersChange={updateFilters}
-          categories={getFilterMetadata().categories}
-          locations={getFilterMetadata().locations}
+          categories={filterMetadata.categories}
+          locations={filterMetadata.locations}
         />
       </div>
 
@@ -275,6 +283,10 @@ export default function DashboardContent() {
       <Suspense fallback={null}>
         <PerformanceMonitor />
       </Suspense>
+      
+      {/* DNA Match Floating Button & Modal */}
+      <DNAMatchFloatingButton onClick={() => setShowDNAModal(true)} />
+      <DNAMatchModal isOpen={showDNAModal} onClose={() => setShowDNAModal(false)} />
     </div>
   );
 }

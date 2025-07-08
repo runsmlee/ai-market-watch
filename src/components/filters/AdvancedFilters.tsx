@@ -32,8 +32,9 @@ export default function AdvancedFilters({
 
   // Update filters when debounced search changes
   useEffect(() => {
-    onFiltersChange({ ...filters, search: debouncedSearch });
-  }, [debouncedSearch]);
+    const newFilters = { ...filters, search: debouncedSearch };
+    onFiltersChange(newFilters);
+  }, [debouncedSearch, onFiltersChange]);
 
   const handleCategoryToggle = (category: string) => {
     const newCategories = new Set(filters.categories);
