@@ -1,15 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client
-// You'll need to add these to your .env.local file
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+// Get Supabase credentials
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Supabase credentials not found. Please check your .env.local file');
+// Create a function to get the Supabase client
+// This prevents issues during build time when env vars might not be available
+function getSupabaseClient() {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn('Supabase credentials not found. Please check your .env.local file');
+    return null;
+  }
+  return createClient(supabaseUrl, supabaseAnonKey);
 }
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Type for the startup vector content
 export interface StartupVectorContent {
@@ -57,7 +60,12 @@ export interface StartupVectorContent {
 // Function to fetch company data from startup_vectors table
 export async function fetchCompanyFromSupabase(companyId: string): Promise<any | null> {
   try {
-    console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      console.error('Supabase client not initialized');
+      return null;
+    }
+    
     console.log('Fetching from startup_vectors with ID:', companyId);
     
     const { data, error } = await supabase
