@@ -14,7 +14,7 @@ import { Startup } from '@/types/startup';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 // Lazy load heavy components
-const VirtualizedCompanyGrid = lazy(() => import('@/components/company/VirtualizedCompanyGrid'));
+import VirtualizedCompanyGrid from '@/components/company/VirtualizedCompanyGrid';
 const AnalyticsSidebar = lazy(() => import('@/components/charts/AnalyticsSidebar'));
 const PerformanceMonitor = lazy(() => import('@/components/layout/PerformanceMonitor'));
 
@@ -92,6 +92,10 @@ export default function DashboardContent() {
         setLoading(true);
         setError(null);
         
+        // Clear any existing data first
+        console.log('🧹 Clearing existing data...');
+        setStartups([], null, false);
+        
         console.log('🚀 Initializing dashboard data...');
         
         const response = await fetchStartups(undefined, { 
@@ -108,7 +112,7 @@ export default function DashboardContent() {
           responseKeys: Object.keys(response),
           hasTransformedData: !!response.transformedData,
           transformedDataSample: response.transformedData?.slice(0, 1),
-          fullResponse: response
+          source: response.source || 'unknown'
         });
 
         if (response.error) {
@@ -119,15 +123,19 @@ export default function DashboardContent() {
         console.log('🏗️ About to set startups:', {
           startupsCount: startups.length,
           firstStartup: startups[0],
+          firstStartupKeys: startups[0] ? Object.keys(startups[0]) : [],
+          firstStartupCompanyName: startups[0]?.companyName,
+          firstStartupCompanyNameType: typeof startups[0]?.companyName,
           sampleData: startups.slice(0, 3).map(s => ({
             id: s.id,
             companyName: s.companyName,
+            companyNameType: typeof s.companyName,
             category: s.category,
             yearFounded: s.yearFounded
           }))
         });
         
-        setStartups(startups, response.lastUpdated, !!response.lastUpdated);
+        setStartups(startups, response.lastUpdated, false);
         setIsInitialized(true);
         
         console.log('✅ Dashboard initialized successfully');
@@ -213,12 +221,10 @@ export default function DashboardContent() {
         sidebarCollapsed ? 'pr-0' : 'pr-80'
       }`}>
         <div className="px-4 sm:px-6 lg:px-8">
-          <Suspense fallback={<GridSkeleton />}>
-            <VirtualizedCompanyGrid 
-              companies={filteredStartups} 
-              loading={loading}
-            />
-          </Suspense>
+          <VirtualizedCompanyGrid 
+            companies={filteredStartups} 
+            loading={loading}
+          />
         </div>
       </div>
       
@@ -264,9 +270,7 @@ export default function DashboardContent() {
             </div>
             
             <Suspense fallback={<SidebarSkeleton />}>
-              <AnalyticsSidebar 
-                companies={filteredStartups}
-              />
+              <AnalyticsSidebar />
             </Suspense>
           </div>
         </div>

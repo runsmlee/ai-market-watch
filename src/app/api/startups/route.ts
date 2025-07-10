@@ -1,7 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { fetchAllStartupsFromSupabase } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('🚀 API Route called - Attempting Supabase fetch first');
+    
+    // Try Supabase first
+    const supabaseData = await fetchAllStartupsFromSupabase();
+    
+    if (supabaseData && supabaseData.length > 0) {
+      console.log(`✅ Successfully fetched ${supabaseData.length} startups from Supabase`);
+      console.log('🔍 Sample Supabase data structure:', {
+        firstItem: supabaseData[0],
+        keys: Object.keys(supabaseData[0] || {}),
+        hasCompanyName: 'companyName' in (supabaseData[0] || {}),
+        companyNameValue: supabaseData[0]?.companyName
+      });
+      
+      // Return data in the same format as Google Apps Script
+      return NextResponse.json({
+        success: true,
+        data: supabaseData,
+        source: 'supabase',
+        timestamp: new Date().toISOString()
+      }, {
+        headers: {
+          'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+      });
+    }
+    
+    console.log('⚠️ Supabase fetch failed or returned no data, falling back to Google Apps Script');
     // Google Apps Script URL - Check at runtime
     const APPS_SCRIPT_URL = process.env.APPS_SCRIPT_URL;
     

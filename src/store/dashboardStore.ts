@@ -117,19 +117,83 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   sidebarCollapsed: true,
 
   setStartups: (startups, lastUpdated, isFromCache = false) => {
-    console.log('📊 Setting startups:', { count: startups.length, lastUpdated, isFromCache });
+    console.log('📊 Setting startups:', { 
+      count: startups.length, 
+      lastUpdated, 
+      isFromCache,
+      firstStartup: startups[0]
+    });
     
+    // Get current filters and sort function
+    const { filters, sortStartups } = get();
+    
+    // Apply filters immediately with the new data
+    console.log('🔍 Applying filters to new startups...');
+    const filtered = startups.filter((startup) => {
+      // Search filter
+      if (filters.search.trim()) {
+        const searchTerm = filters.search.toLowerCase();
+        const searchableText = [
+          startup.companyName || '',
+          startup.description || '',
+          startup.category || '',
+          startup.location || '',
+          startup.ceo || ''
+        ].join(' ').toLowerCase();
+        
+        if (!searchableText.includes(searchTerm)) {
+          return false;
+        }
+      }
+      
+      // Category filter
+      if (filters.categories.size > 0 && !filters.categories.has(startup.category || '')) {
+        return false;
+      }
+      
+      // Location filter
+      if (filters.locations.size > 0) {
+        const city = startup.location?.split(',')[0]?.trim() || '';
+        if (!city || !filters.locations.has(city)) {
+          return false;
+        }
+      }
+      
+      // Year filter
+      const yearFounded = startup.yearFounded || 0;
+      if (yearFounded > 0 && (yearFounded < filters.yearFrom || yearFounded > filters.yearTo)) {
+        return false;
+      }
+      
+      return true;
+    });
+    
+    // Sort the filtered results
+    const sorted = sortStartups(filtered, filters.sortBy);
+    
+    // Calculate stats
+    const stats = calculateDashboardStats(startups, sorted);
+    
+    // Update all state at once
     set({ 
       allStartups: startups,
+      filteredStartups: sorted,
+      stats,
       lastUpdated: lastUpdated || new Date().toISOString(),
       isFromCache 
     });
     
-    // Apply current filters immediately - call directly without Promise
-    console.log('🔄 About to apply filters after setStartups...');
-    const store = get();
-    console.log('🔄 Calling applyFilters from setStartups with allStartups count:', store.allStartups.length);
-    store.applyFilters();
+    console.log('✅ Startups set and filtered:', {
+      totalCount: startups.length,
+      filteredCount: sorted.length,
+      firstFiltered: sorted[0],
+      sampleFiltered: sorted.slice(0, 3).map(s => ({
+        id: s.id,
+        companyName: s.companyName,
+        category: s.category
+      })),
+      stats
+    });
   },
 
   updateFilters: (newFilters) => {

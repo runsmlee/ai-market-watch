@@ -15,11 +15,14 @@ function createCacheKey(startups: Startup[]): string {
 }
 
 // Parse funding amount from string
-export function parseFundingAmount(fundingStr: string): number {
-  if (!fundingStr || fundingStr === '-' || fundingStr === 'N/A') return 0;
+export function parseFundingAmount(fundingStr: string | any): number {
+  // Ensure fundingStr is a string
+  const funding = String(fundingStr || '');
+  
+  if (!funding || funding === '-' || funding === 'N/A' || funding === 'null' || funding === 'undefined') return 0;
   
   // Remove currency symbols and normalize
-  const cleanStr = fundingStr.replace(/[$,]/g, '').toLowerCase().trim();
+  const cleanStr = funding.replace(/[$,]/g, '').toLowerCase().trim();
   
   // Extract number and multiplier
   const match = cleanStr.match(/^([\d.]+)([kmb])?/);

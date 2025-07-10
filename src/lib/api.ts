@@ -75,18 +75,36 @@ export async function fetchStartups(
     }
 
     // Transform and cache the data
+    // Check if data is from Supabase (already transformed) or Google Apps Script
+    const isSupabaseData = data.source === 'supabase';
+    
+    // Log the structure of the first item to debug
+    if (data.data && data.data.length > 0) {
+      console.log('🔍 First data item structure:', {
+        keys: Object.keys(data.data[0]),
+        sample: data.data[0],
+        hasCompanyName: 'companyName' in data.data[0],
+        hasCompanyNameSnake: 'company_name' in data.data[0],
+        hasCompanyNameCapital: 'Company Name' in data.data[0]
+      });
+    }
+    
+    // Always transform the data to ensure consistent field names
     const transformedStartups = transformApiDataToStartups(data.data || []);
     
     console.log('🔄 Data transformed successfully:', {
+      source: data.source || 'google-apps-script',
       originalLength: (data.data || []).length,
-      transformedLength: transformedStartups.length
+      transformedLength: transformedStartups.length,
+      isSupabaseData
     });
     
     const apiResponse: ApiResponse = {
       ...data,
       data: data.data,
       transformedData: transformedStartups,
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
+      source: data.source || 'unknown'
     };
 
     // Cache the response
@@ -124,47 +142,110 @@ export async function fetchStartups(
 
 export function transformApiDataToStartups(apiData: any[]): Startup[] {
   return apiData
-    .map((item, index) => ({
-      id: `startup-${index}`,
-      companyName: String(item['Company Name'] || ''),
-      ceo: String(item['CEO'] || ''),
-      previousExperience: String(item['Previous experience of CEO'] || ''),
-      keyMembers: String(item['Key members'] || ''),
-      teamSize: String(item['Team size'] || ''),
-      webpage: String(item['Webpage'] || ''),
-      location: String(item['Location'] || ''),
-      yearFounded: parseInt(String(item['Year Founded'] || '0')) || 0,
-      description: String(item['One-line description'] || ''),
-      currentStage: String(item['Current stage/status'] || ''),
-      targetCustomer: String(item['Target customer'] || ''),
-      mainValueProposition: String(item['Main value proposition'] || ''),
-      keyProducts: String(item['Key products/solutions portfolio'] || ''),
-      industryVerticals: String(item['Industry verticals served'] || ''),
-      uvp: String(item['UVP'] || ''),
-      technologicalAdvantage: String(item['Key technological/business advantage'] || ''),
-      patents: String(item['Patents/IP (if public)'] || ''),
-      keyPartnerships: String(item['Key partnerships/collaborations'] || ''),
-      competitors: String(item['2-3 main competitors'] || ''),
-      differentiation: String(item['How they differentiate'] || ''),
-      marketPositioning: String(item['Market positioning'] || ''),
-      geographicFocus: String(item['Geographic competition focus'] || ''),
-      totalFundingRaised: String(item['Total funding raised'] || ''),
-      latestFundingRound: String(item['Latest funding round'] || ''),
-      keyInvestors: String(item['Key investors'] || ''),
-      growthMetrics: String(item['Basic growth metrics'] || ''),
-      notableCustomers: String(item['Notable customers'] || ''),
-      majorMilestones: String(item['Major milestones'] || ''),
-      category: String(item['Category'] || 'Other'),
-      updatedDate: String(item['Updated Date'] || ''),
-      postingStatus: String(item['Posting'] || ''),
-    }))
+    .map((item, index) => {
+      // Log first item for debugging
+      if (index === 0) {
+        console.log('🔍 First item structure:', {
+          keys: Object.keys(item).slice(0, 10),
+          hasCompanyName: 'companyName' in item,
+          companyNameValue: item.companyName,
+          companyNameType: typeof item.companyName
+        });
+      }
+      
+      // Check if data is already in camelCase format (from Supabase)
+      const isTransformed = 'companyName' in item;
+      
+      if (isTransformed) {
+        // Data is already transformed (from Supabase), but ensure all fields are properly typed
+        return {
+          id: item.id || `startup-${index}`,
+          companyName: String(item.companyName || ''),
+          ceo: String(item.ceo || ''),
+          previousExperience: String(item.previousExperience || ''),
+          keyMembers: String(item.keyMembers || ''),
+          teamSize: String(item.teamSize || ''),
+          webpage: String(item.webpage || ''),
+          location: String(item.location || ''),
+          yearFounded: parseInt(String(item.yearFounded || '0')) || 0,
+          description: String(item.description || ''),
+          currentStage: String(item.currentStage || ''),
+          targetCustomer: String(item.targetCustomer || ''),
+          mainValueProposition: String(item.mainValueProposition || ''),
+          keyProducts: String(item.keyProducts || ''),
+          industryVerticals: String(item.industryVerticals || ''),
+          uvp: String(item.uvp || ''),
+          technologicalAdvantage: String(item.technologicalAdvantage || ''),
+          patents: String(item.patents || ''),
+          keyPartnerships: String(item.keyPartnerships || ''),
+          competitors: String(item.competitors || ''),
+          differentiation: String(item.differentiation || ''),
+          marketPositioning: String(item.marketPositioning || ''),
+          geographicFocus: String(item.geographicFocus || ''),
+          totalFundingRaised: String(item.totalFundingRaised || ''),
+          latestFundingRound: String(item.latestFundingRound || ''),
+          keyInvestors: String(item.keyInvestors || ''),
+          growthMetrics: String(item.growthMetrics || ''),
+          notableCustomers: String(item.notableCustomers || ''),
+          majorMilestones: String(item.majorMilestones || ''),
+          category: String(item.category || 'Other'),
+          updatedDate: String(item.updatedDate || ''),
+          postingStatus: String(item.postingStatus || ''),
+        } as Startup;
+      }
+      
+      // Transform from Google Apps Script format
+      return {
+        id: item.id || `startup-${index}`,
+        companyName: String(item['Company Name'] || ''),
+        ceo: String(item['CEO'] || ''),
+        previousExperience: String(item['Previous experience of CEO'] || ''),
+        keyMembers: String(item['Key members'] || ''),
+        teamSize: String(item['Team size'] || ''),
+        webpage: String(item['Webpage'] || ''),
+        location: String(item['Location'] || ''),
+        yearFounded: parseInt(String(item['Year Founded'] || '0')) || 0,
+        description: String(item['One-line description'] || ''),
+        currentStage: String(item['Current stage/status'] || ''),
+        targetCustomer: String(item['Target customer'] || ''),
+        mainValueProposition: String(item['Main value proposition'] || ''),
+        keyProducts: String(item['Key products/solutions portfolio'] || ''),
+        industryVerticals: String(item['Industry verticals served'] || ''),
+        uvp: String(item['UVP'] || ''),
+        technologicalAdvantage: String(item['Key technological/business advantage'] || ''),
+        patents: String(item['Patents/IP (if public)'] || ''),
+        keyPartnerships: String(item['Key partnerships/collaborations'] || ''),
+        competitors: String(item['2-3 main competitors'] || ''),
+        differentiation: String(item['How they differentiate'] || ''),
+        marketPositioning: String(item['Market positioning'] || ''),
+        geographicFocus: String(item['Geographic competition focus'] || ''),
+        totalFundingRaised: String(item['Total funding raised'] || ''),
+        latestFundingRound: String(item['Latest funding round'] || ''),
+        keyInvestors: String(item['Key investors'] || ''),
+        growthMetrics: String(item['Basic growth metrics'] || ''),
+        notableCustomers: String(item['Notable customers'] || ''),
+        majorMilestones: String(item['Major milestones'] || ''),
+        category: String(item['Category'] || 'Other'),
+        updatedDate: String(item['Updated Date'] || ''),
+        postingStatus: String(item['Posting'] || ''),
+      };
+    })
     .filter((startup) => {
       // Filter out companies with invalid or empty names
-      const companyName = startup.companyName.trim();
+      // Ensure companyName is a string before calling trim
+      const rawCompanyName = startup.companyName;
+      const companyName = typeof rawCompanyName === 'string' 
+        ? rawCompanyName.trim() 
+        : String(rawCompanyName || '').trim();
       
       // Only filter out if company name is truly empty or null
       if (!companyName || companyName === '') {
-        console.log(`🚫 Filtered out company with empty name`);
+        console.log(`🚫 Filtered out company with empty name:`, {
+          id: startup.id,
+          rawCompanyName: startup.companyName,
+          companyNameType: typeof startup.companyName,
+          keys: Object.keys(startup).slice(0, 5)
+        });
         return false;
       }
       

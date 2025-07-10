@@ -16,6 +16,7 @@ export default function VirtualizedCompanyGrid({
   companies, 
   loading = false 
 }: VirtualizedCompanyGridProps) {
+  // Component is ready
   const [selectedCompany, setSelectedCompany] = useState<Startup | null>(null);
   const [isClient, setIsClient] = useState(false);
   const { sidebarCollapsed } = useDashboardStore();

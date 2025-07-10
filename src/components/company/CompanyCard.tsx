@@ -11,8 +11,8 @@ interface CompanyCardProps {
   onClick: () => void;
 }
 
-const safeString = (value: any): string => {
-  if (value === null || value === undefined) return '';
+const safeString = (value: any, fallback: string = ''): string => {
+  if (value === null || value === undefined || value === '') return fallback;
   return String(value);
 };
 
@@ -33,10 +33,13 @@ const getCompanyDomain = (company: Startup): string => {
   }
   
   // Generate a domain-like string from company name
-  return company.companyName
-    ?.toLowerCase()
+  const companyName = company.companyName || 'unknown';
+  const domain = companyName
+    .toLowerCase()
     .replace(/[^a-z0-9]/g, '')
-    .substring(0, 20) + '.com' || 'unknown.com';
+    .substring(0, 20);
+  
+  return domain ? `${domain}.com` : 'unknown.com';
 };
 
 // Logo component with fallback
@@ -90,6 +93,16 @@ const CompanyLogo = memo(({ company }: { company: Startup }) => {
 CompanyLogo.displayName = 'CompanyLogo';
 
 const CompanyCard = memo(({ company, onClick }: CompanyCardProps) => {
+  // Debug log to check received data
+  if (!company.companyName || company.companyName === '') {
+    console.warn('⚠️ CompanyCard received company with empty name:', {
+      id: company.id,
+      companyName: company.companyName,
+      keys: Object.keys(company),
+      sampleData: JSON.stringify(company).substring(0, 200)
+    });
+  }
+  
   return (
     <div 
       className="group relative overflow-hidden cursor-pointer h-[400px]"
@@ -108,15 +121,15 @@ const CompanyCard = memo(({ company, onClick }: CompanyCardProps) => {
               <h3 className="text-lg font-semibold text-white mb-2 
                             group-hover:text-white/90 transition-colors duration-300 leading-tight
                             line-clamp-2 min-h-[2.5rem]" 
-                  title={safeString(company.companyName)}>
-                {safeString(company.companyName)}
+                  title={safeString(company.companyName, 'Unknown Company')}>
+                {safeString(company.companyName, 'Unknown Company')}
               </h3>
               <div className="flex items-center gap-2 mb-2">
                 <span className="px-2 py-1 bg-white/[0.08] border border-white/[0.12] 
                                 rounded text-xs font-medium text-white/80 
                                 backdrop-blur-sm truncate max-w-[120px]"
-                      title={safeString(company.category)}>
-                  {truncateText(safeString(company.category), 15)}
+                      title={safeString(company.category, 'Uncategorized')}>
+                  {truncateText(safeString(company.category, 'Uncategorized'), 15)}
                 </span>
               </div>
             </div>
@@ -132,8 +145,8 @@ const CompanyCard = memo(({ company, onClick }: CompanyCardProps) => {
         {/* Description */}
         <div className="mb-4 flex-shrink-0">
           <p className="text-sm text-white/75 line-clamp-3 leading-relaxed min-h-[3.5rem]"
-             title={safeString(company.description)}>
-            {safeString(company.description)}
+             title={safeString(company.description, 'No description available')}>
+            {safeString(company.description, 'No description available')}
           </p>
         </div>
 
@@ -146,8 +159,8 @@ const CompanyCard = memo(({ company, onClick }: CompanyCardProps) => {
               <span className="text-xs text-white/60 font-medium">Founded</span>
             </div>
             <div className="text-sm font-semibold text-white/95 truncate"
-                 title={safeString(company.yearFounded)}>
-              {safeString(company.yearFounded)}
+                 title={safeString(company.yearFounded, 'N/A')}>
+              {safeString(company.yearFounded, 'N/A')}
             </div>
           </div>
           
@@ -158,8 +171,8 @@ const CompanyCard = memo(({ company, onClick }: CompanyCardProps) => {
               <span className="text-xs text-white/60 font-medium">Team</span>
             </div>
             <div className="text-sm font-semibold text-white/90 truncate"
-                 title={safeString(company.teamSize)}>
-              {truncateText(safeString(company.teamSize), 20)}
+                 title={safeString(company.teamSize, 'Unknown')}>
+              {truncateText(safeString(company.teamSize, 'Unknown'), 20)}
             </div>
           </div>
         </div>
@@ -177,12 +190,12 @@ const CompanyCard = memo(({ company, onClick }: CompanyCardProps) => {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-sm text-white/90 font-medium truncate"
-                     title={safeString(company.totalFundingRaised)}>
-                  {truncateText(safeString(company.totalFundingRaised), 25)}
+                     title={safeString(company.totalFundingRaised, 'Undisclosed')}>
+                  {truncateText(safeString(company.totalFundingRaised, 'Undisclosed'), 25)}
                 </div>
                 <div className="text-xs text-white/60 truncate"
-                     title={safeString(company.latestFundingRound)}>
-                  {truncateText(safeString(company.latestFundingRound), 20)}
+                     title={safeString(company.latestFundingRound, 'No funding info')}>
+                  {truncateText(safeString(company.latestFundingRound, 'No funding info'), 20)}
                 </div>
               </div>
             </div>
@@ -199,8 +212,8 @@ const CompanyCard = memo(({ company, onClick }: CompanyCardProps) => {
           <div className="flex items-center gap-1.5 text-white/60">
             <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
             <span className="text-sm truncate"
-                  title={safeString(company.location)}>
-              {truncateText(safeString(company.location), 30)}
+                  title={safeString(company.location, 'Location unknown')}>
+              {truncateText(safeString(company.location, 'Location unknown'), 30)}
             </span>
           </div>
         </div>
