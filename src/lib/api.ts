@@ -78,16 +78,7 @@ export async function fetchStartups(
     // Check if data is from Supabase (already transformed) or Google Apps Script
     const isSupabaseData = data.source === 'supabase';
     
-    // Log the structure of the first item to debug
-    if (data.data && data.data.length > 0) {
-      console.log('🔍 First data item structure:', {
-        keys: Object.keys(data.data[0]),
-        sample: data.data[0],
-        hasCompanyName: 'companyName' in data.data[0],
-        hasCompanyNameSnake: 'company_name' in data.data[0],
-        hasCompanyNameCapital: 'Company Name' in data.data[0]
-      });
-    }
+    // Data structure verified
     
     // Always transform the data to ensure consistent field names
     const transformedStartups = transformApiDataToStartups(data.data || []);
@@ -143,15 +134,7 @@ export async function fetchStartups(
 export function transformApiDataToStartups(apiData: any[]): Startup[] {
   return apiData
     .map((item, index) => {
-      // Log first item for debugging
-      if (index === 0) {
-        console.log('🔍 First item structure:', {
-          keys: Object.keys(item).slice(0, 10),
-          hasCompanyName: 'companyName' in item,
-          companyNameValue: item.companyName,
-          companyNameType: typeof item.companyName
-        });
-      }
+      // Transform data based on format
       
       // Check if data is already in camelCase format (from Supabase)
       const isTransformed = 'companyName' in item;

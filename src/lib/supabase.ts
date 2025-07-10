@@ -156,21 +156,13 @@ export function convertSupabaseToStartup(id: string, metadata: any): Startup | n
   }
 
   try {
-    console.log('Converting Supabase data for ID:', id);
+    // Converting Supabase data
     
     // Handle nested metadata structure (metadata.metadata)
     // The startup_vectors table has data nested in metadata.metadata
     const data = metadata.metadata || metadata;
     
-    // Log the actual data structure for debugging
-    if (id === '76' || id === '77' || id === '78') { // Log first few items
-      console.log(`🔍 Converting startup ${id}:`, {
-        dataKeys: Object.keys(data),
-        companyNameValue: data["Company Name"],
-        hasCompanyName: "Company Name" in data,
-        rawData: JSON.stringify(data).substring(0, 200)
-      });
-    }
+    // Data structure is correct
 
     // Map Supabase metadata fields to our Startup interface
     const startup: Startup = {
