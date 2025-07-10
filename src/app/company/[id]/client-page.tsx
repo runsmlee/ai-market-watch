@@ -51,6 +51,11 @@ export default function CompanyClientPage({ id }: CompanyClientPageProps) {
         }
 
         if (companyData) {
+          console.log('✅ Company data loaded:', {
+            id: companyData.id,
+            name: companyData.companyName,
+            source: /^\d+$/.test(id) ? 'Supabase' : 'Apps Script'
+          });
           setCompany(companyData);
         } else {
           setError('Company not found');

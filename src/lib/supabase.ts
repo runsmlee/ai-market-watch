@@ -109,6 +109,9 @@ export function convertSupabaseToStartup(id: string, metadata: any): any {
     console.log('Converting Supabase data for ID:', id);
     console.log('Metadata structure:', JSON.stringify(metadata, null, 2));
     
+    // Handle nested metadata structure (metadata.metadata)
+    const data = metadata.metadata || metadata;
+    
     // Parse arrays from string format if needed
     const parseArray = (value: any): string[] => {
       if (Array.isArray(value)) return value;
@@ -122,37 +125,37 @@ export function convertSupabaseToStartup(id: string, metadata: any): any {
     // The n8n response uses lowercase field names, not Title Case
     return {
       id,
-      companyName: metadata.company_name || metadata["Company Name"] || 'Unknown Company',
-      description: metadata.description || metadata["One-line description"] || '',
-      category: metadata.category || metadata["Category"] || '',
-      yearFounded: parseInt(metadata.year_founded || metadata["Year Founded"]) || new Date().getFullYear(),
-      location: metadata.location || metadata["Location"] || '',
-      teamSize: metadata["Team size"] || '',
-      keyMembers: metadata["Key members"] || '',
-      webpage: metadata["Webpage"] || '',
-      ceo: metadata["CEO"] || '',
-      previousExperience: metadata["Previous experience of CEO"] || '',
-      targetCustomer: metadata["Target customer"] || '',
-      mainValueProposition: metadata["Main value proposition"] || '',
-      uvp: metadata["UVP"] || '',
-      technologicalAdvantage: metadata["Key technological/business advantage"] || '',
+      companyName: data.company_name || data["Company Name"] || 'Unknown Company',
+      description: data.description || data["One-line description"] || '',
+      category: data.category || data["Category"] || '',
+      yearFounded: parseInt(data.year_founded || data["Year Founded"]) || new Date().getFullYear(),
+      location: data.location || data["Location"] || '',
+      teamSize: data["Team size"] || '',
+      keyMembers: data["Key members"] || '',
+      webpage: data["Webpage"] || '',
+      ceo: data["CEO"] || '',
+      previousExperience: data["Previous experience of CEO"] || '',
+      targetCustomer: data["Target customer"] || '',
+      mainValueProposition: data["Main value proposition"] || '',
+      uvp: data["UVP"] || '',
+      technologicalAdvantage: data["Key technological/business advantage"] || '',
       // Convert arrays to comma-separated strings for compatibility
-      competitors: parseArray(metadata["2-3 main competitors"]).join(', '),
-      differentiation: metadata["How they differentiate"] || '',
-      notableCustomers: parseArray(metadata["Notable customers"]).join(', '),
-      keyInvestors: parseArray(metadata["Key investors"]).join(', '),
-      latestFundingRound: metadata["Latest funding round"] || '',
-      totalFundingRaised: metadata.total_funding || metadata["Total funding raised"] || '',
-      growthMetrics: metadata["Basic growth metrics"] || '',
+      competitors: parseArray(data["2-3 main competitors"]).join(', '),
+      differentiation: data["How they differentiate"] || '',
+      notableCustomers: parseArray(data["Notable customers"]).join(', '),
+      keyInvestors: parseArray(data["Key investors"]).join(', '),
+      latestFundingRound: data["Latest funding round"] || '',
+      totalFundingRaised: data.total_funding || data["Total funding raised"] || '',
+      growthMetrics: data["Basic growth metrics"] || '',
       // Additional metadata fields (convert to strings for compatibility)
-      keyProducts: parseArray(metadata["Key products/solutions portfolio"]).join(', '),
-      industryVerticals: parseArray(metadata["Industry verticals served"]).join(', '),
-      marketPositioning: metadata["Market positioning"] || '',
-      geographicFocus: metadata["Geographic competition focus"] || '',
-      keyPartnerships: parseArray(metadata["Key partnerships/collaborations"]).join(', '),
-      patents: metadata["Patents/IP (if public)"] || '',
-      majorMilestones: metadata["Major milestones"] || '',
-      currentStage: metadata.funding_stage || metadata["Current stage/status"] || '',
+      keyProducts: parseArray(data["Key products/solutions portfolio"]).join(', '),
+      industryVerticals: parseArray(data["Industry verticals served"]).join(', '),
+      marketPositioning: data["Market positioning"] || '',
+      geographicFocus: data["Geographic competition focus"] || '',
+      keyPartnerships: parseArray(data["Key partnerships/collaborations"]).join(', '),
+      patents: data["Patents/IP (if public)"] || '',
+      majorMilestones: data["Major milestones"] || '',
+      currentStage: data.funding_stage || data["Current stage/status"] || '',
       updatedDate: new Date().toISOString(),
       // Fields for compatibility
       postingStatus: '',

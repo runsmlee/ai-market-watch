@@ -53,25 +53,50 @@ Year Founded: ${formData.yearFounded}`,
       source: 'web-app'
     };
 
-    // Call n8n webhook with timeout
+    // Call n8n webhook with timeout and retry
     const webhookUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n-qnj8.onrender.com/webhook/find_similar_startups';
     console.log('Calling n8n webhook:', webhookUrl);
     console.log('Request body:', JSON.stringify(requestBody, null, 2));
     
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    let response: Response | null = null;
+    let lastError: Error | null = null;
+    const maxRetries = 2; // Try twice total
     
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-      signal: controller.signal,
-    }).finally(() => clearTimeout(timeoutId));
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+        
+        if (attempt > 1) {
+          console.log(`Retry attempt ${attempt} after timeout...`);
+        }
+        
+        response = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+          signal: controller.signal,
+        }).finally(() => clearTimeout(timeoutId));
 
-    if (!response.ok) {
-      throw new Error(`Webhook failed: ${response.statusText}`);
+        if (response.ok) {
+          break; // Success, exit retry loop
+        }
+        
+        lastError = new Error(`Webhook failed: ${response.statusText}`);
+      } catch (error) {
+        lastError = error as Error;
+        if (error instanceof Error && error.name === 'AbortError' && attempt < maxRetries) {
+          console.log(`Request timeout on attempt ${attempt}, will retry...`);
+          continue; // Retry on timeout
+        }
+        throw error; // Throw other errors immediately
+      }
+    }
+
+    if (!response || !response.ok) {
+      throw lastError || new Error('Webhook failed after retries');
     }
 
     const responseText = await response.text();
@@ -131,7 +156,7 @@ Year Founded: ${formData.yearFounded}`,
       errorDetails = error.message;
       if (error.name === 'AbortError') {
         errorMessage = 'Request timeout';
-        errorDetails = 'The analysis service took too long to respond. Please try again.';
+        errorDetails = 'The analysis service took too long to respond after multiple attempts. Please try again in a moment.';
       }
     }
     

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   Dna,
@@ -15,9 +15,6 @@ import {
   ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
-import CompanyModal from '@/components/company/CompanyModal';
-import { Startup } from '@/types/startup';
-import { fetchStartups } from '@/lib/api';
 
 interface DNAMatchResultsProps {
   result: {
@@ -48,39 +45,10 @@ interface DNAMatchResultsProps {
 
 export default function DNAMatchResults({ result, onReset }: DNAMatchResultsProps) {
   const { matches, insights } = result;
-  const [selectedCompany, setSelectedCompany] = useState<Startup | null>(null);
-  const [loadingCompany, setLoadingCompany] = useState(false);
-  const [allStartups, setAllStartups] = useState<Startup[]>([]);
 
-  // Fetch all startups once to find company details by ID
-  useEffect(() => {
-    const loadStartups = async () => {
-      try {
-        const response = await fetchStartups();
-        const startups = response.transformedData || response.data || [];
-        setAllStartups(startups);
-      } catch (error) {
-        console.error('Failed to load startups:', error);
-      }
-    };
-    loadStartups();
-  }, []);
-
-  const handleCompanyClick = async (companyId: string) => {
-    setLoadingCompany(true);
-    try {
-      // Find the company from our cached startups
-      const company = allStartups.find(s => s.id === companyId);
-      if (company) {
-        setSelectedCompany(company);
-      } else {
-        console.error('Company not found:', companyId);
-      }
-    } catch (error) {
-      console.error('Error loading company:', error);
-    } finally {
-      setLoadingCompany(false);
-    }
+  const handleCompanyClick = (companyId: string) => {
+    // Open in new tab with Supabase ID
+    window.open(`/company/${companyId}`, '_blank');
   };
 
   return (
@@ -358,12 +326,6 @@ export default function DNAMatchResults({ result, onReset }: DNAMatchResultsProp
         </Link>
       </motion.div>
 
-      {/* Company Modal */}
-      <CompanyModal
-        company={selectedCompany}
-        isOpen={!!selectedCompany}
-        onClose={() => setSelectedCompany(null)}
-      />
     </div>
   );
 }
