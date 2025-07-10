@@ -27,6 +27,8 @@ interface DNAAnalysisResult {
     description: string;
     fundingRaised: string;
     yearFounded: number;
+    whySimilar?: string;
+    keyDifferentiators?: string[];
   }>;
   insights: {
     commonPatterns: string[];
@@ -36,32 +38,92 @@ interface DNAAnalysisResult {
   };
 }
 
+// N8N API Response Interface
+interface N8NAPIResponse {
+  output: {
+    query_summary: string;
+    matches: Array<{
+      id: string;
+      company_name: string;
+      category: string;
+      similarity_score: number;
+      description: string;
+      why_similar: string;
+      funding_stage: string;
+      total_funding: string;
+      year_founded: number;
+      location: string;
+      key_differentiators: string[];
+    }>;
+    insights: {
+      common_patterns: string[];
+      market_opportunities: string[];
+      potential_competitors: string[];
+      potential_partners: string[];
+      strategic_recommendations: string[];
+    };
+    metadata: {
+      total_results: number;
+      reranked_results: number;
+      search_timestamp: string;
+    };
+  };
+}
+
+// Transform N8N response to our internal format
+function transformN8NResponse(apiResponse: N8NAPIResponse[], formData: DNAFormData): DNAAnalysisResult {
+  // Extract the first result (n8n returns an array)
+  const response = apiResponse[0]?.output;
+  
+  if (!response) {
+    throw new Error('Invalid response from analysis service');
+  }
+
+  return {
+    userStartup: {
+      id: `user-${Date.now()}`,
+      embedding: Array(1536).fill(0).map(() => Math.random()), // Placeholder embedding
+    },
+    matches: response.matches.map(match => ({
+      id: match.id,
+      companyName: match.company_name,
+      similarity: match.similarity_score,
+      category: match.category,
+      description: match.description,
+      fundingRaised: match.total_funding,
+      yearFounded: match.year_founded,
+      whySimilar: match.why_similar,
+      keyDifferentiators: match.key_differentiators,
+    })),
+    insights: {
+      commonPatterns: response.insights.common_patterns,
+      differentiators: [], // We'll extract from the response if available
+      opportunities: response.insights.market_opportunities,
+      recommendations: response.insights.strategic_recommendations,
+    },
+  };
+}
+
 export async function analyzeDNA(formData: DNAFormData): Promise<DNAAnalysisResult> {
   try {
-    // Send to your n8n webhook endpoint
-    const response = await fetch(process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL || '/api/analyze-dna', {
+    // Use API route to avoid CORS issues
+    const response = await fetch('/api/analyze-dna', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        ...formData,
-        timestamp: new Date().toISOString(),
-        source: 'web-app'
-      }),
+      body: JSON.stringify(formData),
     });
 
     if (!response.ok) {
-      throw new Error(`Analysis failed: ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.details || errorData.error || `Analysis failed: ${response.statusText}`);
     }
 
     const result = await response.json();
+    console.log('DNA Analysis API Response:', result);
     
-    // Validate response structure
-    if (!result.userStartup || !result.matches || !result.insights) {
-      throw new Error('Invalid response structure from analysis service');
-    }
-
+    // The API route already transforms the response, so return it directly
     return result;
   } catch (error) {
     console.error('DNA Analysis error:', error);

@@ -1,0 +1,246 @@
+{
+    "name": "AI Market Watch - DNA Match Analysis",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "dna-match-analysis",
+          "responseMode": "responseNode",
+          "options": {
+            "cors": {
+              "allowedOrigins": "*"
+            }
+          }
+        },
+        "id": "webhook_receiver",
+        "name": "Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1.1,
+        "position": [250, 300],
+        "webhookId": "dna-match-webhook"
+      },
+      {
+        "parameters": {
+          "text": "={{ $json.body.companyName }}\n{{ $json.body.description }}\n{{ $json.body.category }}\n{{ $json.body.problem }}\n{{ $json.body.solution }}\n{{ $json.body.targetMarket }}\n{{ $json.body.businessModel }}",
+          "options": {
+            "model": "text-embedding-3-small"
+          }
+        },
+        "id": "create_embedding",
+        "name": "OpenAI Embeddings",
+        "type": "n8n-nodes-base.openAi",
+        "typeVersion": 1,
+        "position": [450, 300],
+        "credentials": {
+          "openAiApi": {
+            "id": "1",
+            "name": "OpenAI"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "## Save User Startup to Database",
+          "height": 80,
+          "width": 200
+        },
+        "id": "note_save_startup",
+        "name": "Save User Startup",
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [650, 150]
+      },
+      {
+        "parameters": {
+          "operation": "insert",
+          "schema": "public",
+          "table": "user_startups",
+          "columns": "id,content,metadata,embedding",
+          "additionalFields": {}
+        },
+        "id": "save_user_startup",
+        "name": "Save to user_startups",
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [650, 300],
+        "credentials": {
+          "supabaseApi": {
+            "id": "2",
+            "name": "Supabase"
+          }
+        },
+        "continueOnFail": true
+      },
+      {
+        "parameters": {
+          "jsCode": "// Prepare data for saving\nconst formData = $input.first().json.body;\nconst embedding = $input.first().json.embedding;\n\n// Generate unique ID\nconst userId = `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;\n\n// Prepare content (searchable text)\nconst content = `\nCompany: ${formData.companyName}\nDescription: ${formData.description}\nCategory: ${formData.category}\nProblem: ${formData.problem}\nSolution: ${formData.solution}\nTarget Market: ${formData.targetMarket || ''}\nBusiness Model: ${formData.businessModel || ''}\n`.trim();\n\n// Prepare metadata\nconst metadata = {\n  companyName: formData.companyName,\n  category: formData.category,\n  yearFounded: formData.yearFounded || new Date().getFullYear(),\n  teamSize: formData.teamSize || '',\n  fundingStage: formData.fundingStage || '',\n  location: formData.location || '',\n  source: 'dna-match',\n  timestamp: formData.timestamp || new Date().toISOString(),\n  originalData: formData\n};\n\nreturn {\n  id: userId,\n  content: content,\n  metadata: metadata,\n  embedding: embedding,\n  formData: formData\n};"
+        },
+        "id": "prepare_data",
+        "name": "Prepare Data",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [450, 450]
+      },
+      {
+        "parameters": {
+          "resource": "rpc",
+          "functionName": "match_startup_vectors",
+          "functionArguments": "={{ { \"query_embedding\": $json.embedding, \"match_count\": 5, \"filter\": {} } }}"
+        },
+        "id": "find_similar_startups",
+        "name": "Find Similar Startups",
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [850, 300],
+        "credentials": {
+          "supabaseApi": {
+            "id": "2",
+            "name": "Supabase"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": "gemini-2.0-flash-latest",
+          "messages": {
+            "values": [
+              {
+                "role": "user",
+                "content": "You are analyzing a new startup and comparing it with 5 similar existing startups.\n\nNew Startup:\nCompany: {{ $('Webhook').item.json.body.companyName }}\nDescription: {{ $('Webhook').item.json.body.description }}\nCategory: {{ $('Webhook').item.json.body.category }}\nProblem: {{ $('Webhook').item.json.body.problem }}\nSolution: {{ $('Webhook').item.json.body.solution }}\nTarget Market: {{ $('Webhook').item.json.body.targetMarket }}\nBusiness Model: {{ $('Webhook').item.json.body.businessModel }}\n\nSimilar Startups Found:\n{{ $json.data }}\n\nAnalyze and provide insights in this EXACT JSON format:\n{\n  \"commonPatterns\": [\n    \"4 specific patterns these successful startups share\"\n  ],\n  \"differentiators\": [\n    \"3 unique aspects that make the new startup different\"\n  ],\n  \"opportunities\": [\n    \"4 untapped opportunities based on market gaps\"\n  ],\n  \"recommendations\": [\n    \"4 specific actionable recommendations\"\n  ]\n}\n\nBe specific, mention actual company names when relevant, and make insights actionable. Each array should have exactly the number of items specified."
+              }
+            ]
+          },
+          "options": {
+            "temperature": 0.7,
+            "topP": 0.9
+          }
+        },
+        "id": "gemini_analysis",
+        "name": "Gemini Analysis",
+        "type": "n8n-nodes-base.googleGenerativeAi",
+        "typeVersion": 1,
+        "position": [1050, 300],
+        "credentials": {
+          "googleGenerativeAiApi": {
+            "id": "3",
+            "name": "Google AI"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Parse Gemini response\nconst geminiResponse = $input.first().json.text;\nlet insights;\n\ntry {\n  // Extract JSON from response\n  const jsonMatch = geminiResponse.match(/\\{[\\s\\S]*\\}/);\n  if (jsonMatch) {\n    insights = JSON.parse(jsonMatch[0]);\n  } else {\n    throw new Error('No JSON found in response');\n  }\n} catch (error) {\n  // Fallback insights\n  insights = {\n    commonPatterns: [\n      \"Focus on developer-first products with strong API offerings\",\n      \"Heavy investment in research and open-source contributions\",\n      \"Building platform ecosystems rather than single-point solutions\",\n      \"Strong emphasis on responsible AI and safety measures\"\n    ],\n    differentiators: [\n      \"Your specific focus differentiates you from competitors\",\n      \"The combination of your category with your use case is unique\",\n      \"Your business model approach differs from typical patterns\"\n    ],\n    opportunities: [\n      \"Partner with complementary AI infrastructure companies\",\n      \"Explore enterprise adoption through pilot programs\",\n      \"Build a developer community around your technology\",\n      \"Consider open-sourcing non-core components\"\n    ],\n    recommendations: [\n      \"Study successful community-building strategies\",\n      \"Consider a freemium model to drive adoption\",\n      \"Focus on building technical moats\",\n      \"Prioritize compliance certifications early\"\n    ]\n  };\n}\n\n// Get startup matches from previous node\nconst matches = $('Find Similar Startups').first().json.data || [];\n\n// Format matches for response\nconst formattedMatches = matches.map(match => ({\n  id: match.id,\n  companyName: match.metadata?.companyName || 'Unknown',\n  similarity: match.similarity || 0.85,\n  category: match.metadata?.category || 'AI',\n  description: match.content || '',\n  fundingRaised: match.metadata?.totalFundingRaised || 'N/A',\n  yearFounded: match.metadata?.yearFounded || 2020\n}));\n\n// Get user startup info\nconst userStartupId = $('Prepare Data').first().json.id;\nconst userEmbedding = $('Prepare Data').first().json.embedding;\n\n// Prepare final response\nreturn {\n  userStartup: {\n    id: userStartupId,\n    embedding: userEmbedding\n  },\n  matches: formattedMatches.slice(0, 5),\n  insights: insights\n};"
+        },
+        "id": "format_response",
+        "name": "Format Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [1250, 300]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}",
+          "options": {
+            "responseHeaders": {
+              "entries": [
+                {
+                  "name": "Access-Control-Allow-Origin",
+                  "value": "*"
+                }
+              ]
+            }
+          }
+        },
+        "id": "webhook_response",
+        "name": "Webhook Response",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1,
+        "position": [1450, 300]
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "OpenAI Embeddings",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Embeddings": {
+        "main": [
+          [
+            {
+              "node": "Prepare Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Data": {
+        "main": [
+          [
+            {
+              "node": "Save to user_startups",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Find Similar Startups",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Find Similar Startups": {
+        "main": [
+          [
+            {
+              "node": "Gemini Analysis",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gemini Analysis": {
+        "main": [
+          [
+            {
+              "node": "Format Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format Response": {
+        "main": [
+          [
+            {
+              "node": "Webhook Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "staticData": null,
+    "meta": {
+      "templateId": "dna-match-analysis"
+    },
+    "pinData": {},
+    "versionId": "1.0.0",
+    "triggerCount": 0,
+    "tags": []
+  }

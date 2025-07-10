@@ -30,6 +30,8 @@ interface DNAMatchResultsProps {
       description: string;
       fundingRaised: string;
       yearFounded: number;
+      whySimilar?: string;
+      keyDifferentiators?: string[];
     }>;
     insights: {
       commonPatterns: string[];
@@ -132,6 +134,16 @@ export default function DNAMatchResults({ result, onReset }: DNAMatchResultsProp
                   {match.description}
                 </p>
               </div>
+
+              {/* Why Similar Section */}
+              {match.whySimilar && (
+                <div className="mb-4 p-3 bg-white/5 rounded-lg">
+                  <p className="text-sm text-gray-300">
+                    <span className="font-medium text-white">Why similar: </span>
+                    {match.whySimilar}
+                  </p>
+                </div>
+              )}
 
               {/* Funding Info */}
               {match.fundingRaised && (
