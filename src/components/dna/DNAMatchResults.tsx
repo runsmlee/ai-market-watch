@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Dna,
@@ -15,6 +15,9 @@ import {
   ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
+import CompanyModal from '@/components/company/CompanyModal';
+import { Startup } from '@/types/startup';
+import { fetchStartups } from '@/lib/api';
 
 interface DNAMatchResultsProps {
   result: {
@@ -45,6 +48,40 @@ interface DNAMatchResultsProps {
 
 export default function DNAMatchResults({ result, onReset }: DNAMatchResultsProps) {
   const { matches, insights } = result;
+  const [selectedCompany, setSelectedCompany] = useState<Startup | null>(null);
+  const [loadingCompany, setLoadingCompany] = useState(false);
+  const [allStartups, setAllStartups] = useState<Startup[]>([]);
+
+  // Fetch all startups once to find company details by ID
+  useEffect(() => {
+    const loadStartups = async () => {
+      try {
+        const response = await fetchStartups();
+        const startups = response.transformedData || response.data || [];
+        setAllStartups(startups);
+      } catch (error) {
+        console.error('Failed to load startups:', error);
+      }
+    };
+    loadStartups();
+  }, []);
+
+  const handleCompanyClick = async (companyId: string) => {
+    setLoadingCompany(true);
+    try {
+      // Find the company from our cached startups
+      const company = allStartups.find(s => s.id === companyId);
+      if (company) {
+        setSelectedCompany(company);
+      } else {
+        console.error('Company not found:', companyId);
+      }
+    } catch (error) {
+      console.error('Error loading company:', error);
+    } finally {
+      setLoadingCompany(false);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
@@ -113,8 +150,20 @@ export default function DNAMatchResults({ result, onReset }: DNAMatchResultsProp
             >
               {/* Similarity Badge */}
               <div className="absolute top-4 right-4">
-                <div className="px-3 py-1 bg-white/10 rounded-full">
-                  <span className="text-sm font-medium text-white">
+                <div className={`px-3 py-1 rounded-full ${
+                  match.similarity >= 0.9 
+                    ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30' 
+                    : match.similarity >= 0.8 
+                    ? 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30'
+                    : 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30'
+                }`}>
+                  <span className={`text-sm font-medium ${
+                    match.similarity >= 0.9 
+                      ? 'text-green-400' 
+                      : match.similarity >= 0.8 
+                      ? 'text-blue-400'
+                      : 'text-purple-400'
+                  }`}>
                     {Math.round(match.similarity * 100)}% Match
                   </span>
                 </div>
@@ -135,13 +184,33 @@ export default function DNAMatchResults({ result, onReset }: DNAMatchResultsProp
                 </p>
               </div>
 
-              {/* Why Similar Section */}
+              {/* Similarity Section */}
               {match.whySimilar && (
-                <div className="mb-4 p-3 bg-white/5 rounded-lg">
-                  <p className="text-sm text-gray-300">
-                    <span className="font-medium text-white">Why similar: </span>
-                    {match.whySimilar}
-                  </p>
+                <div className="mb-4 p-3 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg border border-blue-500/20">
+                  <div className="flex items-start gap-2">
+                    <Sparkles className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-xs font-medium text-blue-400 uppercase tracking-wider mb-1">Similarity</p>
+                      <p className="text-sm text-gray-300">
+                        {match.whySimilar}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Key Differentiators */}
+              {match.keyDifferentiators && match.keyDifferentiators.length > 0 && (
+                <div className="mb-4 space-y-2">
+                  <p className="text-xs font-medium text-orange-400 uppercase tracking-wider">Key Differentiators</p>
+                  <ul className="space-y-1">
+                    {match.keyDifferentiators.map((diff, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <Target className="w-3 h-3 text-orange-400 mt-0.5 flex-shrink-0" />
+                        <span className="text-sm text-gray-400">{diff}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               )}
 
@@ -157,17 +226,16 @@ export default function DNAMatchResults({ result, onReset }: DNAMatchResultsProp
                 </div>
               )}
 
-              {/* View Details Link */}
-              <Link
-                href={`/company/${match.id}`}
+              {/* Click overlay for modal */}
+              <button
+                onClick={() => handleCompanyClick(match.id)}
                 className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/0 
                          group-hover:ring-white/10 transition-all duration-300"
-              >
-                <span className="sr-only">View {match.companyName} details</span>
-              </Link>
+                aria-label={`View ${match.companyName} details`}
+              />
               
               <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 
-                            transition-opacity duration-300">
+                            transition-opacity duration-300 pointer-events-none">
                 <ExternalLink className="w-4 h-4 text-gray-400" />
               </div>
             </motion.div>
@@ -289,6 +357,13 @@ export default function DNAMatchResults({ result, onReset }: DNAMatchResultsProp
           <ArrowRight className="w-4 h-4" />
         </Link>
       </motion.div>
+
+      {/* Company Modal */}
+      <CompanyModal
+        company={selectedCompany}
+        isOpen={!!selectedCompany}
+        onClose={() => setSelectedCompany(null)}
+      />
     </div>
   );
 }

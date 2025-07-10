@@ -1,7 +1,8 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import CompanyModal from '@/components/company/CompanyModal'
+import CompanyPageClient from '@/components/company/CompanyPageClient'
 import { fetchStartups } from '@/lib/api'
+import { fetchCompanyFromSupabase, convertSupabaseToStartup } from '@/lib/supabase'
 import { Startup } from '@/types/startup'
 import StructuredData from '@/components/seo/StructuredData'
 
@@ -12,13 +13,26 @@ interface Props {
 // Generate metadata for each company page
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
-    const startupsData = await fetchStartups({}, { useCache: true })
-    const startups = startupsData.transformedData || startupsData.data || []
+    let company: Startup | null = null;
     
-    const company = startups.find((startup: Startup) => 
-      startup.id === params.id || 
-      startup.companyName?.toLowerCase().replace(/\s+/g, '-') === params.id
-    )
+    // Check if ID is numeric (Supabase ID)
+    if (/^\d+$/.test(params.id)) {
+      const supabaseData = await fetchCompanyFromSupabase(params.id)
+      if (supabaseData) {
+        company = convertSupabaseToStartup(params.id, supabaseData)
+      }
+    }
+    
+    // If not found in Supabase or not numeric ID, try Apps Script
+    if (!company) {
+      const startupsData = await fetchStartups({}, { useCache: true })
+      const startups = startupsData.transformedData || startupsData.data || []
+      
+      company = startups.find((startup: Startup) => 
+        startup.id === params.id || 
+        startup.companyName?.toLowerCase().replace(/\s+/g, '-') === params.id
+      )
+    }
 
     if (!company) {
       return {
@@ -94,26 +108,37 @@ export async function generateStaticParams() {
 
 export default async function CompanyPage({ params }: Props) {
   try {
-    const startupsData = await fetchStartups({}, { useCache: true })
-    const startups = startupsData.transformedData || startupsData.data || []
+    let company: Startup | null = null;
     
-    const company = startups.find((startup: Startup) => 
-      startup.id === params.id || 
-      startup.companyName?.toLowerCase().replace(/\s+/g, '-') === params.id
-    )
+    // Check if ID is numeric (Supabase ID)
+    if (/^\d+$/.test(params.id)) {
+      const supabaseData = await fetchCompanyFromSupabase(params.id)
+      if (supabaseData) {
+        company = convertSupabaseToStartup(params.id, supabaseData)
+      }
+    }
+    
+    // If not found in Supabase or not numeric ID, try Apps Script
+    if (!company) {
+      const startupsData = await fetchStartups({}, { useCache: true })
+      const startups = startupsData.transformedData || startupsData.data || []
+      
+      company = startups.find((startup: Startup) => 
+        startup.id === params.id || 
+        startup.companyName?.toLowerCase().replace(/\s+/g, '-') === params.id
+      )
+    }
 
     if (!company) {
       notFound()
     }
 
     return (
-        <div className="min-h-screen bg-gray-950 text-white">
-          <CompanyModal 
-            company={company} 
-            isOpen={true} 
-            onClose={() => window.history.back()} 
-          />
-      </div>
+      <>
+        <StructuredData startup={company} type="organization" />
+        <StructuredData startup={company} type="article" />
+        <CompanyPageClient company={company} />
+      </>
     )
   } catch (error) {
     console.error('Error loading company:', error)

@@ -94,7 +94,7 @@ export default function Header() {
               {/* Logo with subtle glow effect */}
               <div className="absolute inset-0 bg-white/5 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <Image 
-                src="/icon.svg" 
+                src="/ai-market-watch-logo.png" 
                 alt="AI Market Watch Logo" 
                 width={60} 
                 height={60}

@@ -906,11 +906,11 @@ function FundingTab({ company, timelineData }: { company: Startup; timelineData:
             Key Investors
           </h4>
           <div className="space-y-2">
-            {company.keyInvestors?.split(',').slice(0, 4).map((investor, index) => (
+            {(company.keyInvestors?.split(',') || []).slice(0, 4).map((investor, index) => (
               <div key={index} className="flex items-center gap-2 p-2 bg-white/[0.06] border border-white/[0.1] rounded-lg 
                                         hover:bg-white/[0.08] transition-colors duration-200">
                 <div className="w-2 h-2 bg-orange-400 rounded-full" />
-                <span className="text-sm text-white">{investor.trim()}</span>
+                <span className="text-sm text-white">{typeof investor === 'string' ? investor.trim() : investor}</span>
               </div>
             )) || []}
           </div>

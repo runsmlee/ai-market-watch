@@ -15,7 +15,8 @@ import {
   Brain,
   Mail,
   Download,
-  Lock
+  Lock,
+  ExternalLink
 } from 'lucide-react';
 import { analyzeDNA } from '@/lib/dna-analysis';
 
@@ -135,6 +136,11 @@ export default function DNAMatchModal({ isOpen, onClose }: DNAMatchModalProps) {
     setError(null);
   };
 
+  const handleCompanyClick = (companyId: string) => {
+    // Open in new tab for better UX and SEO
+    window.open(`/company/${companyId}`, '_blank');
+  };
+
   const isFormValid = () => {
     return formData.companyName && 
            formData.description && 
@@ -146,9 +152,10 @@ export default function DNAMatchModal({ isOpen, onClose }: DNAMatchModalProps) {
   if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
+    <>
+      <AnimatePresence>
+        {isOpen && (
+          <>
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -385,26 +392,47 @@ export default function DNAMatchModal({ isOpen, onClose }: DNAMatchModalProps) {
                         </div>
 
                         {/* Top 3 Matches */}
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                           {analysisResult.matches.slice(0, 3).map((match: any, index: number) => (
-                            <div
+                            <motion.button
                               key={match.id}
-                              className="bg-white/[0.06] border border-white/[0.12] rounded-lg p-4"
+                              onClick={() => handleCompanyClick(match.id)}
+                              className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl p-5 
+                                       hover:bg-white/[0.06] hover:border-white/[0.15] transition-all duration-200
+                                       text-left group cursor-pointer"
+                              whileHover={{ scale: 1.01 }}
+                              whileTap={{ scale: 0.99 }}
                             >
-                              <div className="flex items-start justify-between">
-                                <div>
-                                  <h4 className="text-lg font-semibold text-white">
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex-1">
+                                  <h4 className="text-lg font-semibold text-white group-hover:text-orange-400 transition-colors">
                                     {match.companyName}
                                   </h4>
-                                  <p className="text-sm text-gray-400 mt-1">
+                                  <p className="text-sm text-gray-500 mt-0.5">
                                     {match.category} • {Math.round(match.similarity * 100)}% Match
                                   </p>
                                 </div>
-                                <div className="text-2xl font-bold text-gray-600">
+                                <div className="text-3xl font-bold text-gray-700">
                                   #{index + 1}
                                 </div>
                               </div>
-                            </div>
+                              
+                              {/* Simplified Similarity Section */}
+                              {match.whySimilar && (
+                                <div className="bg-gradient-to-r from-blue-500/5 to-purple-500/5 rounded-lg p-3 border border-white/[0.05]">
+                                  <p className="text-xs font-medium text-blue-300 uppercase tracking-wider mb-1">Similarity</p>
+                                  <p className="text-sm text-gray-300 leading-relaxed line-clamp-2">
+                                    {match.whySimilar}
+                                  </p>
+                                </div>
+                              )}
+                              
+                              {/* Hover indicator */}
+                              <div className="mt-3 flex items-center gap-2 text-xs text-gray-500 group-hover:text-gray-400 transition-colors">
+                                <ExternalLink className="w-3 h-3" />
+                                <span>Open in new tab</span>
+                              </div>
+                            </motion.button>
                           ))}
                         </div>
 
@@ -551,7 +579,9 @@ export default function DNAMatchModal({ isOpen, onClose }: DNAMatchModalProps) {
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+      </AnimatePresence>
+      
+    </>
   );
 }
 
