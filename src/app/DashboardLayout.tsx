@@ -26,6 +26,23 @@ export default function DashboardLayout() {
   const [showFilterSidebar, setShowFilterSidebar] = useState(true);
   const [mobileTab, setMobileTab] = useState('home');
 
+  const {
+    allStartups,
+    filteredStartups,
+    filters,
+    updateFilters,
+    loading,
+    error,
+    setStartups,
+    setLoading,
+    setError,
+    refreshData,
+    getFilterMetadata,
+    sidebarCollapsed,
+    toggleSidebar,
+    isVectorSearchActive,
+  } = useDashboardStore();
+
   useEffect(() => {
     setMounted(true);
     
@@ -68,23 +85,6 @@ export default function DashboardLayout() {
       console.log('🔧 Debug utilities added to window.debugDashboard');
     }
   }, [getFilterMetadata]);
-
-  const {
-    allStartups,
-    filteredStartups,
-    filters,
-    updateFilters,
-    loading,
-    error,
-    setStartups,
-    setLoading,
-    setError,
-    refreshData,
-    getFilterMetadata,
-    sidebarCollapsed,
-    toggleSidebar,
-    isVectorSearchActive,
-  } = useDashboardStore();
 
   // Initialize data
   useEffect(() => {
@@ -141,7 +141,7 @@ export default function DashboardLayout() {
     };
 
     initializeData();
-  }, [mounted, isInitialized, setStartups, setLoading, setError]);
+  }, [mounted, isInitialized, setStartups, setLoading, setError, getFilterMetadata]);
 
   const filterMetadata = React.useMemo(() => {
     // Force refresh if we have data but empty metadata

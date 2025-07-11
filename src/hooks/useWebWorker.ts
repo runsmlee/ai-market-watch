@@ -20,6 +20,8 @@ export function useWebWorker({ workerPath, onMessage, onError }: UseWebWorkerOpt
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    const currentCallbacks = callbacksRef.current;
+
     try {
       workerRef.current = new Worker(workerPath);
       
@@ -33,10 +35,10 @@ export function useWebWorker({ workerPath, onMessage, onError }: UseWebWorkerOpt
         }
         
         // Handle callbacks
-        const callback = callbacksRef.current.get(type);
+        const callback = currentCallbacks.get(type);
         if (callback) {
           callback(data);
-          callbacksRef.current.delete(type);
+          currentCallbacks.delete(type);
         }
         
         // Call general message handler
@@ -54,7 +56,6 @@ export function useWebWorker({ workerPath, onMessage, onError }: UseWebWorkerOpt
     }
 
     return () => {
-      const currentCallbacks = callbacksRef.current;
       if (workerRef.current) {
         workerRef.current.terminate();
         workerRef.current = null;
