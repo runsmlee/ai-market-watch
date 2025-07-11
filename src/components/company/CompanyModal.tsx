@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { X, ExternalLink, Building2, TrendingUp, Users, Target, Shield, Lightbulb, Award, Globe, DollarSign, Calendar, Star, BarChart3, ChevronRight } from 'lucide-react';
 import { Startup } from '@/types/startup';
-import { getCachedLogo, setCachedLogo } from '@/lib/logoCache';
+import CompanyLogo from './CompanyLogo';
 import {
   RadarChart,
   PolarGrid,
@@ -33,107 +33,6 @@ interface CompanyModalProps {
   onClose: () => void;
 }
 
-// Logo loading hook
-function useCompanyLogo(webpage: string | undefined, companyName: string) {
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasError, setHasError] = useState(false);
-
-  useEffect(() => {
-    if (!webpage) return;
-
-    setIsLoading(true);
-    setHasError(false);
-    setLogoUrl(null);
-
-    const domain = extractDomain(webpage);
-    if (!domain) {
-      setIsLoading(false);
-      setHasError(true);
-      return;
-    }
-
-    // Check cache first
-    const cachedLogo = getCachedLogo(domain);
-    if (cachedLogo) {
-      setLogoUrl(cachedLogo);
-      setIsLoading(false);
-      return;
-    }
-
-    // Try multiple logo sources with fallbacks
-    tryMultipleLogoSources(domain, companyName)
-      .then(url => {
-        setLogoUrl(url);
-        setCachedLogo(domain, url); // Cache the successful result
-        setIsLoading(false);
-      })
-      .catch(() => {
-        setHasError(true);
-        setIsLoading(false);
-      });
-  }, [webpage, companyName]);
-
-  return { logoUrl, isLoading, hasError };
-}
-
-// Extract domain from URL
-function extractDomain(url: string): string | null {
-  try {
-    const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
-    return urlObj.hostname.replace('www.', '');
-  } catch {
-    return null;
-  }
-}
-
-// Try multiple logo sources with fallbacks
-async function tryMultipleLogoSources(domain: string, companyName: string): Promise<string> {
-  const sources = [
-    // Google's high-quality favicon service (most reliable)
-    `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
-    // DuckDuckGo favicon service (good fallback)
-    `https://icons.duckduckgo.com/ip3/${domain}.ico`,
-    // Direct favicon from domain
-    `https://${domain}/favicon.ico`,
-    // Alternative favicon paths
-    `https://${domain}/favicon.png`,
-    `https://${domain}/apple-touch-icon.png`,
-  ];
-
-  for (const source of sources) {
-    try {
-      const isValid = await validateImageUrl(source);
-      if (isValid) return source;
-    } catch {
-      continue;
-    }
-  }
-
-  throw new Error('No valid logo found');
-}
-
-// Validate if image URL is accessible and valid
-function validateImageUrl(url: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    const timeout = setTimeout(() => {
-      resolve(false);
-    }, 3000); // 3 second timeout
-
-    img.onload = () => {
-      clearTimeout(timeout);
-      resolve(img.width > 16 && img.height > 16); // Ensure it's not a tiny placeholder
-    };
-    
-    img.onerror = () => {
-      clearTimeout(timeout);
-      resolve(false);
-    };
-    
-    img.src = url;
-  });
-}
 
 // Enhanced VC scoring based on actual data patterns
 function generateVCRadarData(company: Startup) {
@@ -468,7 +367,6 @@ function generateCompetitiveData(company: Startup) {
 
 export default function CompanyModal({ company, isOpen, onClose }: CompanyModalProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'analysis' | 'funding'>('overview');
-  const { logoUrl } = useCompanyLogo(company?.webpage, company?.companyName || '');
 
   const radarData = company ? generateVCRadarData(company) : [];
   const timelineData = company ? generateFundingTimelineData(company) : [];
@@ -529,28 +427,7 @@ export default function CompanyModal({ company, isOpen, onClose }: CompanyModalP
           <div className="flex items-center justify-between p-3 sm:p-4 border-b border-white/[0.08] 
                          bg-white/[0.02] backdrop-blur-sm flex-shrink-0 rounded-t-xl sm:rounded-t-2xl">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-              <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl overflow-hidden 
-                             bg-white/[0.06] border border-white/[0.12] flex-shrink-0">
-                {logoUrl ? (
-                  <img 
-                    src={logoUrl} 
-                    alt={`${company.companyName} logo`}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      target.nextElementSibling?.setAttribute('style', 'display: flex');
-                    }}
-                  />
-                ) : null}
-                <div 
-                  className="w-full h-full bg-gradient-to-br from-white/[0.1] to-white/[0.05] 
-                           flex items-center justify-center"
-                  style={{ display: logoUrl ? 'none' : 'flex' }}
-                >
-                  <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-white/60" />
-                </div>
-              </div>
+              <CompanyLogo company={company} size="md" />
               
               <div className="min-w-0 flex-1">
                 <h2 className="text-base sm:text-lg font-bold text-white truncate">{company.companyName}</h2>

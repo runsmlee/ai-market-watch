@@ -1,33 +1,98 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { generateDNAMatchPDF } from '@/lib/pdf-generator';
+import { sendDNAMatchEmail, createDNAMatchEmailTemplate } from '@/lib/email';
+import { saveDNAMatchReport, uploadPDFToStorage } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
     const { email, analysisResult, formData } = await request.json();
     
-    // Store email in database (you'll implement this with Supabase)
-    // For now, just log it
-    console.log('Email collected:', {
+    console.log('Received DNA report request for:', {
       email,
       company: formData.companyName,
       timestamp: new Date().toISOString()
     });
+
+    // Extract the actual result from the n8n response
+    console.log('Analysis result structure:', JSON.stringify(analysisResult, null, 2).slice(0, 500) + '...');
+    const actualResult = Array.isArray(analysisResult) 
+      ? analysisResult[0]?.output 
+      : analysisResult.output || analysisResult;
     
-    // In production, you would:
-    // 1. Store email in Supabase emails table
-    // 2. Generate PDF report
-    // 3. Send email via SendGrid/Resend/etc.
-    // 4. Track analytics
+    if (!actualResult || !actualResult.matches) {
+      throw new Error('Invalid analysis result structure');
+    }
+
+    // Generate PDF report
+    console.log('Generating PDF report...');
+    const pdfBuffer = await generateDNAMatchPDF({
+      companyName: formData.companyName,
+      companyData: formData,
+      analysisResult: actualResult,
+    });
+
+    // Upload PDF to Supabase Storage
+    const fileName = `dna-reports/${formData.companyName.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.pdf`;
+    console.log('Uploading PDF to storage...');
+    const pdfUrl = await uploadPDFToStorage(pdfBuffer, fileName);
+
+    // Save report metadata to database
+    console.log('Saving report to database...');
+    await saveDNAMatchReport({
+      email,
+      companyName: formData.companyName,
+      companyData: formData,
+      analysisResults: analysisResult,
+      pdfUrl,
+    });
+
+    // Prepare email data
+    const emailData = {
+      companyName: formData.companyName,
+      topMatches: (actualResult?.matches || []).map((match: any) => ({
+        companyName: match.company_name,
+        similarity: match.similarity_score,
+        category: match.category,
+      })),
+      reportUrl: pdfUrl,
+    };
+
+    // Create email HTML
+    const emailHtml = createDNAMatchEmailTemplate(emailData);
+
+    // Send email with PDF attachment
+    console.log('Sending email...');
+    const emailResult = await sendDNAMatchEmail({
+      to: email,
+      subject: `Your AI Startup DNA Analysis Report - ${formData.companyName}`,
+      html: emailHtml,
+      attachments: pdfUrl ? undefined : [{
+        filename: `${formData.companyName}-DNA-Analysis.pdf`,
+        content: pdfBuffer,
+        contentType: 'application/pdf',
+      }],
+    });
+
+    if (!emailResult.success) {
+      throw new Error(`Email sending failed: ${emailResult.error}`);
+    }
+
+    console.log('DNA report sent successfully!');
     
-    // Mock response
     return NextResponse.json({
       success: true,
-      message: 'Report sent successfully'
+      message: 'Report sent successfully',
+      pdfUrl,
+      emailMessageId: emailResult.messageId,
     });
     
   } catch (error) {
-    console.error('Email sending error:', error);
+    console.error('Error processing DNA report:', error);
     return NextResponse.json(
-      { error: 'Failed to send report' },
+      { 
+        error: 'Failed to send report',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

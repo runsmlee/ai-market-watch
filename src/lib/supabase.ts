@@ -484,3 +484,86 @@ export async function searchCompanies(searchTerm: string, limit: number = 20) {
     return null;
   }
 }
+
+// Function to save DNA match report
+export async function saveDNAMatchReport({
+  email,
+  companyName,
+  companyData,
+  analysisResults,
+  pdfUrl,
+}: {
+  email: string;
+  companyName: string;
+  companyData: any;
+  analysisResults: any;
+  pdfUrl?: string;
+}) {
+  try {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      console.error('Supabase client not initialized');
+      return null;
+    }
+    
+    const { data, error } = await supabase
+      .from('dna_match_reports')
+      .insert({
+        email,
+        company_name: companyName,
+        company_data: companyData,
+        analysis_results: analysisResults,
+        pdf_url: pdfUrl,
+        email_sent_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error saving DNA match report:', error);
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error in saveDNAMatchReport:', error);
+    return null;
+  }
+}
+
+// Function to upload PDF to Supabase Storage
+export async function uploadPDFToStorage(
+  pdfBuffer: Buffer,
+  fileName: string
+): Promise<string | null> {
+  try {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      console.error('Supabase client not initialized');
+      return null;
+    }
+    
+    const { data, error } = await supabase.storage
+      .from('dna-reports')
+      .upload(fileName, pdfBuffer, {
+        contentType: 'application/pdf',
+        cacheControl: '3600',
+        upsert: false,
+      });
+    
+    if (error) {
+      console.error('Error uploading PDF:', error);
+      return null;
+    }
+    
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('dna-reports')
+      .getPublicUrl(fileName);
+    
+    return publicUrl;
+  } catch (error) {
+    console.error('Error in uploadPDFToStorage:', error);
+    return null;
+  }
+}

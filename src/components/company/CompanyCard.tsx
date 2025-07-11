@@ -1,10 +1,9 @@
 'use client';
 
 import React, { memo } from 'react';
-import Image from 'next/image';
-import { MapPin, DollarSign, Calendar, Users, ExternalLink, Building2 } from 'lucide-react';
+import { MapPin, DollarSign, Calendar, Users, ExternalLink } from 'lucide-react';
 import { Startup } from '../../types/startup';
-import { getCachedLogo, setCachedLogo } from '../../lib/logoCache';
+import CompanyLogo from './CompanyLogo';
 
 interface CompanyCardProps {
   company: Startup;
@@ -20,77 +19,6 @@ const truncateText = (text: string, maxLength: number): string => {
   if (text.length <= maxLength) return text;
   return text.substring(0, maxLength) + '...';
 };
-
-// Extract domain from company name or website for logo fetching
-const getCompanyDomain = (company: Startup): string => {
-  if (company.webpage) {
-    try {
-      const url = new URL(company.webpage.startsWith('http') ? company.webpage : `https://${company.webpage}`);
-      return url.hostname.replace('www.', '');
-    } catch {
-      // If website URL is invalid, fallback to company name
-    }
-  }
-  
-  // Generate a domain-like string from company name
-  const companyName = company.companyName || 'unknown';
-  const domain = companyName
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, '')
-    .substring(0, 20);
-  
-  return domain ? `${domain}.com` : 'unknown.com';
-};
-
-// Logo component with fallback
-const CompanyLogo = memo(({ company }: { company: Startup }) => {
-  const domain = getCompanyDomain(company);
-  const cachedLogo = getCachedLogo(domain);
-  
-  // Try to get logo from various sources
-  const logoSources = [
-    cachedLogo,
-    `https://logo.clearbit.com/${domain}`,
-    `https://www.google.com/s2/favicons?domain=${domain}&sz=64`,
-  ].filter(Boolean);
-
-  const handleLogoLoad = (src: string) => {
-    if (!cachedLogo && src) {
-      setCachedLogo(domain, src);
-    }
-  };
-
-  const handleLogoError = () => {
-    // Could implement fallback logic here
-  };
-
-  if (logoSources.length === 0) {
-    return (
-      <div className="w-10 h-10 bg-white/[0.06] border border-white/[0.1] 
-                     rounded-lg flex items-center justify-center flex-shrink-0">
-        <Building2 className="w-5 h-5 text-white/70" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="w-10 h-10 bg-white/[0.06] border border-white/[0.1] 
-                   rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
-      <Image
-        src={logoSources[0]}
-        alt={`${company.companyName} logo`}
-        width={32}
-        height={32}
-        className="object-contain"
-        onLoad={() => handleLogoLoad(logoSources[0])}
-        onError={handleLogoError}
-        unoptimized // For external logos that might not work with Next.js optimization
-      />
-    </div>
-  );
-});
-
-CompanyLogo.displayName = 'CompanyLogo';
 
 const CompanyCard = memo(({ company, onClick }: CompanyCardProps) => {
   // Debug log to check received data
