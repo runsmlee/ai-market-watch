@@ -58,6 +58,8 @@ export async function GET(request: NextRequest) {
     
     console.log(`✅ Successfully fetched ${supabaseData.length} startups from Supabase`);
     
+
+    
     // Return data
     return NextResponse.json({
       success: true,

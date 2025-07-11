@@ -126,6 +126,8 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       firstStartup: startups[0]
     });
     
+
+    
     // Get current filters and sort function
     const { filters, sortStartups } = get();
     
@@ -561,43 +563,29 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
         matchType: r.matchType
       })));
       
-      // Convert search results to Startup format
-      const vectorResults = searchResponse.data.map(result => ({
-        id: result.id || '',
-        companyName: result.companyName || '',
-        description: result.description || '',
-        location: result.location || '',
-        category: result.category || '',
-        totalFundingRaised: result.totalFundingRaised || '',
-        yearFounded: result.yearFounded || 0,
-        vectorSimilarity: result.vectorSimilarity,
-        matchType: result.matchType,
-        // Fill in other required fields with defaults
-        ceo: '',
-        previousExperience: '',
-        keyMembers: '',
-        teamSize: '',
-        webpage: '',
-        currentStage: '',
-        targetCustomer: '',
-        mainValueProposition: '',
-        keyProducts: '',
-        industryVerticals: '',
-        uvp: '',
-        technologicalAdvantage: '',
-        patents: '',
-        keyPartnerships: '',
-        competitors: '',
-        differentiation: '',
-        marketPositioning: '',
-        geographicFocus: '',
-        latestFundingRound: '',
-        keyInvestors: '',
-        growthMetrics: '',
-        notableCustomers: '',
-        majorMilestones: '',
-        updatedDate: '',
-      } as Startup & { vectorSimilarity?: number; matchType?: string }));
+      // 🔧 FIX: Use search results directly instead of overriding with empty strings
+      // searchResponse.data already contains all the fields from SearchResult (extends Startup)
+      const vectorResults = searchResponse.data;
+      
+      // 🔍 COMPREHENSIVE: Log ALL fields to check for missing data
+      if (vectorResults.length > 0) {
+        const first = vectorResults[0];
+        console.log('📊 Complete search result data check (32 fields):');
+        console.log('Basic Info:', { id: first.id, companyName: first.companyName, location: first.location, category: first.category });
+        console.log('Team:', { ceo: first.ceo, previousExperience: first.previousExperience, keyMembers: first.keyMembers, teamSize: first.teamSize });
+        console.log('Business:', { description: first.description, currentStage: first.currentStage, targetCustomer: first.targetCustomer, mainValueProposition: first.mainValueProposition });
+        console.log('Products:', { keyProducts: first.keyProducts, industryVerticals: first.industryVerticals, uvp: first.uvp });
+        console.log('Tech:', { technologicalAdvantage: first.technologicalAdvantage, patents: first.patents, keyPartnerships: first.keyPartnerships });
+        console.log('Competition:', { competitors: first.competitors, differentiation: first.differentiation, marketPositioning: first.marketPositioning, geographicFocus: first.geographicFocus });
+        console.log('Funding:', { totalFundingRaised: first.totalFundingRaised, latestFundingRound: first.latestFundingRound, keyInvestors: first.keyInvestors });
+        console.log('Growth:', { growthMetrics: first.growthMetrics, notableCustomers: first.notableCustomers, majorMilestones: first.majorMilestones });
+        console.log('Meta:', { webpage: first.webpage, yearFounded: first.yearFounded, updatedDate: first.updatedDate, postingStatus: first.postingStatus });
+        
+        // Count undefined/null/empty fields
+        const allFields = Object.entries(first);
+        const emptyFields = allFields.filter(([key, value]) => !value || value === '').map(([key]) => key);
+        console.log(`❌ Empty/missing fields (${emptyFields.length}/${allFields.length}):`, emptyFields);
+      }
       
       // Apply year filter if needed
       const yearFiltered = vectorResults.filter(startup => {

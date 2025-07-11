@@ -287,6 +287,7 @@ export function convertStartupDetailsToStartup(data: any): Startup | null {
       majorMilestones: data.major_milestones || '',
       category: data.category || '',
       updatedDate: data.updated_date || '',
+      postingStatus: data.posting || '', // 🔧 FIX: Added missing postingStatus field
     };
     
     return startup;

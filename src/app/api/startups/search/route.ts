@@ -222,12 +222,16 @@ async function performVectorSearch(
         vector_similarity: item.vector_similarity,
         category: item.category
       })));
+      
+
     }
 
     // Use the same conversion function as regular startup fetch for consistency
-    return (data || []).map((item: any) => {
+    return (data || []).map((item: any, index: number) => {
       const convertedStartup = convertStartupDetailsToStartup(item);
       if (convertedStartup) {
+
+        
         // Add vector-specific properties
         return {
           ...convertedStartup,

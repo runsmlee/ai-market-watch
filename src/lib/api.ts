@@ -83,6 +83,8 @@ export async function fetchStartups(
     // Always transform the data to ensure consistent field names
     const transformedStartups = transformApiDataToStartups(data.data || []);
     
+
+    
     console.log('🔄 Data transformed successfully:', {
       source: data.source || 'google-apps-script',
       originalLength: (data.data || []).length,
