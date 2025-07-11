@@ -3,12 +3,12 @@ import { Startup, StartupFilters, DashboardStats, SortOption } from '@/types/sta
 import { calculateDashboardStats } from '@/lib/statistics';
 import { fetchStartups } from '@/lib/api';
 import { DataCache, CACHE_KEYS } from '@/lib/cache';
-import { searchCompanies } from '@/lib/search';
+import { searchCompanies, SearchResult } from '@/lib/search';
 
 interface DashboardState {
   // Data
-  allStartups: Startup[];
-  filteredStartups: Startup[];
+  allStartups: (Startup | SearchResult)[];
+  filteredStartups: (Startup | SearchResult)[];
   stats: DashboardStats;
   loading: boolean;
   error: string | null;
@@ -25,11 +25,11 @@ interface DashboardState {
   processingTask: string | null;
   
   // Actions
-  setStartups: (startups: Startup[], lastUpdated?: string, isFromCache?: boolean) => void;
+  setStartups: (startups: (Startup | SearchResult)[], lastUpdated?: string, isFromCache?: boolean) => void;
   updateFilters: (filters: Partial<StartupFilters>) => void;
   applyFilters: () => Promise<void>;
   performVectorSearch: (query?: string) => Promise<void>;
-  sortStartups: (startups: Startup[], sortBy: SortOption) => Startup[];
+  sortStartups: (startups: (Startup | SearchResult)[], sortBy: SortOption) => (Startup | SearchResult)[];
   clearFilters: () => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -39,9 +39,9 @@ interface DashboardState {
   toggleSidebar: () => void;
   
   // Web Worker actions
-  processDataInBackground: (data: any[]) => Promise<Startup[]>;
-  calculateStatsInBackground: (companies: Startup[]) => Promise<DashboardStats>;
-  filterInBackground: (companies: Startup[], filters: StartupFilters) => Promise<Startup[]>;
+  processDataInBackground: (data: any[]) => Promise<(Startup | SearchResult)[]>;
+  calculateStatsInBackground: (companies: (Startup | SearchResult)[]) => Promise<DashboardStats>;
+  filterInBackground: (companies: (Startup | SearchResult)[], filters: StartupFilters) => Promise<(Startup | SearchResult)[]>;
 }
 
 // Web Worker instance (singleton)
@@ -336,7 +336,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     
     // During vector search, preserve similarity order
     const { isVectorSearchActive } = get();
-    if (isVectorSearchActive && sorted.length > 0 && sorted[0].vectorSimilarity !== undefined) {
+    if (isVectorSearchActive && sorted.length > 0 && 'vectorSimilarity' in sorted[0] && (sorted[0] as SearchResult).vectorSimilarity !== undefined) {
       // Keep the original order from vector search (already sorted by similarity)
       return sorted;
     }
@@ -488,7 +488,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   })),
   
   // Web Worker methods
-  processDataInBackground: async (data: any[]): Promise<Startup[]> => {
+  processDataInBackground: async (data: any[]): Promise<(Startup | SearchResult)[]> => {
     try {
       return await postWorkerMessage('PROCESS_STARTUPS', data);
     } catch (error) {
@@ -496,7 +496,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     }
   },
   
-  calculateStatsInBackground: async (companies: Startup[]): Promise<DashboardStats> => {
+  calculateStatsInBackground: async (companies: (Startup | SearchResult)[]): Promise<DashboardStats> => {
     try {
       return await postWorkerMessage('CALCULATE_STATISTICS', companies);
     } catch (error) {
@@ -504,7 +504,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     }
   },
   
-  filterInBackground: async (companies: Startup[], filters: StartupFilters): Promise<Startup[]> => {
+  filterInBackground: async (companies: (Startup | SearchResult)[], filters: StartupFilters): Promise<(Startup | SearchResult)[]> => {
     try {
       // Convert Set to Array for worker
       const serializedFilters = {
