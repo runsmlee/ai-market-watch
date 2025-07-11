@@ -1,0 +1,27 @@
+{
+  "name": "AI Market Watch",
+  "short_name": "AI Market Watch",
+  "description": "Venture capital analysis dashboard for evaluating AI startups using VC-grade investment metrics",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0F172A",
+  "background_color": "#0F172A",
+  "icons": [
+    {
+      "src": "/logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "finance", "productivity"],
+  "lang": "en",
+  "dir": "ltr"
+}

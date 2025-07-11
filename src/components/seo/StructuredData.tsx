@@ -8,7 +8,7 @@ interface StructuredDataProps {
 
 export function StructuredData({ startup, type = 'website' }: StructuredDataProps) {
   const generateStructuredData = () => {
-    const baseUrl = 'https://ai-market-watch.com'
+    const baseUrl = 'https://ai-market-watch.xyz'
 
     if (startup && type === 'organization') {
       return {

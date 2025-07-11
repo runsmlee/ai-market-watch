@@ -19,7 +19,7 @@ export function MetaTags({
   canonical,
   image,
 }: MetaTagsProps) {
-  const baseUrl = 'https://ai-market-watch.com'
+  const baseUrl = 'https://ai-market-watch.xyz'
   
   const metaTitle = startup 
     ? `${startup.companyName} - AI Startup Profile | AI Market Watch`
