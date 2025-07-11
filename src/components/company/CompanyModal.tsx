@@ -409,9 +409,9 @@ export default function CompanyModal({ company, isOpen, onClose }: CompanyModalP
       onWheel={(e) => e.stopPropagation()}
       onTouchMove={(e) => e.stopPropagation()}
     >
-      {/* Background overlay - 더 강한 배경으로 모달 식별력 향상 */}
+      {/* Background overlay - 세련된 다크 오버레이 */}
       <div 
-        className="absolute inset-0 bg-black/70 backdrop-blur-md"
+        className="absolute inset-0 bg-black/85 backdrop-blur-md"
         onClick={onClose}
       />
       
@@ -420,25 +420,26 @@ export default function CompanyModal({ company, isOpen, onClose }: CompanyModalP
         <div 
           className="relative w-full max-w-6xl rounded-xl sm:rounded-2xl 
                      max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] flex flex-col
-                     glass-strong backdrop-blur-xl shadow-2xl shadow-black/50"
+                     bg-black/90 backdrop-blur-xl shadow-2xl shadow-black/60
+                     border border-white/[0.15]"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Compact Header */}
           <div className="flex items-center justify-between p-3 sm:p-4 border-b border-white/[0.08] 
-                         bg-white/[0.02] backdrop-blur-sm flex-shrink-0 rounded-t-xl sm:rounded-t-2xl">
+                         bg-black/30 backdrop-blur-sm flex-shrink-0 rounded-t-xl sm:rounded-t-2xl">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
               <CompanyLogo company={company} size="md" />
               
               <div className="min-w-0 flex-1">
                 <h2 className="text-base sm:text-lg font-bold text-white truncate">{company.companyName}</h2>
                 <div className="flex items-center gap-1 sm:gap-2 text-xs text-white/60">
-                  <span className="px-1.5 sm:px-2 py-0.5 bg-white/[0.08] border border-white/[0.12] 
-                                 rounded-full truncate max-w-[100px] sm:max-w-none">
+                  <span className="px-1.5 sm:px-2 py-0.5 bg-white/[0.06] border border-white/[0.12] 
+                                 rounded-full truncate max-w-[100px] sm:max-w-none text-white/70">
                     {company.category}
                   </span>
                   {company.totalFundingRaised && (
-                    <span className="hidden sm:inline px-2 py-0.5 bg-orange-500/[0.15] text-orange-300 
-                                   rounded-full border border-orange-500/[0.25]">
+                    <span className="hidden sm:inline px-2 py-0.5 bg-white/[0.06] text-white/80 
+                                   rounded-full border border-white/[0.12]">
                       {company.totalFundingRaised}
                     </span>
                   )}
@@ -452,12 +453,12 @@ export default function CompanyModal({ company, isOpen, onClose }: CompanyModalP
                        border border-white/[0.12] hover:border-white/[0.16] flex items-center justify-center
                        transition-all duration-200 flex-shrink-0"
             >
-              <X className="w-4 h-4 text-white/70" />
+              <X className="w-4 h-4 text-white/70 hover:text-white/90" />
             </button>
           </div>
 
           {/* Compact Tab Navigation */}
-          <div className="flex border-b border-white/[0.08] bg-white/[0.02] backdrop-blur-sm flex-shrink-0">
+          <div className="flex border-b border-white/[0.08] bg-black/20 backdrop-blur-sm flex-shrink-0">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
@@ -467,7 +468,7 @@ export default function CompanyModal({ company, isOpen, onClose }: CompanyModalP
                   className={`flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 px-4 sm:px-4 py-4 sm:py-4 text-sm sm:text-sm font-medium whitespace-nowrap
                             transition-all duration-200 min-w-0 flex-1 ${
                             activeTab === tab.id
-                              ? 'text-white bg-white/[0.08] border-b-2 border-orange-400'
+                              ? 'text-white bg-white/[0.08] border-b-2 border-white/50'
                               : 'text-white/60 hover:text-white/80 hover:bg-white/[0.04]'
                           }`}
                 >
@@ -480,7 +481,7 @@ export default function CompanyModal({ company, isOpen, onClose }: CompanyModalP
 
           {/* Content Area */}
           <div 
-            className="flex-1 overflow-auto p-3 sm:p-4 min-h-0 bg-white/[0.01]"
+            className="flex-1 overflow-auto p-3 sm:p-4 min-h-0 bg-black/10"
             onWheel={(e) => {
               // 모달 내부에서만 스크롤 허용
               e.stopPropagation();
@@ -654,9 +655,9 @@ function VCAnalysisTab({ company, radarData }: { company: Startup; radarData: an
                 <RadarTyped
                   name="Investment Score"
                   dataKey="A"
-                  stroke="#f97316"
-                  fill="#f97316"
-                  fillOpacity={0.2}
+                  stroke="#d1d5db"
+                  fill="#9ca3af"
+                  fillOpacity={0.15}
                   strokeWidth={2}
                 />
               </RadarChart>
@@ -760,14 +761,14 @@ function FundingTab({ company, timelineData }: { company: Startup; timelineData:
                 <YAxisTyped tick={{ fontSize: 10, fill: '#ffffff80' }} />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: 'rgb(var(--surface-secondary))', 
-                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.9)', 
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
                     borderRadius: '8px',
                     fontSize: '12px',
                     backdropFilter: 'blur(12px)'
                   }}
                 />
-                <BarTyped dataKey="amount" fill="#f97316" radius={[2, 2, 0, 0]} />
+                <BarTyped dataKey="amount" fill="#9ca3af" radius={[2, 2, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
