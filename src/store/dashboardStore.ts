@@ -124,13 +124,8 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
 
   setStartups: (startups, lastUpdated, isFromCache = false) => {
     // Don't override if vector search is active
-    const { isVectorSearchActive, filteredStartups } = get();
+    const { isVectorSearchActive } = get();
     if (isVectorSearchActive) {
-      console.log('🛡️ Vector search active, preventing data override in setStartups');
-      console.log('Keeping vector results:', filteredStartups.length, 'companies');
-      if (filteredStartups.length > 0) {
-        console.log('Current vector results sample:', filteredStartups.slice(0, 3).map(s => s.companyName));
-      }
       return;
     }
     
@@ -192,22 +187,15 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       isFromCache 
     });
     
-    console.log('✅ Startups loaded:', startups.length, 'total,', sorted.length, 'after filters');
   },
 
   updateFilters: async (newFilters) => {
-    console.log('🔧 Updating filters:', newFilters);
-    
     const currentState = get();
     
-    // 🛡️ CRITICAL: During vector search, only allow clearing search filter
+    // During vector search, only allow clearing search filter
     if (currentState.isVectorSearchActive) {
-      console.log('🛡️ Vector search active - checking filter update');
-      
       // Only process if search is being cleared
       if ('search' in newFilters && newFilters.search === '') {
-        console.log('🛡️ Search cleared - deactivating vector search');
-        
         // Reset to full data when clearing vector search
         set({ 
           isVectorSearchActive: false,
@@ -221,7 +209,6 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       }
       
       // Block all other filter updates during vector search
-      console.log('🛡️ Blocking filter update during vector search');
       return;
     }
     
@@ -239,27 +226,11 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     
     // Don't apply text-based filtering when vector search is active
     if (isVectorSearchActive) {
-      console.log('🛡️ Vector search active, skipping text-based filtering');
-      console.log('Current vector results:', filteredStartups.length, 'companies');
-      if (filteredStartups.length > 0) {
-        console.log('First 3 vector results:', filteredStartups.slice(0, 3).map(s => s.companyName));
-      }
       return;
     }
     
-    console.log('🔍 applyFilters called with:', {
-      allStartupsLength: allStartups.length,
-      filtersState: {
-        search: filters.search,
-        categoriesSize: filters.categories.size,
-        locationsSize: filters.locations.size,
-        yearRange: [filters.yearFrom, filters.yearTo],
-        sortBy: filters.sortBy
-      }
-    });
     
     if (!allStartups || allStartups.length === 0) {
-      console.log('⚠️ No startups to filter - allStartups is empty or undefined');
       // Set empty filtered results explicitly
       set({ 
         filteredStartups: [],
@@ -273,17 +244,6 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       return;
     }
 
-    // Sample some data for debugging
-    console.log('📊 Sample startup data:', {
-      sampleCount: Math.min(3, allStartups.length),
-      samples: allStartups.slice(0, 3).map(s => ({
-        companyName: s.companyName,
-        category: s.category,
-        location: s.location,
-        yearFounded: s.yearFounded,
-        description: s.description?.substring(0, 50) + '...'
-      }))
-    });
 
     // DEBUG MODE: Skip filtering temporarily to test data flow
     const DEBUG_SKIP_FILTERS = false; // Set to true for debugging
@@ -305,7 +265,6 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       set({ isProcessing: true, processingTask: 'Filtering companies...' });
       
       // Use main thread filtering for reliability
-      console.log('🔍 Starting main thread filtering...');
       const filtered = allStartups.filter((startup) => {
         // Search filter - simple includes
         if (filters.search.trim()) {
@@ -347,11 +306,6 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
         return true;
       });
       
-      console.log('🎯 Filter results:', {
-        originalCount: allStartups.length,
-        filteredCount: filtered.length,
-        filterPercentage: ((filtered.length / allStartups.length) * 100).toFixed(1) + '%'
-      });
       
       // Sort the filtered results
       const sorted = get().sortStartups(filtered, filters.sortBy);
@@ -366,10 +320,6 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
         processingTask: null
       });
       
-      console.log('✅ Filters applied successfully:', {
-        filteredCount: sorted.length,
-        stats
-      });
       
     } catch (error) {
       console.error('❌ Filter application failed:', error);
@@ -384,10 +334,9 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   sortStartups: (startups, sortBy) => {
     const sorted = [...startups];
     
-    // 🔍 CRITICAL: During vector search, preserve similarity order
+    // During vector search, preserve similarity order
     const { isVectorSearchActive } = get();
     if (isVectorSearchActive && sorted.length > 0 && sorted[0].vectorSimilarity !== undefined) {
-      console.log('🔍 Preserving vector similarity order');
       // Keep the original order from vector search (already sorted by similarity)
       return sorted;
     }
@@ -478,20 +427,11 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   getFilterMetadata: () => {
     const { allStartups, filteredStartups, isVectorSearchActive } = get();
     
-    // CRITICAL: Use filteredStartups during vector search to show current results metadata
+    // Use filteredStartups during vector search to show current results metadata
     const startupsToAnalyze = isVectorSearchActive ? filteredStartups : allStartups;
-    
-    console.log('🔍 getFilterMetadata called with:', {
-      isVectorSearchActive,
-      dataSource: isVectorSearchActive ? 'filteredStartups' : 'allStartups',
-      count: startupsToAnalyze.length,
-      sampleCategory: startupsToAnalyze[0]?.category,
-      sampleLocation: startupsToAnalyze[0]?.location
-    });
     
     // If no startups loaded yet, return empty arrays
     if (!startupsToAnalyze || startupsToAnalyze.length === 0) {
-      console.log('⚠️ No startups loaded yet, returning empty metadata');
       return { categories: [], locations: [] };
     }
     
@@ -502,15 +442,10 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
         key: CACHE_KEYS.FILTERS_META 
       });
       if (cached && cached.categories.length > 0 && cached.locations.length > 0) {
-        console.log('📋 Using cached filter metadata');
         return cached;
       }
     }
 
-    // Calculate fresh metadata from the appropriate data source
-    console.log('🔬 Analyzing startup data for metadata:');
-    console.log('First 5 startups categories:', startupsToAnalyze.slice(0, 5).map(s => s.category));
-    console.log('First 5 startups locations:', startupsToAnalyze.slice(0, 5).map(s => s.location));
     
     const categories = Array.from(new Set(startupsToAnalyze.map(s => s.category))).filter(Boolean) as string[];
     const locations = Array.from(new Set(
@@ -522,21 +457,13 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       })
     )).filter(location => location !== 'Unknown') as string[];
     
-    console.log('🏷️ Extracted categories:', categories.slice(0, 10));
-    console.log('📍 Extracted locations:', locations.slice(0, 10));
 
     const metadata = { categories, locations };
     
-    console.log('📊 Generated fresh filter metadata:', JSON.stringify(metadata, null, 2));
     
     // Cache for 1 hour (only in browser) and only if we have data AND not in vector search mode
     if (!isVectorSearchActive && categories.length > 0 && locations.length > 0) {
       DataCache.set({ key: CACHE_KEYS.FILTERS_META, ttl: 60 * 60 * 1000 }, metadata);
-      console.log('✅ Cached non-empty filter metadata');
-    } else if (isVectorSearchActive) {
-      console.log('🔍 Not caching metadata during vector search');
-    } else {
-      console.log('⚠️ Not caching empty filter metadata');
     }
     
     return metadata;
@@ -616,16 +543,17 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       }
       
       console.log('📊 Vector search response data sample:', searchResponse.data.slice(0, 2).map(r => ({
+        id: r.id,
         companyName: r.companyName,
         vectorSimilarity: r.vectorSimilarity,
-        matchType: r.matchType
+        matchType: r.matchType,
+        hasAllFields: !!r.id && !!r.companyName && !!r.category
       })));
       
       // 🔧 FIX: Use search results directly instead of overriding with empty strings
       // searchResponse.data already contains all the fields from SearchResult (extends Startup)
       const vectorResults = searchResponse.data;
       
-      console.log('📊 Vector search found:', vectorResults.length, 'results');
       
       // Apply year filter if needed
       const yearFiltered = vectorResults.filter(startup => {

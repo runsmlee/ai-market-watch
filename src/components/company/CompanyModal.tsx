@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, ExternalLink, Building2, TrendingUp, Users, Target, Shield, Lightbulb, Award, Globe, DollarSign, Calendar, Star, BarChart3, ChevronRight } from 'lucide-react';
 import { Startup } from '@/types/startup';
 import CompanyLogo from './CompanyLogo';
@@ -368,10 +369,19 @@ function generateCompetitiveData(company: Startup) {
 }
 
 export default function CompanyModal({ company, isOpen, onClose, hideCloseButton = false }: CompanyModalProps) {
+  console.log('🔍 CompanyModal state:', {
+    isOpen,
+    company: company ? { id: company.id, name: company.companyName } : null
+  });
   const [activeTab, setActiveTab] = useState<'overview' | 'analysis' | 'funding'>('overview');
+  const [mounted, setMounted] = useState(false);
 
   const radarData = company ? generateVCRadarData(company) : [];
   const timelineData = company ? generateFundingTimelineData(company) : [];
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -380,24 +390,18 @@ export default function CompanyModal({ company, isOpen, onClose, hideCloseButton
     
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
-      // 백그라운드 스크롤 완전 차단
+      // 백그라운드 스크롤 차단 (position fixed 제거 - 모달이 사라지는 원인일 수 있음)
       document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-      document.body.style.height = '100%';
     }
     
     return () => {
       document.removeEventListener('keydown', handleEscape);
       // 원래 상태로 복원
       document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.height = '';
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen || !company) return null;
+  if (!isOpen || !company || !mounted) return null;
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Building2 },
@@ -405,9 +409,17 @@ export default function CompanyModal({ company, isOpen, onClose, hideCloseButton
     { id: 'funding', label: 'Funding', icon: DollarSign },
   ] as const;
 
-  return (
+  const modalContent = (
     <div 
-      className="fixed inset-0 z-50 overflow-hidden"
+      className="fixed inset-0 z-[100] overflow-hidden"
+      style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 100
+      }}
       onWheel={(e) => e.stopPropagation()}
       onTouchMove={(e) => e.stopPropagation()}
     >
@@ -529,6 +541,8 @@ export default function CompanyModal({ company, isOpen, onClose, hideCloseButton
       </div>
     </div>
   );
+
+  return typeof window !== 'undefined' ? createPortal(modalContent, document.body) : null;
 }
 
 // Compact Overview Tab

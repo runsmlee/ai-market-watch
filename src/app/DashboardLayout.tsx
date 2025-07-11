@@ -54,20 +54,13 @@ export default function DashboardLayout() {
       // Don't reload if we already have data (e.g., from vector search)
       const currentState = useDashboardStore.getState();
       
-      // CRITICAL: Block ALL initialization if vector search is active
+      // Block initialization if vector search is active
       if (currentState.isVectorSearchActive) {
-        console.log('🛡️ Vector search is active - blocking ALL data initialization');
-        console.log('Current data:', {
-          allStartups: currentState.allStartups.length,
-          filteredStartups: currentState.filteredStartups.length
-        });
-        setIsInitialized(true); // Mark as initialized to prevent future attempts
         return;
       }
       
-      // Skip if already initialized and have data
-      if (isInitialized && (currentState.allStartups.length > 0 || currentState.filteredStartups.length > 0)) {
-        console.log('📊 Already initialized with data, skipping');
+      // Skip if already initialized
+      if (isInitialized) {
         return;
       }
 
@@ -102,11 +95,11 @@ export default function DashboardLayout() {
     };
 
     initializeData();
-  }, [mounted]); // 의존성을 최소화하여 불필요한 재실행 방지
+  }, [mounted, setStartups, setLoading, setError]);
 
   const filterMetadata = React.useMemo(() => {
     return getFilterMetadata();
-  }, [filteredStartups.length, isVectorSearchActive, getFilterMetadata]);
+  }, [getFilterMetadata]);
 
   if (!mounted) {
     return null;
