@@ -13,15 +13,15 @@ export function GET(): Response {
     categories: ['business', 'finance', 'productivity'],
     icons: [
       {
-        src: '/icon.svg',
-        sizes: 'any',
-        type: 'image/svg+xml',
+        src: '/logo_without_text.png',
+        sizes: '96x96',
+        type: 'image/png',
         purpose: 'any',
       },
       {
-        src: '/icon.svg',
-        sizes: 'any',
-        type: 'image/svg+xml',
+        src: '/logo_without_text.png',
+        sizes: '192x192',
+        type: 'image/png',
         purpose: 'maskable',
       },
       {
@@ -45,9 +45,9 @@ export function GET(): Response {
         url: '/?filter=latest',
         icons: [
           {
-            src: '/icon.svg',
+            src: '/logo_without_text.png',
             sizes: '96x96',
-            type: 'image/svg+xml',
+            type: 'image/png',
           },
         ],
       },

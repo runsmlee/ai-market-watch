@@ -107,34 +107,49 @@ export async function fetchAllStartupsFromSupabase(): Promise<Startup[] | null> 
       return null;
     }
     
-    // Fetching all startups from startup_vectors
-    // Adding explicit limit to ensure we get all records (default is 1000)
-    const { data, error } = await supabase
-      .from('startup_vectors')
-      .select('id, metadata')
-      .limit(5000); // Set higher than expected count to ensure all startups are fetched
+    // Fetching all startups from startup_vectors using pagination
+    // Supabase API has a default max_rows limit of 1000, so we need to paginate
+    const allData: any[] = [];
+    let offset = 0;
+    const pageSize = 1000;
+    let hasMore = true;
 
-    if (error) {
-      console.error('Supabase error:', error);
-      return null;
+    while (hasMore) {
+      const { data, error } = await supabase
+        .from('startup_vectors')
+        .select('id, metadata')
+        .range(offset, offset + pageSize - 1);
+
+      if (error) {
+        console.error('Supabase error:', error);
+        return null;
+      }
+
+      if (data && data.length > 0) {
+        allData.push(...data);
+        offset += data.length;
+        hasMore = data.length === pageSize;
+      } else {
+        hasMore = false;
+      }
     }
 
-    if (!data || data.length === 0) {
+    if (allData.length === 0) {
       console.log('No startups found in startup_vectors table');
       return [];
     }
 
-    // Found startups in Supabase
+    console.log(`📊 Found ${allData.length} startups in Supabase (fetched in ${Math.ceil(allData.length / pageSize)} pages)`);
     
     // Convert each startup to the expected format
-    const startups = data
+    const startups = allData
       .map((item: { id: string; metadata: any }) => {
         const startup = convertSupabaseToStartup(item.id, item.metadata);
         return startup;
       })
       .filter((startup): startup is Startup => startup !== null); // Type-safe filter
 
-    // Successfully converted startups
+    console.log(`✅ Successfully converted ${startups.length} startups (filtered out ${allData.length - startups.length})`);
 
     return startups;
   } catch (error) {
@@ -147,53 +162,170 @@ export async function fetchAllStartupsFromSupabase(): Promise<Startup[] | null> 
 export function convertSupabaseToStartup(id: string, metadata: any): Startup | null {
   // Check if metadata has the expected structure
   if (!metadata || typeof metadata !== 'object') {
-    console.error('Invalid metadata structure:', metadata);
+    console.error('Invalid metadata structure for id:', id, metadata);
     return null;
   }
 
   try {
     // Converting Supabase data
     
-    // Handle nested metadata structure (metadata.metadata)
-    // The startup_vectors table has data nested in metadata.metadata
-    const data = metadata.metadata || metadata;
+    // Handle nested metadata structure
+    // Check if we have the new structure (metadata.output) or old structure
+    let companyData: any;
+    let productData: any;
+    let fundingData: any;
+    let innovationData: any;
+    let competitionData: any;
     
-    // Data structure is correct
+    if (metadata.metadata?.output) {
+      // New structure: metadata.metadata.output.company, etc.
+      const output = metadata.metadata.output;
+      companyData = output.company || {};
+      productData = output.product || {};
+      fundingData = output.funding || {};
+      innovationData = output.innovation || {};
+      competitionData = output.competition || {};
+    } else if (metadata.output) {
+      // Alternative new structure: metadata.output.company, etc.
+      companyData = metadata.output.company || {};
+      productData = metadata.output.product || {};
+      fundingData = metadata.output.funding || {};
+      innovationData = metadata.output.innovation || {};
+      competitionData = metadata.output.competition || {};
+    } else if (metadata.metadata) {
+      // Old structure: flat fields in metadata.metadata
+      const data = metadata.metadata;
+      companyData = {
+        company_name: data["Company Name"],
+        ceo_name: data["CEO"],
+        ceo_experience: data["Previous experience of CEO"],
+        team_size: data["Team size"],
+        key_members: data["Key members"],
+        webpage: data["Webpage"],
+        location: data["Location"],
+        founded_year: data["Year Founded"],
+        category: data["Category"]
+      };
+      productData = {
+        description: data["One-line description"],
+        current_stage: data["Current stage/status"],
+        target_customer: data["Target customer"],
+        value_proposition: data["Main value proposition"],
+        product_portfolio: data["Key products/solutions portfolio"],
+        industries_served: data["Industry verticals served"]
+      };
+      fundingData = {
+        total_raised: data["Total funding raised"],
+        latest_round: data["Latest funding round"],
+        key_investors: data["Key investors"],
+        growth_metrics: data["Basic growth metrics"],
+        notable_customers: data["Notable customers"],
+        major_milestones: data["Major milestones"]
+      };
+      innovationData = {
+        unique_factors: data["UVP"],
+        tech_business_advantage: data["Key technological/business advantage"],
+        patents: data["Patents/IP (if public)"],
+        key_partnerships: data["Key partnerships/collaborations"]
+      };
+      competitionData = {
+        main_competitors: data["2-3 main competitors"],
+        differentiation: data["How they differentiate"],
+        market_position: data["Market positioning"],
+        geographic_focus: data["Geographic competition focus"]
+      };
+    } else {
+      // Fallback to direct metadata
+      const data = metadata;
+      companyData = {
+        company_name: data["Company Name"],
+        ceo_name: data["CEO"],
+        ceo_experience: data["Previous experience of CEO"],
+        team_size: data["Team size"],
+        key_members: data["Key members"],
+        webpage: data["Webpage"],
+        location: data["Location"],
+        founded_year: data["Year Founded"],
+        category: data["Category"]
+      };
+      productData = {
+        description: data["One-line description"],
+        current_stage: data["Current stage/status"],
+        target_customer: data["Target customer"],
+        value_proposition: data["Main value proposition"],
+        product_portfolio: data["Key products/solutions portfolio"],
+        industries_served: data["Industry verticals served"]
+      };
+      fundingData = {
+        total_raised: data["Total funding raised"],
+        latest_round: data["Latest funding round"],
+        key_investors: data["Key investors"],
+        growth_metrics: data["Basic growth metrics"],
+        notable_customers: data["Notable customers"],
+        major_milestones: data["Major milestones"]
+      };
+      innovationData = {
+        unique_factors: data["UVP"],
+        tech_business_advantage: data["Key technological/business advantage"],
+        patents: data["Patents/IP (if public)"],
+        key_partnerships: data["Key partnerships/collaborations"]
+      };
+      competitionData = {
+        main_competitors: data["2-3 main competitors"],
+        differentiation: data["How they differentiate"],
+        market_position: data["Market positioning"],
+        geographic_focus: data["Geographic competition focus"]
+      };
+    }
 
-    // Map Supabase metadata fields to our Startup interface
+    // Map to our Startup interface
     const startup: Startup = {
-      id: id || `startup-${data["Company Name"]?.replace(/\s+/g, '-').toLowerCase() || 'unknown'}`,
-      companyName: data["Company Name"] || '',
-      description: data["One-line description"] || '',
-      category: data["Category"] || '',
-      yearFounded: parseInt(String(data["Year Founded"])) || new Date().getFullYear(),
-      location: data["Location"] || '',
-      teamSize: data["Team size"] || '',
-      keyMembers: data["Key members"] || '',
-      webpage: data["Webpage"] || '',
-      ceo: data["CEO"] || '',
-      previousExperience: data["Previous experience of CEO"] || '',
-      targetCustomer: data["Target customer"] || '',
-      mainValueProposition: data["Main value proposition"] || '',
-      uvp: data["UVP"] || '',
-      technologicalAdvantage: data["Key technological/business advantage"] || '',
-      competitors: data["2-3 main competitors"] || '',
-      differentiation: data["How they differentiate"] || '',
-      notableCustomers: data["Notable customers"] || '',
-      keyInvestors: data["Key investors"] || '',
-      latestFundingRound: data["Latest funding round"] || '',
-      totalFundingRaised: data["Total funding raised"] || '',
-      growthMetrics: data["Basic growth metrics"] || '',
-      keyProducts: data["Key products/solutions portfolio"] || '',
-      industryVerticals: data["Industry verticals served"] || '',
-      marketPositioning: data["Market positioning"] || '',
-      geographicFocus: data["Geographic competition focus"] || '',
-      keyPartnerships: data["Key partnerships/collaborations"] || '',
-      patents: data["Patents/IP (if public)"] || '',
-      majorMilestones: data["Major milestones"] || '',
-      currentStage: data["Current stage/status"] || '',
-      updatedDate: data["Updated Date"] || new Date().toISOString(),
-      postingStatus: data["Posting"] || ''
+      id: id || `startup-${companyData.company_name?.replace(/\s+/g, '-').toLowerCase() || 'unknown'}`,
+      companyName: companyData.company_name || '',
+      description: productData.description || '',
+      category: companyData.category || '',
+      yearFounded: parseInt(String(companyData.founded_year)) || new Date().getFullYear(),
+      location: companyData.location || '',
+      teamSize: companyData.team_size || '',
+      keyMembers: companyData.key_members || '',
+      webpage: companyData.webpage || '',
+      ceo: companyData.ceo_name || '',
+      previousExperience: companyData.ceo_experience || '',
+      targetCustomer: productData.target_customer || '',
+      mainValueProposition: productData.value_proposition || '',
+      uvp: innovationData.unique_factors || '',
+      technologicalAdvantage: innovationData.tech_business_advantage || '',
+      competitors: Array.isArray(competitionData.main_competitors) 
+        ? competitionData.main_competitors.join(', ') 
+        : competitionData.main_competitors || '',
+      differentiation: competitionData.differentiation || '',
+      notableCustomers: Array.isArray(fundingData.notable_customers)
+        ? fundingData.notable_customers.join(', ')
+        : fundingData.notable_customers || '',
+      keyInvestors: Array.isArray(fundingData.key_investors)
+        ? fundingData.key_investors.join(', ')
+        : fundingData.key_investors || '',
+      latestFundingRound: fundingData.latest_round || '',
+      totalFundingRaised: fundingData.total_raised || '',
+      growthMetrics: fundingData.growth_metrics || '',
+      keyProducts: Array.isArray(productData.product_portfolio)
+        ? productData.product_portfolio.join(', ')
+        : productData.product_portfolio || '',
+      industryVerticals: Array.isArray(productData.industries_served)
+        ? productData.industries_served.join(', ')
+        : productData.industries_served || '',
+      marketPositioning: competitionData.market_position || '',
+      geographicFocus: competitionData.geographic_focus || '',
+      keyPartnerships: Array.isArray(innovationData.key_partnerships)
+        ? innovationData.key_partnerships.join(', ')
+        : innovationData.key_partnerships || '',
+      patents: innovationData.patents || '',
+      majorMilestones: Array.isArray(fundingData.major_milestones)
+        ? fundingData.major_milestones.join(', ')
+        : fundingData.major_milestones || '',
+      currentStage: productData.current_stage || '',
+      updatedDate: metadata.updatedDate || new Date().toISOString(),
+      postingStatus: metadata.postingStatus || ''
     };
 
     // Conversion complete

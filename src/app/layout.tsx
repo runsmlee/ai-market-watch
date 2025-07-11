@@ -19,14 +19,14 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/icon.svg', sizes: '32x32' },
-      { url: '/icon.svg', sizes: '16x16' },
+      { url: '/logo_without_text.png', type: 'image/png' },
+      { url: '/logo_without_text.png', sizes: '32x32' },
+      { url: '/logo_without_text.png', sizes: '16x16' },
     ],
     apple: [
-      { url: '/icon.svg', sizes: '180x180' },
+      { url: '/logo_without_text.png', sizes: '180x180' },
     ],
-    shortcut: '/icon.svg',
+    shortcut: '/logo_without_text.png',
   },
   openGraph: {
     type: 'website',
@@ -85,7 +85,7 @@ const jsonLd = {
     url: 'https://www.ai-market-watch.xyz',
     logo: {
       '@type': 'ImageObject',
-      url: 'https://www.ai-market-watch.xyz/logo.png',
+      url: 'https://www.ai-market-watch.xyz/logo_without_text.png',
       width: 200,
       height: 200,
     },
