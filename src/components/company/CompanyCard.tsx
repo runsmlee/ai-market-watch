@@ -37,8 +37,8 @@ const CompanyCard = memo(({ company, onClick }: CompanyCardProps) => {
       onClick={onClick}
     >
       {/* Main card with unified design */}
-      <div className="relative bg-white/[0.02] border border-white/[0.08] rounded-lg p-5 
-                     hover:bg-white/[0.04] hover:border-white/[0.12]
+      <div className="relative bg-neutral-900/70 border border-neutral-900/50 rounded-lg p-5 
+                     hover:bg-neutral-900/80 hover:border-neutral-800/80
                      transition-all duration-300 hover:scale-[1.02] h-full flex flex-col">
         
         {/* Header section */}
@@ -53,8 +53,8 @@ const CompanyCard = memo(({ company, onClick }: CompanyCardProps) => {
                 {safeString(company.companyName, 'Unknown Company')}
               </h3>
               <div className="flex items-center gap-2 mb-2">
-                <span className="px-2 py-1 bg-white/[0.08] border border-white/[0.12] 
-                                rounded text-xs font-medium text-white/80 
+                <span className="px-2 py-1 bg-neutral-800/80 border border-neutral-800/60 
+                                rounded text-xs font-medium text-white/90 
                                 backdrop-blur-sm truncate max-w-[120px]"
                       title={safeString(company.category, 'Uncategorized')}>
                   {truncateText(safeString(company.category, 'Uncategorized'), 15)}
@@ -80,8 +80,8 @@ const CompanyCard = memo(({ company, onClick }: CompanyCardProps) => {
 
         {/* Key metrics grid */}
         <div className="grid grid-cols-2 gap-3 mb-4 flex-shrink-0">
-          <div className="bg-white/[0.03] border border-white/[0.1] rounded p-3
-                         hover:bg-white/[0.05] transition-colors duration-200">
+          <div className="bg-neutral-800/60 border border-neutral-800/50 rounded p-3
+                         hover:bg-neutral-800/80 transition-colors duration-200">
             <div className="flex items-center gap-1.5 mb-1">
               <Calendar className="w-3.5 h-3.5 text-white/50" />
               <span className="text-xs text-white/60 font-medium">Founded</span>
@@ -92,8 +92,8 @@ const CompanyCard = memo(({ company, onClick }: CompanyCardProps) => {
             </div>
           </div>
           
-          <div className="bg-white/[0.03] border border-white/[0.1] rounded p-3
-                         hover:bg-white/[0.05] transition-colors duration-200">
+          <div className="bg-neutral-800/60 border border-neutral-800/50 rounded p-3
+                         hover:bg-neutral-800/80 transition-colors duration-200">
             <div className="flex items-center gap-1.5 mb-1">
               <Users className="w-3.5 h-3.5 text-white/50" />
               <span className="text-xs text-white/60 font-medium">Team</span>
@@ -106,12 +106,12 @@ const CompanyCard = memo(({ company, onClick }: CompanyCardProps) => {
         </div>
 
         {/* Footer section - push to bottom */}
-        <div className="pt-4 border-t border-white/[0.08] mt-auto">
+        <div className="pt-4 border-t border-neutral-700/60 mt-auto">
           <div className="flex items-center justify-between mb-3">
             {/* Funding info */}
             <div className="flex items-center gap-2.5 flex-1 min-w-0">
               <div className="relative flex-shrink-0">
-                <div className="w-7 h-7 bg-white/[0.06] border border-white/[0.1] 
+                <div className="w-7 h-7 bg-neutral-800/70 border border-neutral-800/60 
                                rounded flex items-center justify-center">
                   <DollarSign className="w-3.5 h-3.5 text-white/70" />
                 </div>
