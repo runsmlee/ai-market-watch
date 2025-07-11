@@ -142,7 +142,7 @@ export default function DashboardContent() {
   // Memoize filter metadata to prevent infinite loops
   const filterMetadata = useMemo(() => {
     return getFilterMetadata();
-  }, [filteredStartups.length]);
+  }, [getFilterMetadata]);
 
   // Don't render anything until mounted (prevents hydration mismatch)
   if (!mounted) {

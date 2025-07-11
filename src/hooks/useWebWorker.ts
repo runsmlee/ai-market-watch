@@ -54,11 +54,12 @@ export function useWebWorker({ workerPath, onMessage, onError }: UseWebWorkerOpt
     }
 
     return () => {
+      const currentCallbacks = callbacksRef.current;
       if (workerRef.current) {
         workerRef.current.terminate();
         workerRef.current = null;
       }
-      callbacksRef.current.clear();
+      currentCallbacks.clear();
     };
   }, [workerPath, onMessage, onError]);
 

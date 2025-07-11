@@ -144,7 +144,7 @@ export default function NavigationBar({ onMenuClick }: NavigationBarProps) {
                     <div className="w-2 h-2 bg-orange-400 rounded-full mt-1 animate-pulse"></div>
                     <div className="text-xs space-y-2">
                       <p className="text-white/90 font-semibold">🚀 AI-powered search understands your intent</p>
-                      <p className="text-white/70">Describe in natural language: "computer vision for retail", "LLMs for education"</p>
+                      <p className="text-white/70">Describe in natural language: &quot;computer vision for retail&quot;, &quot;LLMs for education&quot;</p>
                     </div>
                   </div>
                 </div>

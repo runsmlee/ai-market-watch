@@ -96,11 +96,11 @@ export default function DashboardLayout() {
     };
 
     initializeData();
-  }, [mounted, setStartups, setLoading, setError]);
+  }, [mounted, isInitialized, setStartups, setLoading, setError]);
 
   const filterMetadata = React.useMemo(() => {
     return getFilterMetadata();
-  }, [getFilterMetadata, allStartups.length]);
+  }, [getFilterMetadata]);
 
   if (!mounted) {
     return null;

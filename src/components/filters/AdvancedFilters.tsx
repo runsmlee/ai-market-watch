@@ -36,7 +36,7 @@ export default function AdvancedFilters({
   useEffect(() => {
     const newFilters = { ...filters, search: debouncedSearch };
     onFiltersChange(newFilters);
-  }, [debouncedSearch, onFiltersChange]);
+  }, [debouncedSearch, filters, onFiltersChange]);
 
   const handleCategoryToggle = (category: string) => {
     const newCategories = new Set(filters.categories);

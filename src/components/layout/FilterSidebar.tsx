@@ -65,7 +65,7 @@ export default function FilterSidebar({
     if (debouncedTextSearch !== filters.search) {
       onFiltersChange({ ...filters, search: debouncedTextSearch });
     }
-  }, [debouncedTextSearch]);
+  }, [debouncedTextSearch, filters, onFiltersChange]);
 
   const handleCategoryToggle = (category: string) => {
     const newCategories = new Set(filters.categories);
