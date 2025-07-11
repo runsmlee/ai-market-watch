@@ -31,20 +31,30 @@ export async function POST(request: NextRequest) {
       analysisResult: actualResult,
     });
 
-    // Upload PDF to Supabase Storage
+    // Upload PDF to Supabase Storage (skip if bucket doesn't exist)
+    let pdfUrl = null;
     const fileName = `dna-reports/${formData.companyName.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.pdf`;
-    console.log('Uploading PDF to storage...');
-    const pdfUrl = await uploadPDFToStorage(pdfBuffer, fileName);
+    
+    try {
+      console.log('Uploading PDF to storage...');
+      pdfUrl = await uploadPDFToStorage(pdfBuffer, fileName);
+    } catch (error) {
+      console.warn('PDF upload failed, will attach to email instead:', error);
+    }
 
-    // Save report metadata to database
-    console.log('Saving report to database...');
-    await saveDNAMatchReport({
-      email,
-      companyName: formData.companyName,
-      companyData: formData,
-      analysisResults: analysisResult,
-      pdfUrl,
-    });
+    // Save report metadata to database (skip if table doesn't exist)
+    try {
+      console.log('Saving report to database...');
+      await saveDNAMatchReport({
+        email,
+        companyName: formData.companyName,
+        companyData: formData,
+        analysisResults: analysisResult,
+        pdfUrl,
+      });
+    } catch (error) {
+      console.warn('Database save failed, continuing with email:', error);
+    }
 
     // Prepare email data
     const emailData = {

@@ -35,21 +35,35 @@ export async function sendDNAMatchEmail({
 }) {
   const transporter = createEmailTransporter();
 
-  try {
-    const info = await transporter.sendMail({
-      from: `"AI Market Watch Team" <${process.env.GMAIL_USER}>`,
-      to,
-      subject,
-      html,
-      attachments,
-    });
+  // Retry logic for connection issues
+  let retries = 3;
+  let lastError: any;
+  
+  while (retries > 0) {
+    try {
+      const info = await transporter.sendMail({
+        from: `"AI Market Watch Team" <${process.env.GMAIL_USER}>`,
+        to,
+        subject,
+        html,
+        attachments,
+      });
 
-    console.log('Email sent:', info.messageId);
-    return { success: true, messageId: info.messageId };
-  } catch (error) {
-    console.error('Email sending error:', error);
-    return { success: false, error: error.message };
+      console.log('Email sent:', info.messageId);
+      return { success: true, messageId: info.messageId };
+    } catch (error: any) {
+      console.error(`Email sending error (attempt ${4 - retries}/3):`, error.message);
+      lastError = error;
+      retries--;
+      
+      if (retries > 0) {
+        // Wait before retrying (1s, 2s, 3s)
+        await new Promise(resolve => setTimeout(resolve, (4 - retries) * 1000));
+      }
+    }
   }
+  
+  return { success: false, error: lastError?.message || 'Unknown error' };
 }
 
 // Email template for DNA Match Report

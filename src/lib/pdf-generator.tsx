@@ -209,7 +209,17 @@ const DNAMatchReportPDF: React.FC<DNAMatchReportData> = ({
   companyData,
   analysisResult,
 }) => {
-  const { matches = [], insights = {}, metadata = {} } = analysisResult || {};
+  const { 
+    matches = [], 
+    insights = {
+      common_patterns: [],
+      market_opportunities: [],
+      strategic_recommendations: [],
+      potential_competitors: [],
+      potential_partners: []
+    }, 
+    metadata = {} 
+  } = analysisResult || {};
   const reportDate = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',

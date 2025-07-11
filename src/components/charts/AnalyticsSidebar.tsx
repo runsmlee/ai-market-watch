@@ -82,130 +82,95 @@ export default function AnalyticsSidebar() {
   return (
     <div className="relative w-full">
       {/* Main Dashboard Container */}
-      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 
-                      rounded-2xl p-8 shadow-xl border border-slate-700/50">
+      <div className="bg-black/40 backdrop-blur-xl rounded-2xl p-8 shadow-xl border border-white/[0.15]">
         
         <h2 className="text-2xl font-bold mb-8 text-white flex items-center gap-3">
-          <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg">
-            <BarChart3 className="w-6 h-6" />
+          <div className="p-2 bg-white/[0.06] border border-white/[0.12] rounded-lg">
+            <BarChart3 className="w-6 h-6 text-white/70" />
           </div>
           Market Analytics
         </h2>
 
-        {/* Quick Stats Grid */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="bg-slate-800/50 rounded-xl p-4 backdrop-blur-sm border border-slate-700/50">
-            <div className="flex items-center gap-2 mb-2">
-              <Users className="w-4 h-4 text-blue-400" />
-              <span className="text-xs text-gray-400">Total Companies</span>
-            </div>
-            <p className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              {stats.total_companies.toLocaleString()}
-            </p>
-          </div>
-
-          <div className="bg-slate-800/50 rounded-xl p-4 backdrop-blur-sm border border-slate-700/50">
-            <div className="flex items-center gap-2 mb-2">
-              <DollarSign className="w-4 h-4 text-green-400" />
-              <span className="text-xs text-gray-400">Total Funding</span>
-            </div>
-            <p className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-              {formatFunding(stats.total_funding)}
-            </p>
-          </div>
-
-          <div className="bg-slate-800/50 rounded-xl p-4 backdrop-blur-sm border border-slate-700/50">
-            <div className="flex items-center gap-2 mb-2">
-              <Calendar className="w-4 h-4 text-purple-400" />
-              <span className="text-xs text-gray-400">Avg Founded</span>
-            </div>
-            <p className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              {stats.avg_year_founded}
-            </p>
-          </div>
-
-          <div className="bg-slate-800/50 rounded-xl p-4 backdrop-blur-sm border border-slate-700/50">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-4 h-4 text-amber-400" />
-              <span className="text-xs text-gray-400">Since 2020</span>
-            </div>
-            <p className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
-              {recentCompanies}
-            </p>
-          </div>
-        </div>
 
         {/* Category Distribution */}
         <div className="mb-8">
-          <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" />
+          <h3 className="text-sm font-semibold text-white/80 mb-4 flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-white/60" />
             Top Categories
           </h3>
           <div className="space-y-3">
-            {stats.category_distribution?.slice(0, 5).map(({ category, count, percentage }) => (
-              <div key={category}>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-gray-400 truncate max-w-[180px]">{category}</span>
-                  <span className="text-gray-300 font-medium">{count} ({percentage}%)</span>
+            {stats.category_distribution?.slice(0, 5).map(({ category, count, percentage }, index) => {
+              const topPercentage = stats.category_distribution?.[0]?.percentage || 1;
+              const relativeWidth = (percentage / topPercentage) * 100;
+              return (
+                <div key={category}>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-white/60 truncate max-w-[180px]">{category}</span>
+                    <span className="text-white/90 font-medium">{count} ({percentage}%)</span>
+                  </div>
+                  <div className="w-full bg-white/[0.05] rounded-full h-2 overflow-hidden">
+                    <div 
+                      className="h-full bg-white/30 rounded-full transition-all duration-500"
+                      style={{ width: `${relativeWidth}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="w-full bg-slate-700/50 rounded-full h-2 overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-500"
-                    style={{ width: `${percentage}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
         {/* Location Distribution */}
         <div className="mb-8">
-          <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
-            <MapPin className="w-4 h-4" />
+          <h3 className="text-sm font-semibold text-white/80 mb-4 flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-white/60" />
             Top Locations
           </h3>
           <div className="space-y-3">
-            {stats.location_distribution?.slice(0, 5).map(({ location, count, percentage }) => (
-              <div key={location}>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-gray-400 truncate max-w-[180px]">{location}</span>
-                  <span className="text-gray-300 font-medium">{count} ({percentage}%)</span>
+            {stats.location_distribution?.slice(0, 5).map(({ location, count, percentage }, index) => {
+              const topPercentage = stats.location_distribution?.[0]?.percentage || 1;
+              const relativeWidth = (percentage / topPercentage) * 100;
+              return (
+                <div key={location}>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-white/60 truncate max-w-[180px]">{location}</span>
+                    <span className="text-white/90 font-medium">{count} ({percentage}%)</span>
+                  </div>
+                  <div className="w-full bg-white/[0.05] rounded-full h-2 overflow-hidden">
+                    <div 
+                      className="h-full bg-white/40 rounded-full transition-all duration-500"
+                      style={{ width: `${relativeWidth}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="w-full bg-slate-700/50 rounded-full h-2 overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-500"
-                    style={{ width: `${percentage}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
         {/* Key Insights */}
-        <div className="bg-slate-800/30 rounded-xl p-4 border border-slate-700/50">
-          <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
-            <Globe className="w-4 h-4" />
+        <div className="bg-white/[0.02] rounded-xl p-4 border border-white/[0.08]">
+          <h3 className="text-sm font-semibold text-white/80 mb-3 flex items-center gap-2">
+            <Globe className="w-4 h-4 text-white/60" />
             Key Insights
           </h3>
-          <ul className="space-y-2 text-xs text-gray-400">
+          <ul className="space-y-2 text-xs text-white/60">
             <li className="flex items-start gap-2">
-              <span className="text-blue-400 mt-1">•</span>
+              <span className="text-white/40 mt-1">•</span>
               <span>
-                <span className="text-gray-300 font-medium">{stats.category_distribution?.[0]?.percentage || 0}%</span> of companies are in {stats.category_distribution?.[0]?.category || 'Unknown'}
+                <span className="text-white/90 font-medium">{stats.category_distribution?.[0]?.percentage || 0}%</span> of companies are in {stats.category_distribution?.[0]?.category || 'Unknown'}
               </span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-green-400 mt-1">•</span>
+              <span className="text-white/40 mt-1">•</span>
               <span>
-                Most companies based in <span className="text-gray-300 font-medium">{stats.location_distribution?.[0]?.location || 'Unknown'}</span>
+                Most companies based in <span className="text-white/90 font-medium">{stats.location_distribution?.[0]?.location || 'Unknown'}</span>
               </span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-purple-400 mt-1">•</span>
+              <span className="text-white/40 mt-1">•</span>
               <span>
-                <span className="text-gray-300 font-medium">{((recentCompanies / stats.total_companies) * 100).toFixed(1)}%</span> founded since 2020
+                <span className="text-white/90 font-medium">{((recentCompanies / stats.total_companies) * 100).toFixed(1)}%</span> founded since 2020
               </span>
             </li>
           </ul>
