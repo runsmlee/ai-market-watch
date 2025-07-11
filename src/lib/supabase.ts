@@ -58,7 +58,7 @@ export interface StartupVectorContent {
   };
 }
 
-// Function to fetch company data from startup_vectors table
+// Function to fetch company data from startup_details table
 export async function fetchCompanyFromSupabase(companyId: string): Promise<any | null> {
   try {
     const supabase = getSupabaseClient();
@@ -67,12 +67,56 @@ export async function fetchCompanyFromSupabase(companyId: string): Promise<any |
       return null;
     }
     
-    // Fetching from startup_vectors
+    console.log('🔍 Fetching company with ID:', companyId);
     
+    // First try to fetch from startup_details by ID
     const { data, error } = await supabase
-      .from('startup_vectors')
-      .select('metadata')
+      .from('startup_details')
+      .select('*')
       .eq('id', companyId)
+      .single();
+
+    if (error) {
+      // If not found by ID, try with vector_id for backward compatibility
+      const { data: vectorData, error: vectorError } = await supabase
+        .from('startup_details')
+        .select('*')
+        .eq('vector_id', companyId)
+        .single();
+        
+      if (vectorError) {
+        console.error('Supabase error:', vectorError);
+        return null;
+      }
+      
+      console.log('✅ Found company via vector_id:', vectorData);
+      return vectorData;
+    }
+
+    console.log('✅ Found company:', data);
+    return data;
+  } catch (error) {
+    console.error('Error in fetchCompanyFromSupabase:', error);
+    return null;
+  }
+}
+
+// New function to fetch company by slug
+export async function fetchCompanyBySlug(slug: string): Promise<any | null> {
+  try {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      console.error('Supabase client not initialized');
+      return null;
+    }
+    
+    console.log('🔍 Fetching company with slug:', slug);
+    
+    // Use case-insensitive search for slug
+    const { data, error } = await supabase
+      .from('startup_details')
+      .select('*')
+      .ilike('company_slug', slug)
       .single();
 
     if (error) {
@@ -80,25 +124,76 @@ export async function fetchCompanyFromSupabase(companyId: string): Promise<any |
       return null;
     }
 
-    console.log('Raw Supabase response:', data);
-
-    if (!data || !data.metadata) {
-      console.error('No data found for company ID:', companyId);
-      return null;
-    }
-
-    // The metadata field contains the JSON data
-    console.log('Metadata field type:', typeof data.metadata);
-    console.log('Metadata field value:', data.metadata);
-    
-    return data.metadata;
+    console.log('✅ Found company by slug:', data);
+    return data;
   } catch (error) {
-    console.error('Error in fetchCompanyFromSupabase:', error);
+    console.error('Error in fetchCompanyBySlug:', error);
     return null;
   }
 }
 
-// Function to fetch all startups from startup_vectors table
+// New function to search companies
+export async function searchCompanies(query: string): Promise<any[] | null> {
+  try {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      console.error('Supabase client not initialized');
+      return null;
+    }
+    
+    console.log('🔍 Searching companies with query:', query);
+    
+    const { data, error } = await supabase
+      .from('startup_details')
+      .select('*')
+      .or(`company_name.ilike.%${query}%,one_line_description.ilike.%${query}%,main_value_proposition.ilike.%${query}%`)
+      .order('company_name')
+      .limit(50);
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return null;
+    }
+
+    console.log(`✅ Found ${data?.length || 0} companies matching query`);
+    return data || [];
+  } catch (error) {
+    console.error('Error in searchCompanies:', error);
+    return null;
+  }
+}
+
+// New function to fetch companies by category
+export async function fetchCompaniesByCategory(category: string): Promise<any[] | null> {
+  try {
+    const supabase = getSupabaseClient();
+    if (!supabase) {
+      console.error('Supabase client not initialized');
+      return null;
+    }
+    
+    console.log('🔍 Fetching companies with category:', category);
+    
+    const { data, error } = await supabase
+      .from('startup_details')
+      .select('*')
+      .ilike('category', `%${category}%`)
+      .order('company_name');
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return null;
+    }
+
+    console.log(`✅ Found ${data?.length || 0} companies in category`);
+    return data || [];
+  } catch (error) {
+    console.error('Error in fetchCompaniesByCategory:', error);
+    return null;
+  }
+}
+
+// Function to fetch all startups from startup_details table
 export async function fetchAllStartupsFromSupabase(): Promise<Startup[] | null> {
   try {
     const supabase = getSupabaseClient();
@@ -107,8 +202,7 @@ export async function fetchAllStartupsFromSupabase(): Promise<Startup[] | null> 
       return null;
     }
     
-    // Fetching all startups from startup_vectors using pagination
-    // Supabase API has a default max_rows limit of 1000, so we need to paginate
+    // Fetching all startups from startup_details using pagination
     const allData: any[] = [];
     let offset = 0;
     const pageSize = 1000;
@@ -116,9 +210,10 @@ export async function fetchAllStartupsFromSupabase(): Promise<Startup[] | null> 
 
     while (hasMore) {
       const { data, error } = await supabase
-        .from('startup_vectors')
-        .select('id, metadata')
-        .range(offset, offset + pageSize - 1);
+        .from('startup_details')
+        .select('*')
+        .range(offset, offset + pageSize - 1)
+        .order('company_name');
 
       if (error) {
         console.error('Supabase error:', error);
@@ -135,7 +230,7 @@ export async function fetchAllStartupsFromSupabase(): Promise<Startup[] | null> 
     }
 
     if (allData.length === 0) {
-      console.log('No startups found in startup_vectors table');
+      console.log('No startups found in startup_details table');
       return [];
     }
 
@@ -143,13 +238,10 @@ export async function fetchAllStartupsFromSupabase(): Promise<Startup[] | null> 
     
     // Convert each startup to the expected format
     const startups = allData
-      .map((item: { id: string; metadata: any }) => {
-        const startup = convertSupabaseToStartup(item.id, item.metadata);
-        return startup;
-      })
-      .filter((startup): startup is Startup => startup !== null); // Type-safe filter
+      .map((item) => convertStartupDetailsToStartup(item))
+      .filter((startup): startup is Startup => startup !== null);
 
-    console.log(`✅ Successfully converted ${startups.length} startups (filtered out ${allData.length - startups.length})`);
+    console.log(`✅ Successfully converted ${startups.length} startups`);
 
     return startups;
   } catch (error) {
@@ -158,7 +250,53 @@ export async function fetchAllStartupsFromSupabase(): Promise<Startup[] | null> 
   }
 }
 
-// Convert Supabase data to our Startup type
+// Convert startup_details row to our Startup type
+export function convertStartupDetailsToStartup(data: any): Startup | null {
+  if (!data) return null;
+  
+  try {
+    const startup: Startup = {
+      id: data.id || data.vector_id?.toString() || '',
+      companyName: data.company_name || '',
+      ceo: data.ceo || '',
+      previousExperience: data.previous_experience_of_ceo || '',
+      keyMembers: data.key_members || '',
+      teamSize: data.team_size || '',
+      webpage: data.webpage || '',
+      location: data.location || '',
+      yearFounded: data.year_founded || null,
+      description: data.one_line_description || '',
+      currentStage: data.current_stage_status || '',
+      targetCustomer: data.target_customer || '',
+      mainValueProposition: data.main_value_proposition || '',
+      keyProducts: data.key_products_solutions_portfolio || '',
+      industryVerticals: data.industry_verticals_served || '',
+      uvp: data.uvp || '',
+      technologicalAdvantage: data.key_technological_business_advantage || '',
+      patents: data.patents_ip_if_public || '',
+      keyPartnerships: data.key_partnerships_collaborations || '',
+      competitors: data.main_competitors_2_3 || '',
+      differentiation: data.how_they_differentiate || '',
+      marketPositioning: data.market_positioning || '',
+      geographicFocus: data.geographic_competition_focus || '',
+      totalFundingRaised: data.total_funding_raised || '',
+      latestFundingRound: data.latest_funding_round || '',
+      keyInvestors: data.key_investors || '',
+      growthMetrics: data.basic_growth_metrics || '',
+      notableCustomers: data.notable_customers || '',
+      majorMilestones: data.major_milestones || '',
+      category: data.category || '',
+      updatedDate: data.updated_date || '',
+    };
+    
+    return startup;
+  } catch (error) {
+    console.error('Error converting startup details:', error);
+    return null;
+  }
+}
+
+// Convert Supabase data to our Startup type (for backward compatibility with startup_vectors)
 export function convertSupabaseToStartup(id: string, metadata: any): Startup | null {
   // Check if metadata has the expected structure
   if (!metadata || typeof metadata !== 'object') {
@@ -401,7 +539,7 @@ export async function filterStartupsRPC(filters: {
       const totalCount = data[0].total_count;
       const startups = data
         .map((item: any) => convertSupabaseToStartup(item.id, item.metadata))
-        .filter((startup): startup is Startup => startup !== null);
+        .filter((startup: Startup | null): startup is Startup => startup !== null);
       
       return { startups, totalCount };
     }
@@ -459,8 +597,9 @@ export async function getAllLocations() {
   }
 }
 
-// Function to search companies
-export async function searchCompanies(searchTerm: string, limit: number = 20) {
+
+// Function to find company by exact name match
+export async function findCompanyByName(companyName: string): Promise<any | null> {
   try {
     const supabase = getSupabaseClient();
     if (!supabase) {
@@ -468,19 +607,49 @@ export async function searchCompanies(searchTerm: string, limit: number = 20) {
       return null;
     }
     
-    const { data, error } = await supabase.rpc('search_companies', {
-      p_search_term: searchTerm,
-      p_limit: limit
-    });
+    console.log('🔍 Searching for company:', companyName);
     
-    if (error) {
-      console.error('Error searching companies:', error);
-      return null;
+    // First try exact match
+    const { data: exactMatch, error: exactError } = await supabase
+      .from('startup_details')
+      .select('*')
+      .eq('company_name', companyName)
+      .single();
+      
+    if (exactMatch && !exactError) {
+      console.log('✅ Found via exact match:', exactMatch);
+      return exactMatch;
     }
     
-    return data;
+    // Then try case-insensitive match
+    const { data: iMatch, error: iError } = await supabase
+      .from('startup_details')
+      .select('*')
+      .ilike('company_name', companyName)
+      .single();
+      
+    if (iMatch && !iError) {
+      console.log('✅ Found via case-insensitive match:', iMatch);
+      return iMatch;
+    }
+    
+    // Finally try partial match
+    const { data: partialMatch, error: partialError } = await supabase
+      .from('startup_details')
+      .select('*')
+      .ilike('company_name', `%${companyName}%`)
+      .limit(1);
+      
+    if (partialMatch && partialMatch.length > 0 && !partialError) {
+      console.log('✅ Found via partial match:', partialMatch[0]);
+      return partialMatch[0];
+    }
+    
+    console.log('❌ Company not found in Supabase:', companyName);
+    return null;
+    
   } catch (error) {
-    console.error('Error in searchCompanies:', error);
+    console.error('Error in findCompanyByName:', error);
     return null;
   }
 }

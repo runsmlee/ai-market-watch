@@ -136,9 +136,10 @@ export default function DNAMatchModal({ isOpen, onClose }: DNAMatchModalProps) {
     setError(null);
   };
 
-  const handleCompanyClick = (companyId: string) => {
-    // Open in new tab for better UX and SEO
-    window.open(`/company/${companyId}`, '_blank');
+  const handleCompanyClick = (companyName: string) => {
+    // Use company name in URL for better SEO and easier lookup
+    const encodedName = encodeURIComponent(companyName);
+    window.open(`/company/${encodedName}`, '_blank');
   };
 
   const isFormValid = () => {
@@ -396,7 +397,7 @@ export default function DNAMatchModal({ isOpen, onClose }: DNAMatchModalProps) {
                           {analysisResult.matches.slice(0, 3).map((match: any, index: number) => (
                             <motion.button
                               key={match.id}
-                              onClick={() => handleCompanyClick(match.id)}
+                              onClick={() => handleCompanyClick(match.companyName)}
                               className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl p-5 
                                        hover:bg-white/[0.06] hover:border-white/[0.15] transition-all duration-200
                                        text-left group cursor-pointer"
@@ -475,7 +476,7 @@ export default function DNAMatchModal({ isOpen, onClose }: DNAMatchModalProps) {
                                 Get Your Complete DNA Analysis
                               </p>
                               <p className="text-gray-400 text-sm">
-                                Including all 5 matches, insights & recommendations
+                                Including all 3 matches, insights & recommendations
                               </p>
                             </div>
                           </div>
@@ -556,7 +557,7 @@ export default function DNAMatchModal({ isOpen, onClose }: DNAMatchModalProps) {
                         </div>
                         <div className="flex items-center gap-3 text-left">
                           <Building2 className="w-5 h-5 text-gray-400" />
-                          <span className="text-gray-300">All 5 matching companies analyzed</span>
+                          <span className="text-gray-300">All 3 matching companies analyzed</span>
                         </div>
                         <div className="flex items-center gap-3 text-left">
                           <Target className="w-5 h-5 text-gray-400" />

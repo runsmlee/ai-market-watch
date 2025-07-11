@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import CompanyClientPage from './client-page';
 import { fetchStartups } from '@/lib/api';
-import { fetchCompanyFromSupabase, convertSupabaseToStartup } from '@/lib/supabase';
+import { fetchCompanyFromSupabase, convertSupabaseToStartup, findCompanyByName } from '@/lib/supabase';
 import { Startup } from '@/types/startup';
 
 interface Props {
@@ -18,6 +18,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       const supabaseData = await fetchCompanyFromSupabase(params.id);
       if (supabaseData) {
         company = convertSupabaseToStartup(params.id, supabaseData);
+      }
+    } else {
+      // Try to find by company name in Supabase first
+      try {
+        const decodedName = decodeURIComponent(params.id);
+        const supabaseData = await findCompanyByName(decodedName);
+        if (supabaseData) {
+          company = convertSupabaseToStartup(supabaseData.id, supabaseData);
+        }
+      } catch (err) {
+        console.error('Error finding company by name:', err);
       }
     }
     

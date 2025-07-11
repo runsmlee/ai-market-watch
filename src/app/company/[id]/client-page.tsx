@@ -4,8 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { notFound } from 'next/navigation';
 import CompanyModal from '@/components/company/CompanyModal';
-import { fetchStartups } from '@/lib/api';
-import { fetchCompanyFromSupabase, convertSupabaseToStartup } from '@/lib/supabase';
+import { fetchCompanyFromSupabase, fetchCompanyBySlug, findCompanyByName, convertStartupDetailsToStartup } from '@/lib/supabase';
 import { Startup } from '@/types/startup';
 
 interface CompanyClientPageProps {
@@ -22,39 +21,39 @@ export default function CompanyClientPage({ id }: CompanyClientPageProps) {
     const loadCompany = async () => {
       try {
         let companyData: Startup | null = null;
+        let supabaseData = null;
         
-        // Check if ID is numeric (Supabase ID)
-        if (/^\d+$/.test(id)) {
-          try {
-            const supabaseData = await fetchCompanyFromSupabase(id);
-            if (supabaseData) {
-              companyData = convertSupabaseToStartup(id, supabaseData);
-            }
-          } catch (err) {
-            console.error('Error fetching from Supabase:', err);
+        // Check if ID is a UUID (Supabase ID)
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+        
+        if (isUUID) {
+          // Fetch by ID
+          supabaseData = await fetchCompanyFromSupabase(id);
+        } else if (/^\d+$/.test(id)) {
+          // Legacy numeric ID (vector_id)
+          supabaseData = await fetchCompanyFromSupabase(id);
+        } else {
+          // Try as slug first
+          console.log('🔍 Attempting to fetch by slug:', id);
+          supabaseData = await fetchCompanyBySlug(id);
+          
+          // If not found as slug, try as company name
+          if (!supabaseData) {
+            console.log('❌ Not found by slug, trying as company name');
+            const decodedName = decodeURIComponent(id);
+            supabaseData = await findCompanyByName(decodedName);
           }
         }
         
-        // If not found in Supabase or not numeric ID, try Apps Script
-        if (!companyData) {
-          try {
-            const startupsData = await fetchStartups({}, { useCache: true });
-            const startups = startupsData.transformedData || startupsData.data || [];
-            
-            companyData = startups.find((startup: Startup) => 
-              startup.id === id || 
-              startup.companyName?.toLowerCase().replace(/\s+/g, '-') === id
-            );
-          } catch (err) {
-            console.error('Error fetching from Apps Script:', err);
-          }
+        // Convert to Startup type
+        if (supabaseData) {
+          companyData = convertStartupDetailsToStartup(supabaseData);
         }
 
         if (companyData) {
           console.log('✅ Company data loaded:', {
             id: companyData.id,
-            name: companyData.companyName,
-            source: /^\d+$/.test(id) ? 'Supabase' : 'Apps Script'
+            name: companyData.companyName
           });
           setCompany(companyData);
         } else {

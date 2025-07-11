@@ -149,7 +149,7 @@ export function createDNAMatchEmailTemplate({
                         📊 What's in Your Full Report:
                       </h3>
                       <ul style="margin: 0; padding-left: 20px; color: #4b5563; line-height: 1.8;">
-                        <li>All 5 matched companies with detailed analysis</li>
+                        <li>All 3 matched companies with detailed analysis</li>
                         <li>Common success patterns among similar startups</li>
                         <li>Market opportunities and gaps</li>
                         <li>Strategic recommendations for your growth</li>

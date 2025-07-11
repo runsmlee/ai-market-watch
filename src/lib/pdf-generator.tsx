@@ -360,7 +360,7 @@ const DNAMatchReportPDF: React.FC<DNAMatchReportData> = ({
         <View style={styles.divider} />
         
         <Text style={styles.metadata}>
-          Report generated on {reportDate} • Total startups analyzed: {metadata?.total_results || matches.length}
+          Report generated on {reportDate} • Total startups analyzed: {(metadata as any)?.total_results || matches.length}
         </Text>
 
         <Text style={styles.footer}>
