@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { StartupFilters } from '@/types/startup';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Search, MapPin, Calendar, Bot, ChevronDown, ChevronUp, X, Filter } from 'lucide-react';
+import { useDashboardStore } from '@/store/dashboardStore';
 
 interface AdvancedFiltersProps {
   filters: StartupFilters;
@@ -21,6 +22,7 @@ export default function AdvancedFilters({
   const [searchValue, setSearchValue] = useState(filters.search);
   const [isCollapsed, setIsCollapsed] = useState(true); // Always start collapsed
   const debouncedSearch = useDebounce(searchValue, 300);
+  const performVectorSearch = useDashboardStore(state => state.performVectorSearch);
 
   console.log('🎛️ AdvancedFilters render:', {
     categoriesCount: categories.length,
@@ -148,6 +150,12 @@ export default function AdvancedFilters({
                     type="text"
                     value={searchValue}
                     onChange={(e) => setSearchValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && searchValue.trim().length >= 10) {
+                        console.log('🔍 Enter key pressed with query:', searchValue.trim());
+                        performVectorSearch();
+                      }
+                    }}
                     placeholder="Company, CEO, description..."
                     className="w-full px-3 py-2 sm:px-3 sm:py-2.5 bg-white/[0.02] border border-white/[0.06] rounded-md
                              text-sm text-white/90 placeholder-white/40 backdrop-blur-sm

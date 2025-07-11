@@ -10,7 +10,6 @@ import {
   Target, 
   ChevronRight,
   AlertCircle,
-  Loader2,
   CheckCircle2,
   Brain,
   Mail,
@@ -19,9 +18,6 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { analyzeDNA } from '@/lib/dna-analysis';
-import { fetchCompanyBySlug } from '@/lib/supabase';
-import { Startup } from '@/types/startup';
-import CompanyModal from '@/components/company/CompanyModal';
 
 interface DNAMatchModalProps {
   isOpen: boolean;
@@ -50,7 +46,7 @@ const categories = [
 ];
 
 export default function DNAMatchModalWithCompany({ isOpen, onClose }: DNAMatchModalProps) {
-  const [stage, setStage] = useState<'input' | 'analyzing' | 'results' | 'email' | 'company'>('input');
+  const [stage, setStage] = useState<'input' | 'analyzing' | 'results' | 'email'>('input');
   const [formData, setFormData] = useState<FormData>({
     companyName: '',
     description: '',
@@ -68,8 +64,6 @@ export default function DNAMatchModalWithCompany({ isOpen, onClose }: DNAMatchMo
   const [email, setEmail] = useState('');
   const [emailSubmitted, setEmailSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCompany, setSelectedCompany] = useState<Startup | null>(null);
-  const [loadingCompany, setLoadingCompany] = useState(false);
 
   // Reset stage when modal closes
   useEffect(() => {
@@ -77,7 +71,6 @@ export default function DNAMatchModalWithCompany({ isOpen, onClose }: DNAMatchMo
       // Reset to initial state when modal closes
       setTimeout(() => {
         setStage('input');
-        setSelectedCompany(null);
       }, 300); // Wait for exit animation
     }
   }, [isOpen]);
@@ -148,7 +141,6 @@ export default function DNAMatchModalWithCompany({ isOpen, onClose }: DNAMatchMo
     setEmail('');
     setEmailSubmitted(false);
     setError(null);
-    setSelectedCompany(null);
   };
 
   const handleCompanyClick = async (match: any) => {
@@ -191,67 +183,25 @@ export default function DNAMatchModalWithCompany({ isOpen, onClose }: DNAMatchMo
             <div className="glass-strong backdrop-blur-xl rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] 
                           overflow-hidden pointer-events-auto border border-white/[0.15]">
               
-              {/* Show Company Modal when in company stage */}
-              {stage === 'company' && selectedCompany ? (
-                <>
-                  {/* Custom header with back button */}
-                  <div className="relative px-6 py-4 border-b border-white/[0.08] bg-white/[0.02] backdrop-blur-sm">
-                    <div className="flex items-center justify-between">
-                      <button
-                        onClick={() => {
-                          setStage('results');
-                          setSelectedCompany(null);
-                        }}
-                        className="flex items-center gap-2 px-3 py-2 
-                                 bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.12] 
-                                 rounded-lg transition-colors duration-200 text-sm text-white/80"
-                      >
-                        <ChevronRight className="w-4 h-4 rotate-180" />
-                        Back to matches
-                      </button>
-                      <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                      >
-                        <X className="w-5 h-5 text-white/70" />
-                      </button>
+              {/* Original DNA Match Modal Content */}
+              <div className="relative px-6 py-4 border-b border-white/[0.08] bg-white/[0.02] backdrop-blur-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gradient-to-r from-orange-500 to-amber-500 rounded-lg">
+                      <Dna className="w-5 h-5 text-white" />
                     </div>
+                    <h2 className="text-xl font-semibold text-white">
+                      Find Your Startup DNA Match
+                    </h2>
                   </div>
-                  
-                  {/* Company Modal Content - rendered inline */}
-                  <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
-                    <CompanyModal
-                      company={selectedCompany}
-                      isOpen={true}
-                      onClose={() => {
-                        setStage('results');
-                        setSelectedCompany(null);
-                      }}
-                      hideCloseButton={true}
-                    />
-                  </div>
-                </>
-              ) : (
-                <>
-                  {/* Original DNA Match Modal Content */}
-                  <div className="relative px-6 py-4 border-b border-white/[0.08] bg-white/[0.02] backdrop-blur-sm">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-gradient-to-r from-orange-500 to-amber-500 rounded-lg">
-                          <Dna className="w-5 h-5 text-white" />
-                        </div>
-                        <h2 className="text-xl font-semibold text-white">
-                          Find Your Startup DNA Match
-                        </h2>
-                      </div>
-                      <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                      >
-                        <X className="w-5 h-5 text-white/70" />
-                      </button>
-                    </div>
-                  </div>
+                  <button
+                    onClick={onClose}
+                    className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5 text-white/70" />
+                  </button>
+                </div>
+              </div>
                   
                   {/* Content */}
                   <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
@@ -349,7 +299,7 @@ export default function DNAMatchModalWithCompany({ isOpen, onClose }: DNAMatchMo
                                   placeholder="What specific problem are you addressing?"
                                   rows={2}
                                   className="w-full px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg
-                                           text-white placeholder-gray-500 focus:border-purple-500 focus:bg-gray-800
+                                           text-white placeholder-gray-500 focus:border-blue-500 focus:bg-gray-800
                                            transition-all duration-200 resize-none text-sm"
                                   required
                                 />
@@ -366,7 +316,7 @@ export default function DNAMatchModalWithCompany({ isOpen, onClose }: DNAMatchMo
                                   placeholder="How does your product/service solve this problem?"
                                   rows={2}
                                   className="w-full px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg
-                                           text-white placeholder-gray-500 focus:border-purple-500 focus:bg-gray-800
+                                           text-white placeholder-gray-500 focus:border-blue-500 focus:bg-gray-800
                                            transition-all duration-200 resize-none text-sm"
                                   required
                                 />
@@ -455,10 +405,9 @@ export default function DNAMatchModalWithCompany({ isOpen, onClose }: DNAMatchMo
                                 <motion.button
                                   key={match.id}
                                   onClick={() => handleCompanyClick(match)}
-                                  disabled={loadingCompany}
                                   className="w-full bg-white/[0.03] border border-white/[0.08] rounded-xl p-5 
                                            hover:bg-white/[0.06] hover:border-white/[0.15] transition-all duration-200
-                                           text-left group cursor-pointer disabled:opacity-50"
+                                           text-left group cursor-pointer"
                                   whileHover={{ scale: 1.01 }}
                                   whileTap={{ scale: 0.99 }}
                                 >
@@ -488,17 +437,8 @@ export default function DNAMatchModalWithCompany({ isOpen, onClose }: DNAMatchMo
                                   
                                   {/* Hover indicator */}
                                   <div className="mt-3 flex items-center gap-2 text-xs text-gray-500 group-hover:text-gray-400 transition-colors">
-                                    {loadingCompany ? (
-                                      <>
-                                        <Loader2 className="w-3 h-3 animate-spin" />
-                                        <span>Loading...</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <ChevronRight className="w-3 h-3" />
-                                        <span>View details</span>
-                                      </>
-                                    )}
+                                    <ExternalLink className="w-3 h-3" />
+                                    <span>View details in new tab</span>
                                   </div>
                                 </motion.button>
                               ))}
@@ -643,8 +583,6 @@ export default function DNAMatchModalWithCompany({ isOpen, onClose }: DNAMatchMo
                       )}
                     </AnimatePresence>
                   </div>
-                </>
-              )}
             </div>
           </motion.div>
         </>

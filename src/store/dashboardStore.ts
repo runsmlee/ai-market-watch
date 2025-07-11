@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import { Startup, StartupFilters, DashboardStats, SortOption } from '@/types/startup';
 import { calculateDashboardStats } from '@/lib/statistics';
-import { DataCache, CACHE_KEYS } from '@/lib/cache';
 import { fetchStartups } from '@/lib/api';
+import { DataCache, CACHE_KEYS } from '@/lib/cache';
+import { searchCompanies } from '@/lib/search';
 
 interface DashboardState {
   // Data
@@ -25,6 +26,7 @@ interface DashboardState {
   setStartups: (startups: Startup[], lastUpdated?: string, isFromCache?: boolean) => void;
   updateFilters: (filters: Partial<StartupFilters>) => void;
   applyFilters: () => Promise<void>;
+  performVectorSearch: () => Promise<void>;
   sortStartups: (startups: Startup[], sortBy: SortOption) => Startup[];
   clearFilters: () => void;
   setLoading: (loading: boolean) => void;
@@ -196,7 +198,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     });
   },
 
-  updateFilters: (newFilters) => {
+  updateFilters: async (newFilters) => {
     console.log('🔧 Updating filters:', newFilters);
     
     set((state) => ({
@@ -270,7 +272,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       // Use main thread filtering for reliability
       console.log('🔍 Starting main thread filtering...');
       const filtered = allStartups.filter((startup) => {
-        // Search filter
+        // Search filter - simple includes
         if (filters.search.trim()) {
           const searchTerm = filters.search.toLowerCase();
           const searchableText = [
@@ -293,13 +295,15 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
         
         // Location filter
         if (filters.locations.size > 0) {
-          const city = startup.location?.split(',')[0]?.trim() || '';
-          if (!city || !filters.locations.has(city)) {
+          const hasLocation = Array.from(filters.locations).some(filterLoc => 
+            startup.location?.includes(filterLoc)
+          );
+          if (!hasLocation) {
             return false;
           }
         }
         
-        // Year filter - more forgiving
+        // Year filter
         const yearFounded = startup.yearFounded || 0;
         if (yearFounded > 0 && (yearFounded < filters.yearFrom || yearFounded > filters.yearTo)) {
           return false;
@@ -523,6 +527,102 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       });
     } catch (error) {
       throw new Error(`Background filtering failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  },
+
+  performVectorSearch: async () => {
+    const { filters, setLoading, setError } = get();
+    
+    // Check if vector search conditions are met
+    const searchQuery = filters.search.trim();
+    if (searchQuery.length < 10) {
+      console.log('🔍 Search query too short for vector search');
+      return;
+    }
+    
+    // Check if current filtered results are empty
+    const currentFilteredCount = get().filteredStartups.length;
+    if (currentFilteredCount > 0) {
+      console.log('🔍 Text matches found, skipping vector search');
+      return;
+    }
+    
+    console.log('🚀 Performing vector search for:', searchQuery);
+    
+    try {
+      setLoading(true);
+      
+      const searchResponse = await searchCompanies(searchQuery, {
+        categories: filters.categories.size > 0 ? Array.from(filters.categories) : undefined,
+        locations: filters.locations.size > 0 ? Array.from(filters.locations) : undefined,
+        limit: 50,
+      });
+      
+      if (!searchResponse.success) {
+        throw new Error('Vector search failed');
+      }
+      
+      // Convert search results to Startup format
+      const vectorResults = searchResponse.data.map(result => ({
+        id: result.id || '',
+        companyName: result.companyName || '',
+        description: result.description || '',
+        location: result.location || '',
+        category: result.category || '',
+        totalFundingRaised: result.totalFundingRaised || '',
+        yearFounded: result.yearFounded || 0,
+        vectorSimilarity: result.vectorSimilarity,
+        matchType: result.matchType,
+        // Fill in other required fields with defaults
+        ceo: '',
+        previousExperience: '',
+        keyMembers: '',
+        teamSize: '',
+        webpage: '',
+        currentStage: '',
+        targetCustomer: '',
+        mainValueProposition: '',
+        keyProducts: '',
+        industryVerticals: '',
+        uvp: '',
+        technologicalAdvantage: '',
+        patents: '',
+        keyPartnerships: '',
+        competitors: '',
+        differentiation: '',
+        marketPositioning: '',
+        geographicFocus: '',
+        latestFundingRound: '',
+        keyInvestors: '',
+        growthMetrics: '',
+        notableCustomers: '',
+        majorMilestones: '',
+        updatedDate: '',
+      } as Startup & { vectorSimilarity?: number; matchType?: string }));
+      
+      // Apply year filter if needed
+      const yearFiltered = vectorResults.filter(startup => {
+        const yearFounded = startup.yearFounded || 0;
+        if (yearFounded > 0 && (yearFounded < filters.yearFrom || yearFounded > filters.yearTo)) {
+          return false;
+        }
+        return true;
+      });
+      
+      const sorted = get().sortStartups(yearFiltered, filters.sortBy);
+      const stats = calculateDashboardStats(get().allStartups, sorted);
+      
+      set({ 
+        filteredStartups: sorted, 
+        stats,
+        loading: false
+      });
+      
+      console.log(`✅ Vector search completed: ${sorted.length} results`);
+    } catch (error) {
+      console.error('❌ Vector search failed:', error);
+      setError(error instanceof Error ? error.message : 'Vector search failed');
+      setLoading(false);
     }
   }
 }));

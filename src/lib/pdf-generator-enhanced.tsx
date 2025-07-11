@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   page: {
     padding: 40,
     backgroundColor: '#ffffff',
-    fontFamily: 'Helvetica',
+    fontFamily: 'NotoSans, Helvetica',
   },
   coverPage: {
     flex: 1,
@@ -72,13 +72,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 40,
     backgroundColor: '#0a0a0a',
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-    color: '#ffffff',
   },
   coverTitle: {
     fontSize: 36,
@@ -92,40 +85,6 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     textAlign: 'center',
     color: '#f97316',
-  },
-  subtitle: {
-    fontSize: 18,
-    marginBottom: 10,
-    textAlign: 'center',
-    color: '#6b7280',
-  },
-  executiveSummary: {
-    backgroundColor: '#fef3c7',
-    padding: 20,
-    borderRadius: 8,
-    marginBottom: 20,
-  },
-  summaryTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#92400e',
-  },
-  summaryText: {
-    fontSize: 12,
-    color: '#78350f',
-    lineHeight: 1.6,
-  },
-  companyName: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginTop: 40,
-    marginBottom: 40,
-    textAlign: 'center',
-    color: '#ffffff',
-    borderTop: '2px solid #f97316',
-    borderBottom: '2px solid #f97316',
-    paddingVertical: 20,
   },
   companyNameCover: {
     fontSize: 28,
@@ -146,6 +105,23 @@ const styles = StyleSheet.create({
     color: '#111827',
     borderBottom: '2px solid #f97316',
     paddingBottom: 10,
+  },
+  executiveSummary: {
+    backgroundColor: '#fef3c7',
+    padding: 20,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  summaryTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#92400e',
+  },
+  summaryText: {
+    fontSize: 12,
+    color: '#78350f',
+    lineHeight: 1.6,
   },
   matchCard: {
     marginBottom: 25,
@@ -170,6 +146,17 @@ const styles = StyleSheet.create({
     color: '#10b981',
     fontWeight: 'bold',
   },
+  matchCategory: {
+    fontSize: 12,
+    color: '#6b7280',
+    marginBottom: 10,
+  },
+  matchDescription: {
+    fontSize: 11,
+    color: '#374151',
+    marginBottom: 12,
+    lineHeight: 1.5,
+  },
   dataGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -192,52 +179,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#111827',
   },
-  matchCategory: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginBottom: 8,
-  },
-  matchDescription: {
-    fontSize: 11,
-    color: '#374151',
-    marginBottom: 10,
-    lineHeight: 1.4,
-  },
-  similarityBox: {
-    backgroundColor: '#dbeafe',
-    padding: 10,
-    borderRadius: 4,
-    marginBottom: 10,
-  },
-  similarityTitle: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: '#1e40af',
-    marginBottom: 4,
-  },
-  similarityText: {
-    fontSize: 10,
-    color: '#1e40af',
-    lineHeight: 1.4,
-  },
-  differentiatorItem: {
-    fontSize: 10,
-    color: '#374151',
-    marginBottom: 3,
-    paddingLeft: 10,
-  },
-  fundingInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-  },
-  fundingText: {
-    fontSize: 10,
-    color: '#6b7280',
-  },
   insightSection: {
     marginBottom: 25,
     padding: 15,
@@ -257,27 +198,13 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     lineHeight: 1.5,
   },
-  actionItem: {
-    marginBottom: 10,
-    padding: 12,
-    backgroundColor: '#dbeafe',
-    borderRadius: 6,
-    borderLeft: '3px solid #3b82f6',
-  },
-  actionTitle: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#1e40af',
-    marginBottom: 4,
-  },
-  actionText: {
-    fontSize: 10,
-    color: '#1e3a8a',
-    lineHeight: 1.4,
-  },
   analysisSection: {
     marginTop: 20,
     marginBottom: 20,
+  },
+  chartContainer: {
+    marginVertical: 15,
+    alignItems: 'center',
   },
   comparisonTable: {
     marginTop: 15,
@@ -307,6 +234,24 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#374151',
   },
+  actionItem: {
+    marginBottom: 10,
+    padding: 12,
+    backgroundColor: '#dbeafe',
+    borderRadius: 6,
+    borderLeft: '3px solid #3b82f6',
+  },
+  actionTitle: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#1e40af',
+    marginBottom: 4,
+  },
+  actionText: {
+    fontSize: 10,
+    color: '#1e3a8a',
+    lineHeight: 1.4,
+  },
   footer: {
     position: 'absolute',
     bottom: 30,
@@ -323,20 +268,47 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
     fontSize: 10,
   },
-  divider: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-    marginVertical: 20,
-  },
-  metadata: {
-    fontSize: 9,
-    color: '#9ca3af',
-    textAlign: 'center',
-    marginTop: 30,
-  },
 });
 
-// PDF Document Component
+// Simple bar chart component
+const BarChart = ({ data, width = 200, height = 100 }: any) => {
+  const maxValue = Math.max(...data.map((d: any) => d.value));
+  const barWidth = width / data.length * 0.8;
+  const barSpacing = width / data.length * 0.2;
+  
+  return (
+    <Svg width={width} height={height + 30}>
+      {data.map((item: any, index: number) => {
+        const barHeight = (item.value / maxValue) * height;
+        const x = index * (barWidth + barSpacing);
+        const y = height - barHeight;
+        
+        return (
+          <React.Fragment key={index}>
+            <Rect
+              x={x}
+              y={y}
+              width={barWidth}
+              height={barHeight}
+              fill="#f97316"
+            />
+            <Text
+              x={x + barWidth / 2}
+              y={height + 15}
+              textAnchor="middle"
+              fill="#6b7280"
+              style={{ fontSize: 8 }}
+            >
+              {item.label}
+            </Text>
+          </React.Fragment>
+        );
+      })}
+    </Svg>
+  );
+};
+
+// Enhanced PDF Document Component
 const DNAMatchReportPDF: React.FC<DNAMatchReportData> = ({
   companyName,
   companyData,
@@ -352,6 +324,7 @@ const DNAMatchReportPDF: React.FC<DNAMatchReportData> = ({
     }, 
     metadata = {} 
   } = analysisResult || {};
+  
   const reportDate = new Date().toLocaleDateString('ko-KR', {
     year: 'numeric',
     month: 'long',
@@ -362,12 +335,12 @@ const DNAMatchReportPDF: React.FC<DNAMatchReportData> = ({
   const avgFunding = matches.reduce((sum, match) => {
     const funding = parseFloat(match.fundingRaised?.replace(/[^0-9.]/g, '') || '0');
     return sum + funding;
-  }, 0) / matches.length || 0;
+  }, 0) / matches.length;
 
   const avgTeamSize = matches.reduce((sum, match) => {
     const size = parseInt(match.teamSize?.replace(/[^0-9]/g, '') || '0');
     return sum + size;
-  }, 0) / matches.length || 0;
+  }, 0) / matches.length;
 
   return (
     <Document>
@@ -439,13 +412,10 @@ const DNAMatchReportPDF: React.FC<DNAMatchReportData> = ({
         <Text style={styles.pageNumber}>Page 2</Text>
       </Page>
 
-      {/* Detailed Matches Page */}
+      {/* Detailed Matches Analysis */}
       <Page size="A4" style={styles.page}>
         <Text style={styles.sectionTitle}>DNA Match Analysis</Text>
-        <Text style={{ fontSize: 12, color: '#6b7280', marginBottom: 20 }}>
-          Detailed analysis of your top {matches.length} DNA matches.
-        </Text>
-
+        
         {matches.map((match, index) => (
           <View key={match.id} style={styles.matchCard}>
             <View style={styles.matchHeader}>
@@ -458,7 +428,7 @@ const DNAMatchReportPDF: React.FC<DNAMatchReportData> = ({
             </View>
             
             <Text style={styles.matchCategory}>
-              {match.category} • Founded {match.yearFounded} {match.location ? `• ${match.location}` : ''}
+              {match.category} • Founded {match.yearFounded} • {match.location || 'Global'}
             </Text>
             
             <Text style={styles.matchDescription}>{match.description}</Text>
@@ -479,22 +449,13 @@ const DNAMatchReportPDF: React.FC<DNAMatchReportData> = ({
             </View>
             
             {match.whySimilar && (
-              <View style={[styles.similarityBox, { marginTop: 10 }]}>
-                <Text style={styles.similarityTitle}>Why Similar</Text>
-                <Text style={styles.similarityText}>{match.whySimilar}</Text>
-              </View>
-            )}
-            
-            {match.keyDifferentiators && match.keyDifferentiators.length > 0 && (
-              <View style={{ marginTop: 10 }}>
-                <Text style={{ fontSize: 11, fontWeight: 'bold', marginBottom: 4 }}>
-                  Key Differentiators:
+              <View style={[styles.insightSection, { marginTop: 10, backgroundColor: '#dbeafe' }]}>
+                <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#1e40af', marginBottom: 4 }}>
+                  Why Similar
                 </Text>
-                {match.keyDifferentiators.map((diff, idx) => (
-                  <Text key={idx} style={styles.differentiatorItem}>
-                    • {diff}
-                  </Text>
-                ))}
+                <Text style={{ fontSize: 10, color: '#1e3a8a', lineHeight: 1.4 }}>
+                  {match.whySimilar}
+                </Text>
               </View>
             )}
           </View>
@@ -533,7 +494,7 @@ const DNAMatchReportPDF: React.FC<DNAMatchReportData> = ({
           ))}
         </View>
 
-        {/* Market Position Analysis */}
+        {/* Key Differentiators */}
         <View style={styles.analysisSection}>
           <Text style={styles.insightTitle}>🔍 Market Position Analysis</Text>
           <Text style={styles.insightItem}>
@@ -550,20 +511,6 @@ const DNAMatchReportPDF: React.FC<DNAMatchReportData> = ({
           </Text>
         </View>
 
-        {/* Partnership Strategy */}
-        <View style={styles.insightSection}>
-          <Text style={styles.insightTitle}>🤝 Partnership Strategy</Text>
-          <Text style={styles.insightItem}>
-            • Similar companies partner with an average of {3 + Math.floor(Math.random() * 3)} strategic partners
-          </Text>
-          <Text style={styles.insightItem}>
-            • Key partnership categories: Technology providers, Distribution channels, Industry leaders
-          </Text>
-          <Text style={styles.insightItem}>
-            • Recommended first partnership: Focus on {companyData.category} ecosystem players
-          </Text>
-        </View>
-
         <Text style={styles.pageNumber}>Page 4</Text>
       </Page>
 
@@ -574,7 +521,7 @@ const DNAMatchReportPDF: React.FC<DNAMatchReportData> = ({
         {/* Common Patterns */}
         {insights.commonPatterns && insights.commonPatterns.length > 0 && (
           <View style={styles.insightSection}>
-            <Text style={styles.insightTitle}>📊 Common Success Patterns</Text>
+            <Text style={styles.insightTitle}>📊 Success Patterns from Similar Companies</Text>
             {insights.commonPatterns.map((pattern, index) => (
               <Text key={index} style={styles.insightItem}>
                 • {pattern}
@@ -595,29 +542,19 @@ const DNAMatchReportPDF: React.FC<DNAMatchReportData> = ({
           </View>
         )}
 
-        {/* Strategic Recommendations */}
-        {insights.recommendations && insights.recommendations.length > 0 && (
-          <View style={styles.insightSection}>
-            <Text style={styles.insightTitle}>💡 Strategic Recommendations</Text>
-            {insights.recommendations.map((rec, index) => (
-              <Text key={index} style={styles.insightItem}>
-                • {rec}
-              </Text>
-            ))}
-          </View>
-        )}
-
-        {/* Differentiators */}
-        {insights.differentiators && insights.differentiators.length > 0 && (
-          <View style={styles.insightSection}>
-            <Text style={styles.insightTitle}>🚀 Key Differentiators</Text>
-            {insights.differentiators.map((diff, index) => (
-              <Text key={index} style={styles.insightItem}>
-                • {diff}
-              </Text>
-            ))}
-          </View>
-        )}
+        {/* Partnership Strategy */}
+        <View style={styles.insightSection}>
+          <Text style={styles.insightTitle}>🤝 Partnership Strategy</Text>
+          <Text style={styles.insightItem}>
+            • Similar companies partner with an average of {3 + Math.floor(Math.random() * 3)} strategic partners
+          </Text>
+          <Text style={styles.insightItem}>
+            • Key partnership categories: Technology providers, Distribution channels, Industry leaders
+          </Text>
+          <Text style={styles.insightItem}>
+            • Recommended first partnership: Focus on {companyData.category} ecosystem players
+          </Text>
+        </View>
 
         {/* Growth Metrics */}
         <View style={styles.insightSection}>
@@ -632,12 +569,6 @@ const DNAMatchReportPDF: React.FC<DNAMatchReportData> = ({
             • Month 18: Close Series A with ${(3 + Math.floor(Math.random() * 5))}M-${(8 + Math.floor(Math.random() * 7))}M
           </Text>
         </View>
-
-        <View style={styles.divider} />
-        
-        <Text style={styles.metadata}>
-          Report generated on {reportDate} • Total startups analyzed: {(metadata as any)?.total_results || matches.length}
-        </Text>
 
         <Text style={styles.footer}>
           © 2025 AI Market Watch • ai-market-watch.xyz

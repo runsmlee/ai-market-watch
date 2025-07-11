@@ -1,5 +1,48 @@
 # AI Market Watch - Context Log
 
+## 2025-01-12 - 데이터베이스 중복 회사 레코드 정리
+
+### 중복 데이터 문제 해결
+- **중복 레코드 식별**: 16개 회사 그룹에서 총 18개 중복 레코드 발견
+- **주요 중복 케이스**: Manus AI (3개), Zhipu AI (3개), Builder.ai (2개), DeepSeek (2개) 등
+- **정리 기준**: 회사명에서 괄호 정보와 접미사를 제거한 기본 이름으로 그룹화
+- **보존 규칙**: 각 그룹에서 가장 최신 created_at 타임스탬프 레코드만 보존
+
+### 데이터 정리 알고리즘
+- **기본 이름 추출**: `REGEXP_REPLACE`로 `(내용)` 및 `- 내용` 패턴 제거
+- **중복 순위**: `ROW_NUMBER() OVER (PARTITION BY base_name ORDER BY created_at DESC)`
+- **최신 보존**: rank_by_date = 1인 레코드만 유지
+- **외래 키 처리**: startup_details 먼저 삭제 후 고아 벡터 데이터 정리
+
+### 정리 결과
+- **삭제된 레코드**: 18개 중복 회사 레코드
+- **연관 벡터 정리**: 고아가 된 벡터 데이터 자동 정리
+- **최종 상태**: 
+  - 총 회사 레코드: 946개 (정리 후)
+  - 총 벡터 레코드: 944개 (정리 후)
+  - 남은 중복 그룹: 0개 (완전 정리)
+
+### 검증된 정리 사례
+- **Manus AI**: "Manus AI (Developed by Monica.im / Butterfly Effect)" (2025-06-27) 보존
+- **Zhipu AI**: "Zhipu AI (Beijing Zhipu Huazhang Technology)" (2025-06-27) 보존
+- **Builder.ai**: "Builder.ai" (2025-07-11) 보존 vs "Builder.ai (formerly Engineer.ai)" 삭제
+- **Luma AI**: "Luma AI" (2025-07-11) 보존
+- **DeepSeek**: 최신 버전 각각 보존 (다른 법인체로 판단)
+
+### 데이터 품질 향상
+- **검색 정확도**: 중복 제거로 벡터 검색 결과 정확도 향상
+- **사용자 경험**: 동일 회사 중복 표시 방지로 UX 개선
+- **데이터 무결성**: 외래 키 관계 유지하며 안전한 정리 수행
+- **향후 방지**: 소스 데이터 정리 프로세스 개선 필요성 확인
+
+### MCP Supabase 활용
+- **안전한 마이그레이션**: `apply_migration` 도구로 트랜잭션 기반 안전 처리
+- **실시간 검증**: `execute_sql`로 정리 전후 상태 확인
+- **외래 키 호환**: PostgreSQL 제약 조건 순서 고려한 삭제 로직
+- **데이터 보존**: 최신성 기준 명확한 보존 규칙 적용
+
+**Impact**: 데이터 중복 완전 제거, 검색 결과 정확도 향상, 사용자 경험 개선, 데이터베이스 무결성 확보
+
 ## 2024-12-28 - SEO 최적화 및 링크 공유 이미지 설정
 
 ### Open Graph 및 Twitter Card 최적화

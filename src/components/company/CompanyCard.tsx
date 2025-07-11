@@ -6,7 +6,10 @@ import { Startup } from '../../types/startup';
 import CompanyLogo from './CompanyLogo';
 
 interface CompanyCardProps {
-  company: Startup;
+  company: Startup & {
+    vectorSimilarity?: number;
+    combinedScore?: number;
+  };
   onClick: () => void;
 }
 
@@ -59,6 +62,17 @@ const CompanyCard = memo(({ company, onClick }: CompanyCardProps) => {
                       title={safeString(company.category, 'Uncategorized')}>
                   {truncateText(safeString(company.category, 'Uncategorized'), 15)}
                 </span>
+                {(company.vectorSimilarity && 
+                  typeof company.vectorSimilarity === 'number' && 
+                  !isNaN(company.vectorSimilarity) && 
+                  company.vectorSimilarity > 0) && (
+                  <span className="px-2 py-1 bg-blue-900/30 border border-blue-800/30 
+                                  rounded text-xs font-medium text-blue-300
+                                  backdrop-blur-sm"
+                        title={`Vector Similarity: ${Math.round(company.vectorSimilarity * 100)}%`}>
+                    {Math.round(company.vectorSimilarity * 100)}% match
+                  </span>
+                )}
               </div>
             </div>
           </div>

@@ -13,18 +13,13 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString()
     });
 
-    // Extract the actual result from the n8n response
-    console.log('=== FULL Analysis Result ===');
+    // The analysisResult is already transformed by /api/analyze-dna
+    console.log('=== Analysis Result ===');
     console.log(JSON.stringify(analysisResult, null, 2));
     console.log('=== END Analysis Result ===');
     
-    const actualResult = Array.isArray(analysisResult) 
-      ? analysisResult[0]?.output 
-      : analysisResult.output || analysisResult;
-    
-    console.log('=== EXTRACTED actualResult ===');
-    console.log(JSON.stringify(actualResult, null, 2));
-    console.log('=== END actualResult ===');
+    // Use analysisResult directly as it's already in the correct format
+    const actualResult = analysisResult;
     
     if (!actualResult || !actualResult.matches) {
       console.error('❌ Invalid analysis result structure');
@@ -32,29 +27,9 @@ export async function POST(request: NextRequest) {
       throw new Error('Invalid analysis result structure - no matches found');
     }
 
-    // Transform the actualResult to match the expected format
-    const transformedResult: any = {
-      matches: (actualResult?.matches || []).map((match: any) => ({
-        id: match.id,
-        companyName: match.company_name,
-        similarity: match.similarity_score,
-        category: match.category,
-        description: match.description,
-        fundingRaised: match.total_funding,
-        yearFounded: match.year_founded,
-        whySimilar: match.why_similar,
-        keyDifferentiators: match.key_differentiators,
-        fundingStage: match.funding_stage,
-        location: match.location,
-      })),
-      insights: {
-        commonPatterns: actualResult?.insights?.common_patterns || [],
-        differentiators: [], // Not provided by n8n, but expected by PDF
-        opportunities: actualResult?.insights?.market_opportunities || [],
-        recommendations: actualResult?.insights?.strategic_recommendations || [],
-      },
-      metadata: actualResult?.metadata,
-    };
+    // The data is already in the correct format from /api/analyze-dna
+    // No need to transform again - just use it directly
+    const transformedResult = actualResult;
 
     // Generate PDF report
     console.log('Generating PDF report...');
@@ -99,8 +74,8 @@ export async function POST(request: NextRequest) {
     const emailData = {
       companyName: formData.companyName,
       topMatches: (actualResult?.matches || []).slice(0, 3).map((match: any) => ({
-        companyName: match.companyName || match.company_name,
-        similarity: match.similarity || match.similarity_score,
+        companyName: match.companyName,
+        similarity: match.similarity,
         category: match.category,
       })),
       reportUrl: pdfUrl,

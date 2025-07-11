@@ -7,7 +7,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // Create a function to get the Supabase client
 // This prevents issues during build time when env vars might not be available
-function getSupabaseClient() {
+export function getSupabaseClient() {
   if (!supabaseUrl || !supabaseAnonKey) {
     console.warn('Supabase credentials not found. Please check your .env.local file');
     return null;
