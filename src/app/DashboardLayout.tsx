@@ -28,7 +28,46 @@ export default function DashboardLayout() {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    
+    // Add debug utilities to window object for development
+    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+      (window as any).debugDashboard = {
+        clearFilterCache: () => {
+          console.log('🧹 Clearing filter metadata cache');
+          localStorage.removeItem('ai-market-watch-filters-meta');
+          console.log('✅ Filter cache cleared');
+        },
+        clearAllCaches: () => {
+          console.log('🧹 Clearing all caches');
+          const keys = Object.keys(localStorage);
+          keys.forEach(key => {
+            if (key.startsWith('ai-market-watch-')) {
+              localStorage.removeItem(key);
+            }
+          });
+          console.log('✅ All caches cleared');
+        },
+        getStoreState: () => {
+          const state = useDashboardStore.getState();
+          console.log('📊 Dashboard Store State:', {
+            allStartupsLength: state.allStartups.length,
+            originalStartupsLength: state.originalStartups.length,
+            filteredStartupsLength: state.filteredStartups.length,
+            isVectorSearchActive: state.isVectorSearchActive,
+            filters: state.filters
+          });
+          return state;
+        },
+        forceRefreshMetadata: () => {
+          console.log('🔄 Force refreshing filter metadata');
+          const result = getFilterMetadata({ forceRefresh: true });
+          console.log('📊 Result:', result);
+          return result;
+        }
+      };
+      console.log('🔧 Debug utilities added to window.debugDashboard');
+    }
+  }, [getFilterMetadata]);
 
   const {
     allStartups,
@@ -85,6 +124,12 @@ export default function DashboardLayout() {
         setStartups(startups, response.lastUpdated, false);
         setIsInitialized(true);
         
+        // Force refresh filter metadata after data loading
+        setTimeout(() => {
+          console.log('💼 Forcing filter metadata refresh after data load');
+          getFilterMetadata({ forceRefresh: true });
+        }, 100);
+        
         console.log('✅ Dashboard initialized successfully');
         
       } catch (error) {
@@ -99,8 +144,15 @@ export default function DashboardLayout() {
   }, [mounted, isInitialized, setStartups, setLoading, setError]);
 
   const filterMetadata = React.useMemo(() => {
-    return getFilterMetadata();
-  }, [getFilterMetadata]);
+    // Force refresh if we have data but empty metadata
+    const shouldForceRefresh = allStartups.length > 0;
+    console.log('📝 DashboardLayout: Computing filter metadata', {
+      allStartupsLength: allStartups.length,
+      shouldForceRefresh,
+      isInitialized
+    });
+    return getFilterMetadata({ forceRefresh: shouldForceRefresh });
+  }, [allStartups.length, isInitialized, getFilterMetadata]);
 
   if (!mounted) {
     return null;

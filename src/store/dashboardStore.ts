@@ -8,6 +8,7 @@ import { searchCompanies, SearchResult } from '@/lib/search';
 interface DashboardState {
   // Data
   allStartups: (Startup | SearchResult)[];
+  originalStartups: (Startup | SearchResult)[]; // Store original data before vector search
   filteredStartups: (Startup | SearchResult)[];
   stats: DashboardStats;
   loading: boolean;
@@ -34,7 +35,7 @@ interface DashboardState {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   refreshData: () => Promise<void>;
-  getFilterMetadata: () => { categories: string[]; locations: string[] };
+  getFilterMetadata: (options?: { forceRefresh?: boolean }) => { categories: string[]; locations: string[] };
   sidebarCollapsed: boolean;
   toggleSidebar: () => void;
   
@@ -95,6 +96,7 @@ const postWorkerMessage = (type: string, data: any): Promise<any> => {
 export const useDashboardStore = create<DashboardState>((set, get) => ({
   // Initial state
   allStartups: [],
+  originalStartups: [],
   filteredStartups: [],
   stats: {
     totalCompanies: 0,
@@ -123,9 +125,15 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   sidebarCollapsed: true,
 
   setStartups: (startups, lastUpdated, isFromCache = false) => {
-    // Don't override if vector search is active
+    // Store original data separately and allow normal data loading even during vector search
     const { isVectorSearchActive } = get();
+    
+    // Always store original data for filter metadata
+    set({ originalStartups: startups });
+    
+    // Don't override filtered results if vector search is active
     if (isVectorSearchActive) {
+      console.log('📌 Vector search active - storing original data but preserving search results');
       return;
     }
     
@@ -181,6 +189,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     // Update all state at once
     set({ 
       allStartups: startups,
+      originalStartups: startups, // Keep backup of original data
       filteredStartups: sorted,
       stats,
       lastUpdated: lastUpdated || new Date().toISOString(),
@@ -197,14 +206,15 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       // Only process if search is being cleared
       if ('search' in newFilters && newFilters.search === '') {
         // Reset to full data when clearing vector search
+        const { originalStartups } = get();
         set({ 
           isVectorSearchActive: false,
+          allStartups: originalStartups, // Restore original data
           filters: { ...currentState.filters, ...newFilters }
         });
         
-        // Reload full dataset
-        const { refreshData } = get();
-        refreshData();
+        // Re-apply filters to original data
+        get().applyFilters();
         return;
       }
       
@@ -336,8 +346,15 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     
     // During vector search, preserve similarity order
     const { isVectorSearchActive } = get();
-    if (isVectorSearchActive && sorted.length > 0 && 'vectorSimilarity' in sorted[0] && (sorted[0] as SearchResult).vectorSimilarity !== undefined) {
-      // Keep the original order from vector search (already sorted by similarity)
+    if (isVectorSearchActive) {
+      // Always preserve vector search order regardless of vectorSimilarity field presence
+      console.log('🎯 Preserving vector search similarity order');
+      return sorted;
+    }
+    
+    // Also check if any item has vectorSimilarity field (backup check)
+    if (sorted.length > 0 && 'vectorSimilarity' in sorted[0] && (sorted[0] as SearchResult).vectorSimilarity !== undefined) {
+      console.log('🎯 Preserving similarity order based on vectorSimilarity field');
       return sorted;
     }
     
@@ -369,6 +386,8 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   clearFilters: () => {
     console.log('🧹 Clearing all filters');
     
+    const { originalStartups } = get();
+    
     set({
       filters: {
         search: '',
@@ -379,7 +398,8 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
         sortBy: 'recent' as SortOption,
       },
       searchQuery: null,
-      isVectorSearchActive: false
+      isVectorSearchActive: false,
+      allStartups: originalStartups // Restore original data
     });
     
     get().applyFilters();
@@ -424,60 +444,89 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     }
   },
 
-  getFilterMetadata: () => {
-    const { allStartups, filteredStartups, isVectorSearchActive } = get();
+  getFilterMetadata: (options?: { forceRefresh?: boolean }) => {
+    const { allStartups, filteredStartups, originalStartups, isVectorSearchActive } = get();
     
-    // Use filteredStartups during vector search to show current results metadata
-    const startupsToAnalyze = isVectorSearchActive ? filteredStartups : allStartups;
+    // Always use original data for filter metadata to show all available options
+    const startupsToAnalyze = originalStartups.length > 0 ? originalStartups : allStartups;
     
     console.log('🔍 getFilterMetadata called:', {
       allStartupsLength: allStartups.length,
       filteredStartupsLength: filteredStartups.length,
       isVectorSearchActive,
-      startupsToAnalyzeLength: startupsToAnalyze.length
+      startupsToAnalyzeLength: startupsToAnalyze.length,
+      sampleData: startupsToAnalyze.slice(0, 3).map(s => ({ 
+        category: s.category, 
+        location: s.location, 
+        yearFounded: s.yearFounded 
+      }))
     });
     
     // If no startups loaded yet, return empty arrays
     if (!startupsToAnalyze || startupsToAnalyze.length === 0) {
+      console.log('⚠️ No startups data available for filter metadata');
       return { categories: [], locations: [] };
     }
     
-    // Skip cache during vector search
-    if (!isVectorSearchActive) {
+    // Skip cache during vector search or if forceRefresh is requested
+    if (!isVectorSearchActive && !options?.forceRefresh) {
       // Try to get from cache first
       const cached = DataCache.get<{ categories: string[]; locations: string[] }>({ 
         key: CACHE_KEYS.FILTERS_META 
       });
       if (cached && cached.categories.length > 0 && cached.locations.length > 0) {
+        console.log('📦 Using cached filter metadata:', cached);
         return cached;
       }
     }
+    
+    // Clear potentially corrupted cache if forceRefresh
+    if (options?.forceRefresh) {
+      console.log('🧹 Force refreshing filter metadata - clearing cache');
+      DataCache.remove(CACHE_KEYS.FILTERS_META);
+    }
 
     
-    const categories = Array.from(new Set(startupsToAnalyze.map(s => s.category))).filter(Boolean) as string[];
+    // Extract categories - be more lenient with filtering
+    const categories = Array.from(new Set(
+      startupsToAnalyze
+        .map(s => String(s.category || '').trim())
+        .filter(cat => cat.length > 0 && cat.toLowerCase() !== 'other')
+    )) as string[];
+    
+    // Extract locations - be more robust with parsing
     const locations = Array.from(new Set(
-      startupsToAnalyze.map(s => {
-        if (!s.location) return 'Unknown';
-        // Extract city from "City, State/Country" format
-        const city = s.location.split(',')[0].trim();
-        return city || 'Unknown';
-      })
-    )).filter(location => location !== 'Unknown') as string[];
+      startupsToAnalyze
+        .map(s => {
+          const location = String(s.location || '').trim();
+          if (!location) return null;
+          // Handle various location formats
+          const city = location.split(',')[0].trim();
+          return city.length > 0 ? city : null;
+        })
+        .filter(Boolean)
+    )) as string[];
     
 
     const metadata = { categories, locations };
     
-    console.log('📊 Filter metadata:', {
+    console.log('📊 Filter metadata extracted:', {
       categoriesCount: categories.length,
       locationsCount: locations.length,
-      sampleCategories: categories.slice(0, 5),
-      sampleLocations: locations.slice(0, 5)
+      sampleCategories: categories.slice(0, 8),
+      sampleLocations: locations.slice(0, 8),
+      totalStartups: startupsToAnalyze.length,
+      emptyCategories: startupsToAnalyze.filter(s => !s.category || s.category.trim() === '').length,
+      emptyLocations: startupsToAnalyze.filter(s => !s.location || s.location.trim() === '').length
     });
     
     
-    // Cache for 1 hour (only in browser) and only if we have data AND not in vector search mode
-    if (!isVectorSearchActive && categories.length > 0 && locations.length > 0) {
+    // Cache for 1 hour (only in browser) and only if we have meaningful data AND not in vector search mode
+    if (!isVectorSearchActive && categories.length > 0 && locations.length > 0 && startupsToAnalyze.length > 0) {
+      console.log('💾 Caching filter metadata');
       DataCache.set({ key: CACHE_KEYS.FILTERS_META, ttl: 60 * 60 * 1000 }, metadata);
+    } else {
+      console.log('⚠️ Skipping cache - insufficient data or vector search active');
     }
     
     return metadata;
@@ -561,6 +610,17 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       // searchResponse.data already contains all the fields from SearchResult (extends Startup)
       const vectorResults = searchResponse.data;
       
+      // Log vector search results for debugging
+      console.log('🎯 Vector search results:', {
+        count: vectorResults.length,
+        sampleSimilarities: vectorResults.slice(0, 5).map((r, i) => ({
+          index: i,
+          company: r.companyName,
+          similarity: (r as SearchResult).vectorSimilarity,
+          matchType: (r as SearchResult).matchType
+        }))
+      });
+      
       
       // Apply year filter if needed
       const yearFiltered = vectorResults.filter(startup => {
@@ -575,9 +635,8 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       // Use vectorResults for stats calculation, not old allStartups
       const stats = calculateDashboardStats(vectorResults, sorted);
       
-      // 🔧 CRITICAL: Set both allStartups and filteredStartups to prevent override
+      // 🔧 CRITICAL: Only update filteredStartups, keep allStartups as original data
       set({ 
-        allStartups: vectorResults,  // This is the key - set the full dataset
         filteredStartups: sorted, 
         stats,
         loading: false
