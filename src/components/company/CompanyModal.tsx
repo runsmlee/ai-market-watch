@@ -369,10 +369,6 @@ function generateCompetitiveData(company: Startup) {
 }
 
 export default function CompanyModal({ company, isOpen, onClose, hideCloseButton = false }: CompanyModalProps) {
-  console.log('🔍 CompanyModal state:', {
-    isOpen,
-    company: company ? { id: company.id, name: company.companyName } : null
-  });
   const [activeTab, setActiveTab] = useState<'overview' | 'analysis' | 'funding'>('overview');
   const [mounted, setMounted] = useState(false);
 
@@ -411,15 +407,7 @@ export default function CompanyModal({ company, isOpen, onClose, hideCloseButton
 
   const modalContent = (
     <div 
-      className="fixed inset-0 z-[100] overflow-hidden"
-      style={{ 
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 100
-      }}
+      className="fixed inset-0 z-50 overflow-hidden"
       onWheel={(e) => e.stopPropagation()}
       onTouchMove={(e) => e.stopPropagation()}
     >

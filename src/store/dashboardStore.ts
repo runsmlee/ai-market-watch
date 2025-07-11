@@ -542,13 +542,6 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
         throw new Error('Vector search failed');
       }
       
-      console.log('📊 Vector search response data sample:', searchResponse.data.slice(0, 2).map(r => ({
-        id: r.id,
-        companyName: r.companyName,
-        vectorSimilarity: r.vectorSimilarity,
-        matchType: r.matchType,
-        hasAllFields: !!r.id && !!r.companyName && !!r.category
-      })));
       
       // 🔧 FIX: Use search results directly instead of overriding with empty strings
       // searchResponse.data already contains all the fields from SearchResult (extends Startup)
@@ -576,20 +569,6 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
         loading: false
       });
       
-      // 🛡️ Log the final state to verify
-      const finalState = get();
-      console.log('🎯 Final state after vector search:', {
-        allStartupsCount: finalState.allStartups.length,
-        filteredStartupsCount: finalState.filteredStartups.length,
-        isVectorSearchActive: finalState.isVectorSearchActive
-      });
-      
-      console.log(`✅ Vector search completed: ${sorted.length} results`);
-      console.log('🎯 First 3 companies in filteredStartups:', sorted.slice(0, 3).map(s => ({
-        companyName: s.companyName,
-        category: s.category,
-        vectorSimilarity: s.vectorSimilarity
-      })));
     } catch (error) {
       console.error('❌ Vector search failed:', error);
       setError(error instanceof Error ? error.message : 'Vector search failed');

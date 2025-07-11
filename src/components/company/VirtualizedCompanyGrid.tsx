@@ -18,30 +18,10 @@ export default function VirtualizedCompanyGrid({
 }: VirtualizedCompanyGridProps) {
   // Component is ready
   const [selectedCompany, setSelectedCompany] = useState<Startup | null>(null);
-  
-  const handleCompanyClick = (company: Startup) => {
-    console.log('🖱️ Company clicked:', {
-      id: company.id,
-      companyName: company.companyName,
-      hasAllFields: !!company.id && !!company.companyName
-    });
-    setSelectedCompany(company);
-  };
   const [isClient, setIsClient] = useState(false);
   const { sidebarCollapsed } = useDashboardStore();
   const parentRef = useRef<HTMLDivElement>(null);
 
-  // Debug logging
-  useEffect(() => {
-    console.log('🎨 VirtualizedCompanyGrid received companies:', companies.length);
-    if (companies.length > 0) {
-      console.log('🎨 First 3 companies:', companies.slice(0, 3).map(c => ({
-        companyName: c.companyName,
-        category: c.category,
-        vectorSimilarity: c.vectorSimilarity
-      })));
-    }
-  }, [companies]);
 
   // Ensure client-side only rendering for responsive behavior
   useEffect(() => {
@@ -220,7 +200,7 @@ export default function VirtualizedCompanyGrid({
                         <CompanyCard 
                           key={company.id} 
                           company={company}
-                          onClick={() => handleCompanyClick(company)}
+                          onClick={() => setSelectedCompany(company)}
                         />
                       ))}
                     </div>
@@ -278,7 +258,7 @@ export default function VirtualizedCompanyGrid({
                 <CompanyCard 
                   key={company.id} 
                   company={company}
-                  onClick={() => handleCompanyClick(company)}
+                  onClick={() => setSelectedCompany(company)}
                 />
               ))}
             </div>
