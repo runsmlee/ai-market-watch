@@ -533,17 +533,9 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   performVectorSearch: async () => {
     const { filters, setLoading, setError } = get();
     
-    // Check if vector search conditions are met
     const searchQuery = filters.search.trim();
-    if (searchQuery.length < 10) {
-      console.log('🔍 Search query too short for vector search');
-      return;
-    }
-    
-    // Check if current filtered results are empty
-    const currentFilteredCount = get().filteredStartups.length;
-    if (currentFilteredCount > 0) {
-      console.log('🔍 Text matches found, skipping vector search');
+    if (!searchQuery) {
+      console.log('🔍 No search query for vector search');
       return;
     }
     
@@ -556,11 +548,18 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
         categories: filters.categories.size > 0 ? Array.from(filters.categories) : undefined,
         locations: filters.locations.size > 0 ? Array.from(filters.locations) : undefined,
         limit: 50,
+        forceVectorSearch: true,
       });
       
       if (!searchResponse.success) {
         throw new Error('Vector search failed');
       }
+      
+      console.log('📊 Vector search response data sample:', searchResponse.data.slice(0, 2).map(r => ({
+        companyName: r.companyName,
+        vectorSimilarity: r.vectorSimilarity,
+        matchType: r.matchType
+      })));
       
       // Convert search results to Startup format
       const vectorResults = searchResponse.data.map(result => ({

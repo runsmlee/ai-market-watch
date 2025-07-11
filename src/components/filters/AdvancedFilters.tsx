@@ -151,7 +151,7 @@ export default function AdvancedFilters({
                     value={searchValue}
                     onChange={(e) => setSearchValue(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && searchValue.trim().length >= 10) {
+                      if (e.key === 'Enter' && searchValue.trim()) {
                         console.log('🔍 Enter key pressed with query:', searchValue.trim());
                         performVectorSearch();
                       }

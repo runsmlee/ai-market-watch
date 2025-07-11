@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseClient } from '@/lib/supabase';
+import { getSupabaseClient, convertStartupDetailsToStartup } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,6 +8,7 @@ export async function GET(request: NextRequest) {
     const categories = searchParams.get('categories')?.split(',').filter(Boolean);
     const locations = searchParams.get('locations')?.split(',').filter(Boolean);
     const limit = parseInt(searchParams.get('limit') || '50');
+    const forceVectorSearch = searchParams.get('forceVector') === 'true';
 
     if (!query.trim()) {
       return NextResponse.json(
@@ -16,28 +17,35 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log('🔍 Search requested:', { query, categories, locations });
+    console.log('🔍 Search requested:', { query, categories, locations, forceVectorSearch });
 
     const supabase = getSupabaseClient();
     if (!supabase) {
       throw new Error('Supabase client not initialized');
     }
 
-    // Always perform text search first as a fallback
-    console.log('📝 Performing text search...');
-    const textResults = await performTextSearch(supabase, query, categories, locations, limit);
-    console.log(`📝 Text search found ${textResults.length} results`);
+    // Perform text search unless vector search is forced
+    let textResults: any[] = [];
+    if (!forceVectorSearch) {
+      console.log('📝 Performing text search...');
+      textResults = await performTextSearch(supabase, query, categories, locations, limit);
+      console.log(`📝 Text search found ${textResults.length} results`);
+    }
 
-    // Try vector search only if we have OpenAI key and text results are limited
+    // Try vector search if forced or if we have OpenAI key and text results are limited
     let vectorResults: any[] = [];
     let embedding = null;
     
     const useVectorSearch = process.env.OPENAI_API_KEY && 
                           process.env.OPENAI_API_KEY !== 'your_openai_api_key_here';
 
-    if (useVectorSearch && textResults.length < 10) {
+    if (useVectorSearch && (forceVectorSearch || textResults.length < 10)) {
       try {
-        console.log('🚀 Attempting vector search...');
+        if (forceVectorSearch) {
+          console.log('🚀 Performing forced vector search...');
+        } else {
+          console.log('🚀 Attempting vector search (limited text results)...');
+        }
         
         // Step 1: Generate embedding for the search query
         const embeddingResponse = await fetch(
@@ -77,13 +85,23 @@ export async function GET(request: NextRequest) {
 
     console.log(`✅ Search completed: ${combinedResults.length} total results (${textResults.length} text + ${uniqueVectorResults.length} vector)`);
 
+    // Determine search type
+    let searchType: 'combined' | 'text-only' | 'vector-only';
+    if (forceVectorSearch && embedding) {
+      searchType = 'vector-only';
+    } else if (embedding && textResults.length > 0) {
+      searchType = 'combined';
+    } else {
+      searchType = 'text-only';
+    }
+
     return NextResponse.json({
       success: true,
       data: combinedResults,
       count: combinedResults.length,
       textMatchCount: textResults.length,
       vectorMatchCount: uniqueVectorResults.length,
-      searchType: embedding ? 'combined' : 'text-only',
+      searchType,
       query,
     });
   } catch (error) {
@@ -129,17 +147,18 @@ async function performTextSearch(
       return [];
     }
 
-    return (data || []).map((item: any) => ({
-      id: item.id,
-      companyName: item.company_name,
-      description: item.one_line_description,
-      location: item.location,
-      category: item.category,
-      totalFundingRaised: item.total_funding_raised,
-      yearFounded: item.year_founded,
-      companySlug: item.company_slug,
-      matchType: 'text',
-    }));
+    // Use the same conversion function as regular startup fetch for consistency
+    return (data || []).map((item: any) => {
+      const convertedStartup = convertStartupDetailsToStartup(item);
+      if (convertedStartup) {
+        // Add text-specific properties
+        return {
+          ...convertedStartup,
+          matchType: 'text' as const,
+        };
+      }
+      return null;
+    }).filter(Boolean);
   } catch (error) {
     console.error('Text search failed:', error);
     return [];
@@ -158,16 +177,13 @@ async function performVectorSearch(
   try {
     console.log('🔍 Calling search_companies_hybrid RPC function...');
     
-    // Convert embedding array to text format for the RPC function
-    const embeddingText = JSON.stringify(embedding);
     console.log('📊 Embedding prepared:', { 
       originalLength: embedding.length, 
-      textLength: embeddingText.length,
       firstFewValues: embedding.slice(0, 5)
     });
     
     const { data, error } = await supabase.rpc('search_companies_hybrid', {
-      query_embedding_text: embeddingText, // Changed: pass as text instead of array
+      query_embedding: embedding, // Changed: pass array directly instead of JSON string
       search_text: null, // Don't use text matching in vector search
       p_categories: categories || null,
       p_locations: locations || null,
@@ -187,7 +203,7 @@ async function performVectorSearch(
       if (error.message?.includes('structure of query does not match')) {
         console.log('⚠️ Vector function parameter mismatch - check function signature');
         console.log('📝 Attempted parameters:', {
-          query_embedding_text: embeddingText.substring(0, 100) + '...',
+          query_embedding: embedding.slice(0, 5),
           p_categories: categories,
           p_locations: locations,
           p_limit: limit
@@ -208,18 +224,19 @@ async function performVectorSearch(
       })));
     }
 
-    return (data || []).map((item: any) => ({
-      id: item.id,
-      companyName: item.company_name,
-      description: item.one_line_description,
-      location: item.location,
-      category: item.category,
-      totalFundingRaised: item.total_funding_raised,
-      yearFounded: item.year_founded,
-      companySlug: item.company_slug,
-      vectorSimilarity: item.vector_similarity,
-      matchType: 'vector',
-    }));
+    // Use the same conversion function as regular startup fetch for consistency
+    return (data || []).map((item: any) => {
+      const convertedStartup = convertStartupDetailsToStartup(item);
+      if (convertedStartup) {
+        // Add vector-specific properties
+        return {
+          ...convertedStartup,
+          vectorSimilarity: item.vector_similarity,
+          matchType: 'vector' as const,
+        };
+      }
+      return null;
+    }).filter(Boolean);
   } catch (error) {
     console.error('Vector search failed:', error);
     return [];

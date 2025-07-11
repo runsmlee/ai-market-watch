@@ -3,25 +3,50 @@ const nextConfig = {
   output: 'standalone',
   trailingSlash: false,
   images: {
-    domains: [
-      'www.google.com',
-      'icons.duckduckgo.com',
-      'logo.clearbit.com',
-      'unavatar.io',
-    ],
     remotePatterns: [
+      // Clearbit logo service
       {
         protocol: 'https',
         hostname: 'logo.clearbit.com',
         port: '',
         pathname: '/**',
       },
+      // Google favicons
       {
         protocol: 'https',
         hostname: 'www.google.com',
         port: '',
         pathname: '/s2/favicons/**',
       },
+      // DuckDuckGo favicons
+      {
+        protocol: 'https',
+        hostname: 'icons.duckduckgo.com',
+        port: '',
+        pathname: '/**',
+      },
+      // GitHub avatars for specific companies
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+        port: '',
+        pathname: '/**',
+      },
+      // Favicon.io service
+      {
+        protocol: 'https',
+        hostname: 'favicon.io',
+        port: '',
+        pathname: '/**',
+      },
+      // Unavatar service (if used)
+      {
+        protocol: 'https',
+        hostname: 'unavatar.io',
+        port: '',
+        pathname: '/**',
+      },
+      // Unsplash images
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',

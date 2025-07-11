@@ -18,7 +18,33 @@ RETURNS TABLE (
   total_funding_raised text,
   year_founded integer,
   company_slug text,
-  vector_similarity float
+  vector_similarity float,
+  -- Add all additional fields from startup_details
+  ceo text,
+  previous_experience_of_ceo text,
+  key_members text,
+  team_size text,
+  webpage text,
+  current_stage_status text,
+  target_customer text,
+  main_value_proposition text,
+  key_products_solutions_portfolio text,
+  industry_verticals_served text,
+  uvp text,
+  key_technological_business_advantage text,
+  patents_ip_if_public text,
+  key_partnerships_collaborations text,
+  main_competitors_2_3 text,
+  how_they_differentiate text,
+  market_positioning text,
+  geographic_competition_focus text,
+  latest_funding_round text,
+  key_investors text,
+  basic_growth_metrics text,
+  notable_customers text,
+  major_milestones text,
+  updated_date text,
+  vector_id integer
 )
 LANGUAGE plpgsql
 AS $$
@@ -33,7 +59,33 @@ BEGIN
     sd.total_funding_raised,
     sd.year_founded,
     sd.company_slug,
-    1 - (sv.embedding <=> query_embedding) as vector_similarity
+    1 - (sv.embedding <=> query_embedding) as vector_similarity,
+    -- Return all additional fields
+    sd.ceo,
+    sd.previous_experience_of_ceo,
+    sd.key_members,
+    sd.team_size,
+    sd.webpage,
+    sd.current_stage_status,
+    sd.target_customer,
+    sd.main_value_proposition,
+    sd.key_products_solutions_portfolio,
+    sd.industry_verticals_served,
+    sd.uvp,
+    sd.key_technological_business_advantage,
+    sd.patents_ip_if_public,
+    sd.key_partnerships_collaborations,
+    sd.main_competitors_2_3,
+    sd.how_they_differentiate,
+    sd.market_positioning,
+    sd.geographic_competition_focus,
+    sd.latest_funding_round,
+    sd.key_investors,
+    sd.basic_growth_metrics,
+    sd.notable_customers,
+    sd.major_milestones,
+    sd.updated_date,
+    sd.vector_id
   FROM startup_details sd
   JOIN startup_vectors sv ON sd.vector_id = sv.id
   WHERE 
@@ -62,7 +114,33 @@ RETURNS TABLE (
   total_funding_raised text,
   year_founded integer,
   company_slug text,
-  vector_similarity float
+  vector_similarity float,
+  -- Add all additional fields from startup_details
+  ceo text,
+  previous_experience_of_ceo text,
+  key_members text,
+  team_size text,
+  webpage text,
+  current_stage_status text,
+  target_customer text,
+  main_value_proposition text,
+  key_products_solutions_portfolio text,
+  industry_verticals_served text,
+  uvp text,
+  key_technological_business_advantage text,
+  patents_ip_if_public text,
+  key_partnerships_collaborations text,
+  main_competitors_2_3 text,
+  how_they_differentiate text,
+  market_positioning text,
+  geographic_competition_focus text,
+  latest_funding_round text,
+  key_investors text,
+  basic_growth_metrics text,
+  notable_customers text,
+  major_milestones text,
+  updated_date text,
+  vector_id integer
 )
 LANGUAGE plpgsql
 AS $$
@@ -77,7 +155,33 @@ BEGIN
     sd.total_funding_raised,
     sd.year_founded,
     sd.company_slug,
-    1 - (sv.embedding <=> query_embedding) as vector_similarity
+    1 - (sv.embedding <=> query_embedding) as vector_similarity,
+    -- Return all additional fields
+    sd.ceo,
+    sd.previous_experience_of_ceo,
+    sd.key_members,
+    sd.team_size,
+    sd.webpage,
+    sd.current_stage_status,
+    sd.target_customer,
+    sd.main_value_proposition,
+    sd.key_products_solutions_portfolio,
+    sd.industry_verticals_served,
+    sd.uvp,
+    sd.key_technological_business_advantage,
+    sd.patents_ip_if_public,
+    sd.key_partnerships_collaborations,
+    sd.main_competitors_2_3,
+    sd.how_they_differentiate,
+    sd.market_positioning,
+    sd.geographic_competition_focus,
+    sd.latest_funding_round,
+    sd.key_investors,
+    sd.basic_growth_metrics,
+    sd.notable_customers,
+    sd.major_milestones,
+    sd.updated_date,
+    sd.vector_id
   FROM startup_details sd
   JOIN startup_vectors sv ON sd.vector_id = sv.id
   WHERE 1 - (sv.embedding <=> query_embedding) > similarity_threshold

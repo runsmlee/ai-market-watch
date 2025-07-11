@@ -1,6 +1,6 @@
 import { Startup } from '@/types/startup';
 
-export interface SearchResult extends Partial<Startup> {
+export interface SearchResult extends Startup {
   vectorSimilarity?: number;
   textMatchScore?: number;
   combinedScore?: number;
@@ -14,7 +14,7 @@ export interface SearchResponse {
   count: number;
   textMatchCount?: number;
   vectorMatchCount?: number;
-  searchType: 'combined' | 'text-only';
+  searchType: 'combined' | 'text-only' | 'vector-only';
   query: string;
 }
 
@@ -24,6 +24,7 @@ export async function searchCompanies(
     categories?: string[];
     locations?: string[];
     limit?: number;
+    forceVectorSearch?: boolean;
   }
 ): Promise<SearchResponse> {
   if (!query.trim()) {
@@ -31,7 +32,7 @@ export async function searchCompanies(
       success: true,
       data: [],
       count: 0,
-      searchType: 'text',
+      searchType: 'text-only',
       query: '',
     };
   }
@@ -40,6 +41,7 @@ export async function searchCompanies(
     const params = new URLSearchParams({
       q: query,
       ...(options?.limit && { limit: options.limit.toString() }),
+      ...(options?.forceVectorSearch && { forceVector: 'true' }),
     });
 
     if (options?.categories?.length) {
