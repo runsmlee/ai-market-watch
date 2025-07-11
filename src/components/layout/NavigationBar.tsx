@@ -103,6 +103,7 @@ export default function NavigationBar({ onMenuClick }: NavigationBarProps) {
               <div className={`
                 relative flex items-center transition-all duration-300
                 ${isSearchFocused ? 'scale-[1.02]' : ''}
+                ${!isSearchFocused && !searchValue ? 'animate-pulse-orange-subtle' : ''}
               `}>
                 <div className={`
                   absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 rounded-lg blur-xl 
@@ -118,11 +119,11 @@ export default function NavigationBar({ onMenuClick }: NavigationBarProps) {
                     onChange={(e) => setSearchValue(e.target.value)}
                     onKeyDown={handleKeyDown}
                     onFocus={() => setIsSearchFocused(true)}
-                    placeholder="Describe any AI company (e.g. 'AI for sustainable energy') and press Enter"
-                    className="w-full pl-10 pr-4 py-2.5 bg-white/[0.04] border border-white/[0.08] 
-                             rounded-lg text-sm text-white/90 placeholder-white/40
-                             focus:bg-white/[0.06] focus:border-white/[0.12] focus:outline-none
-                             transition-all duration-200"
+                    placeholder="🔍 AI semantic search - describe any company..."
+                    className="w-full pl-10 pr-4 py-3 bg-white/[0.06] border border-white/[0.12] 
+                             rounded-xl text-sm text-white/95 placeholder-white/50 font-medium
+                             focus:bg-white/[0.08] focus:border-white/[0.16] focus:outline-none
+                             transition-all duration-200 hover:bg-white/[0.07]"
                   />
                   {searchValue && (
                     <button
@@ -137,13 +138,13 @@ export default function NavigationBar({ onMenuClick }: NavigationBarProps) {
               
               {/* Search helper text */}
               {isSearchFocused && !searchValue && (
-                <div className="absolute top-full left-0 right-0 mt-2 px-3 py-2 bg-black/90 backdrop-blur-xl 
-                               border border-white/[0.08] rounded-lg">
-                  <div className="flex items-start gap-2">
-                    <div className="w-1 h-1 bg-green-400 rounded-full mt-1.5 animate-pulse"></div>
-                    <div className="text-xs space-y-1">
-                      <p className="text-white/80 font-medium">AI-powered search understands your intent</p>
-                      <p className="text-white/60">Try: "computer vision for retail", "LLMs for education", "autonomous driving startups"</p>
+                <div className="absolute top-full left-0 right-0 mt-2 px-4 py-3 bg-black/95 backdrop-blur-xl 
+                               border border-white/[0.12] rounded-xl shadow-xl">
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-orange-400 rounded-full mt-1 animate-pulse"></div>
+                    <div className="text-xs space-y-2">
+                      <p className="text-white/90 font-semibold">🚀 AI-powered search understands your intent</p>
+                      <p className="text-white/70">Describe in natural language: "computer vision for retail", "LLMs for education"</p>
                     </div>
                   </div>
                 </div>
@@ -153,7 +154,7 @@ export default function NavigationBar({ onMenuClick }: NavigationBarProps) {
               {searchQuery && isSearchFocused && (
                 <div className="absolute top-full left-0 right-0 mt-2 px-3 py-2 bg-black/90 backdrop-blur-xl 
                                border border-white/[0.08] rounded-lg text-xs text-white/60">
-                  <span>Finding companies similar to: "{searchQuery}"</span>
+                  <span>Finding companies similar to: &quot;{searchQuery}&quot;</span>
                 </div>
               )}
             </div>

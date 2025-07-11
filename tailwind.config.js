@@ -102,6 +102,7 @@ module.exports = {
         'shimmer': 'shimmer 2s linear infinite',
         'pulse-slow': 'pulse 3s ease-in-out infinite',
         'pulse-border': 'pulseBorder 2s ease-in-out infinite',
+        'pulse-orange-subtle': 'pulseOrangeSubtle 3s ease-in-out infinite',
         'gradient-x': 'gradientX 3s ease-in-out infinite',
       },
       keyframes: {
@@ -140,6 +141,18 @@ module.exports = {
         pulseBorder: {
           '0%, 100%': { borderColor: 'rgba(255, 255, 255, 0.12)' },
           '50%': { borderColor: 'rgba(255, 255, 255, 0.24)' },
+        },
+        pulseOrangeSubtle: {
+          '0%, 100%': { 
+            borderColor: 'rgba(251, 146, 60, 0.12)',
+            borderRadius: '0.75rem',
+            boxShadow: '0 0 0 0px rgba(251, 146, 60, 0)'
+          },
+          '50%': { 
+            borderColor: 'rgba(251, 146, 60, 0.35)',
+            borderRadius: '0.75rem',
+            boxShadow: '0 0 0 1px rgba(251, 146, 60, 0.15), 0 0 12px rgba(251, 146, 60, 0.1)'
+          },
         },
         gradientX: {
           '0%, 100%': { 'background-position': '0% 50%' },

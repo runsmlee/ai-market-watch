@@ -5,8 +5,6 @@ import { ChevronLeft, ChevronRight, BarChart3 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import StatsGrid from '@/components/layout/StatsGrid';
-import HeroSearch from '@/components/search/HeroSearch';
-import AdvancedFilters from '@/components/filters/AdvancedFilters';
 import DNAMatchFloatingButton from '@/components/dna/DNAMatchFloatingButton';
 import DNAMatchModalWithCompany from '@/components/dna/DNAMatchModalWithCompany';
 import { useDashboardStore } from '@/store/dashboardStore';
@@ -185,17 +183,6 @@ export default function DashboardContent() {
         
         {/* Stats Grid */}
         <StatsGrid stats={stats} />
-        
-        {/* Hero Search - Moved below stats for better flow */}
-        <HeroSearch />
-        
-        {/* Advanced Filters - Renamed from Filters */}
-        <AdvancedFilters 
-          filters={filters}
-          onFiltersChange={updateFilters}
-          categories={filterMetadata.categories}
-          locations={filterMetadata.locations}
-        />
       </div>
 
       {/* Main Content - Full width with internal padding */}
