@@ -7,7 +7,7 @@ import Footer from '@/components/layout/Footer';
 import StatsGrid from '@/components/layout/StatsGrid';
 import AdvancedFilters from '@/components/filters/AdvancedFilters';
 import DNAMatchFloatingButton from '@/components/dna/DNAMatchFloatingButton';
-import DNAMatchModal from '@/components/dna/DNAMatchModal';
+import DNAMatchModalWithCompany from '@/components/dna/DNAMatchModalWithCompany';
 import { useDashboardStore } from '@/store/dashboardStore';
 import { fetchStartups, transformApiDataToStartups } from '@/lib/api';
 import { Startup } from '@/types/startup';
@@ -290,7 +290,7 @@ export default function DashboardContent() {
       
       {/* DNA Match Floating Button & Modal */}
       <DNAMatchFloatingButton onClick={() => setShowDNAModal(true)} />
-      <DNAMatchModal isOpen={showDNAModal} onClose={() => setShowDNAModal(false)} />
+      <DNAMatchModalWithCompany isOpen={showDNAModal} onClose={() => setShowDNAModal(false)} />
     </div>
   );
 }

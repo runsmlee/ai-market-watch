@@ -292,7 +292,7 @@ export default function DNAMatchModal({ isOpen, onClose }: DNAMatchModalProps) {
                               placeholder="What specific problem are you addressing?"
                               rows={2}
                               className="w-full px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg
-                                       text-white placeholder-gray-500 focus:border-purple-500 focus:bg-gray-800
+                                       text-white placeholder-gray-500 focus:border-blue-700 focus:bg-gray-800
                                        transition-all duration-200 resize-none text-sm"
                               required
                             />
@@ -309,7 +309,7 @@ export default function DNAMatchModal({ isOpen, onClose }: DNAMatchModalProps) {
                               placeholder="How does your product/service solve this problem?"
                               rows={2}
                               className="w-full px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg
-                                       text-white placeholder-gray-500 focus:border-purple-500 focus:bg-gray-800
+                                       text-white placeholder-gray-500 focus:border-blue-700 focus:bg-gray-800
                                        transition-all duration-200 resize-none text-sm"
                               required
                             />
