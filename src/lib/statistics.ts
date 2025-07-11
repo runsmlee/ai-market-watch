@@ -94,9 +94,7 @@ export function calculateLocationDistribution(startups: Startup[]): Record<strin
   const distribution: Record<string, number> = {};
   
   startups.forEach(startup => {
-    const location = startup.location ? 
-      startup.location.split(',')[0].trim() : 
-      'Unknown';
+    const location = startup.location?.trim() || 'Unknown';
     distribution[location] = (distribution[location] || 0) + 1;
   });
   

@@ -101,4 +101,15 @@ export const CACHE_KEYS = {
   STATS: 'ai-market-watch-stats',
   FILTERS_META: 'ai-market-watch-filters-meta',
   LAST_UPDATE: 'ai-market-watch-last-update'
-} as const; 
+} as const;
+
+// Force clear all caches and reload data
+export function clearAllCaches(): void {
+  DataCache.clear();
+  // Clear any other caches
+  if (typeof window !== 'undefined') {
+    // Clear session storage too
+    sessionStorage.clear();
+  }
+  console.log('🧹 All caches cleared');
+} 

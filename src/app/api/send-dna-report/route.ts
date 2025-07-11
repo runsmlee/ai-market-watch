@@ -32,12 +32,36 @@ export async function POST(request: NextRequest) {
       throw new Error('Invalid analysis result structure - no matches found');
     }
 
+    // Transform the actualResult to match the expected format
+    const transformedResult: any = {
+      matches: (actualResult?.matches || []).map((match: any) => ({
+        id: match.id,
+        companyName: match.company_name,
+        similarity: match.similarity_score,
+        category: match.category,
+        description: match.description,
+        fundingRaised: match.total_funding,
+        yearFounded: match.year_founded,
+        whySimilar: match.why_similar,
+        keyDifferentiators: match.key_differentiators,
+        fundingStage: match.funding_stage,
+        location: match.location,
+      })),
+      insights: {
+        commonPatterns: actualResult?.insights?.common_patterns || [],
+        differentiators: [], // Not provided by n8n, but expected by PDF
+        opportunities: actualResult?.insights?.market_opportunities || [],
+        recommendations: actualResult?.insights?.strategic_recommendations || [],
+      },
+      metadata: actualResult?.metadata,
+    };
+
     // Generate PDF report
     console.log('Generating PDF report...');
     const pdfBuffer = await generateDNAMatchPDF({
       companyName: formData.companyName,
       companyData: formData,
-      analysisResult: actualResult,
+      analysisResult: transformedResult,
     });
 
     // Upload PDF to Supabase Storage (skip if bucket doesn't exist)

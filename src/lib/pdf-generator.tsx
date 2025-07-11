@@ -17,25 +17,24 @@ interface DNAMatchReportData {
   analysisResult: {
     matches: Array<{
       id: string;
-      company_name: string;
+      companyName: string;
       category: string;
-      similarity_score: number;
+      similarity: number;
       description: string;
-      why_similar: string;
-      funding_stage: string;
-      total_funding: string;
-      year_founded: number;
-      location: string;
-      key_differentiators: string[];
+      whySimilar?: string;
+      fundingStage?: string;
+      fundingRaised: string;
+      yearFounded: number;
+      location?: string;
+      keyDifferentiators?: string[];
     }>;
     insights: {
-      common_patterns: string[];
-      market_opportunities: string[];
-      potential_competitors: string[];
-      potential_partners: string[];
-      strategic_recommendations: string[];
+      commonPatterns: string[];
+      opportunities: string[];
+      differentiators: string[];
+      recommendations: string[];
     };
-    metadata: {
+    metadata?: {
       total_results: number;
       search_timestamp: string;
     };
@@ -212,11 +211,10 @@ const DNAMatchReportPDF: React.FC<DNAMatchReportData> = ({
   const { 
     matches = [], 
     insights = {
-      common_patterns: [],
-      market_opportunities: [],
-      strategic_recommendations: [],
-      potential_competitors: [],
-      potential_partners: []
+      commonPatterns: [],
+      opportunities: [],
+      recommendations: [],
+      differentiators: []
     }, 
     metadata = {} 
   } = analysisResult || {};
@@ -250,32 +248,32 @@ const DNAMatchReportPDF: React.FC<DNAMatchReportData> = ({
           <View key={match.id} style={styles.matchCard}>
             <View style={styles.matchHeader}>
               <Text style={styles.matchTitle}>
-                {index + 1}. {match.company_name}
+                {index + 1}. {match.companyName}
               </Text>
               <Text style={styles.matchScore}>
-                {Math.round(match.similarity_score * 100)}% Match
+                {Math.round(match.similarity * 100)}% Match
               </Text>
             </View>
             
             <Text style={styles.matchCategory}>
-              {match.category} • Founded {match.year_founded} • {match.location}
+              {match.category} • Founded {match.yearFounded} {match.location ? `• ${match.location}` : ''}
             </Text>
             
             <Text style={styles.matchDescription}>{match.description}</Text>
             
-            {match.why_similar && (
+            {match.whySimilar && (
               <View style={styles.similarityBox}>
                 <Text style={styles.similarityTitle}>Why Similar</Text>
-                <Text style={styles.similarityText}>{match.why_similar}</Text>
+                <Text style={styles.similarityText}>{match.whySimilar}</Text>
               </View>
             )}
             
-            {match.key_differentiators && match.key_differentiators.length > 0 && (
+            {match.keyDifferentiators && match.keyDifferentiators.length > 0 && (
               <View>
                 <Text style={{ fontSize: 11, fontWeight: 'bold', marginBottom: 4 }}>
                   Key Differentiators:
                 </Text>
-                {match.key_differentiators.map((diff, idx) => (
+                {match.keyDifferentiators.map((diff, idx) => (
                   <Text key={idx} style={styles.differentiatorItem}>
                     • {diff}
                   </Text>
@@ -285,10 +283,10 @@ const DNAMatchReportPDF: React.FC<DNAMatchReportData> = ({
             
             <View style={styles.fundingInfo}>
               <Text style={styles.fundingText}>
-                Stage: {match.funding_stage || 'N/A'}
+                Stage: {match.fundingStage || 'N/A'}
               </Text>
               <Text style={styles.fundingText}>
-                Total Raised: {match.total_funding || 'N/A'}
+                Total Raised: {match.fundingRaised || 'N/A'}
               </Text>
             </View>
           </View>
@@ -302,10 +300,10 @@ const DNAMatchReportPDF: React.FC<DNAMatchReportData> = ({
         <Text style={styles.sectionTitle}>Strategic Insights</Text>
 
         {/* Common Patterns */}
-        {insights.common_patterns && insights.common_patterns.length > 0 && (
+        {insights.commonPatterns && insights.commonPatterns.length > 0 && (
           <View style={styles.insightSection}>
             <Text style={styles.insightTitle}>📊 Common Success Patterns</Text>
-            {insights.common_patterns.map((pattern, index) => (
+            {insights.commonPatterns.map((pattern, index) => (
               <Text key={index} style={styles.insightItem}>
                 • {pattern}
               </Text>
@@ -314,10 +312,10 @@ const DNAMatchReportPDF: React.FC<DNAMatchReportData> = ({
         )}
 
         {/* Market Opportunities */}
-        {insights.market_opportunities && insights.market_opportunities.length > 0 && (
+        {insights.opportunities && insights.opportunities.length > 0 && (
           <View style={styles.insightSection}>
             <Text style={styles.insightTitle}>🎯 Market Opportunities</Text>
-            {insights.market_opportunities.map((opportunity, index) => (
+            {insights.opportunities.map((opportunity, index) => (
               <Text key={index} style={styles.insightItem}>
                 • {opportunity}
               </Text>
@@ -326,10 +324,10 @@ const DNAMatchReportPDF: React.FC<DNAMatchReportData> = ({
         )}
 
         {/* Strategic Recommendations */}
-        {insights.strategic_recommendations && insights.strategic_recommendations.length > 0 && (
+        {insights.recommendations && insights.recommendations.length > 0 && (
           <View style={styles.insightSection}>
             <Text style={styles.insightTitle}>💡 Strategic Recommendations</Text>
-            {insights.strategic_recommendations.map((rec, index) => (
+            {insights.recommendations.map((rec, index) => (
               <Text key={index} style={styles.insightItem}>
                 • {rec}
               </Text>
@@ -337,23 +335,15 @@ const DNAMatchReportPDF: React.FC<DNAMatchReportData> = ({
           </View>
         )}
 
-        {/* Potential Competitors */}
-        {insights.potential_competitors && insights.potential_competitors.length > 0 && (
+        {/* Differentiators */}
+        {insights.differentiators && insights.differentiators.length > 0 && (
           <View style={styles.insightSection}>
-            <Text style={styles.insightTitle}>⚔️ Potential Competitors</Text>
-            <Text style={styles.insightItem}>
-              {insights.potential_competitors.join(', ')}
-            </Text>
-          </View>
-        )}
-
-        {/* Potential Partners */}
-        {insights.potential_partners && insights.potential_partners.length > 0 && (
-          <View style={styles.insightSection}>
-            <Text style={styles.insightTitle}>🤝 Potential Partners</Text>
-            <Text style={styles.insightItem}>
-              {insights.potential_partners.join(', ')}
-            </Text>
+            <Text style={styles.insightTitle}>🚀 Key Differentiators</Text>
+            {insights.differentiators.map((diff, index) => (
+              <Text key={index} style={styles.insightItem}>
+                • {diff}
+              </Text>
+            ))}
           </View>
         )}
 
