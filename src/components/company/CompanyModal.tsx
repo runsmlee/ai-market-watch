@@ -32,6 +32,7 @@ interface CompanyModalProps {
   company: Startup | null;
   isOpen: boolean;
   onClose: () => void;
+  hideCloseButton?: boolean;
 }
 
 
@@ -366,7 +367,7 @@ function generateCompetitiveData(company: Startup) {
   });
 }
 
-export default function CompanyModal({ company, isOpen, onClose }: CompanyModalProps) {
+export default function CompanyModal({ company, isOpen, onClose, hideCloseButton = false }: CompanyModalProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'analysis' | 'funding'>('overview');
 
   const radarData = company ? generateVCRadarData(company) : [];
@@ -448,14 +449,16 @@ export default function CompanyModal({ company, isOpen, onClose }: CompanyModalP
               </div>
             </div>
 
-            <button
-              onClick={onClose}
-              className="w-8 h-8 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] 
-                       border border-white/[0.12] hover:border-white/[0.16] flex items-center justify-center
-                       transition-all duration-200 flex-shrink-0"
-            >
-              <X className="w-4 h-4 text-white/70 hover:text-white/90" />
-            </button>
+            {!hideCloseButton && (
+              <button
+                onClick={onClose}
+                className="w-8 h-8 rounded-lg bg-white/[0.06] hover:bg-white/[0.12] 
+                         border border-white/[0.12] hover:border-white/[0.16] flex items-center justify-center
+                         transition-all duration-200 flex-shrink-0"
+              >
+                <X className="w-4 h-4 text-white/70 hover:text-white/90" />
+              </button>
+            )}
           </div>
 
           {/* Compact Tab Navigation */}

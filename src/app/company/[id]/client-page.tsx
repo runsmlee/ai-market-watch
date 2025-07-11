@@ -123,7 +123,8 @@ export default function CompanyClientPage({ id }: CompanyClientPageProps) {
         <CompanyModal 
           company={company} 
           isOpen={true} 
-          onClose={handleClose} 
+          onClose={handleClose}
+          hideCloseButton={true}
         />
       </div>
     </>
