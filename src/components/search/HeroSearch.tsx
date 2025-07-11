@@ -21,6 +21,7 @@ export default function HeroSearch() {
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [showPulse, setShowPulse] = useState(true);
   const debouncedSearch = useDebounce(searchValue, 300);
   
   const { 
@@ -51,6 +52,13 @@ export default function HeroSearch() {
     }
   }, [debouncedSearch, updateFilters]); // Remove performVectorSearch from deps to prevent loops
 
+  // Remove pulse effect after first interaction
+  useEffect(() => {
+    if (searchValue || isFocused) {
+      setShowPulse(false);
+    }
+  }, [searchValue, isFocused]);
+
   const handleSearch = () => {
     const trimmedQuery = searchValue.trim();
     if (trimmedQuery) {
@@ -74,38 +82,39 @@ export default function HeroSearch() {
       <div className="relative">
         {/* Marketing copy */}
         <div className="text-center mb-6 sm:mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/[0.04] border border-white/[0.08] rounded-full mb-4">
-            <Sparkles className="w-3.5 h-3.5 text-white/70" />
-            <span className="text-xs font-medium text-white/70 tracking-wide">AI-Powered Discovery</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-white/[0.12] rounded-full mb-4 animate-pulse-slow">
+            <Sparkles className="w-4 h-4 text-white/80" />
+            <span className="text-sm font-medium text-white/90 tracking-wide">🚀 Vector-Based Semantic Search</span>
           </div>
           
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-light text-white mb-3">
-            Describe the <span className="text-gradient-elegant font-normal">AI company</span> you're looking for
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light text-white mb-4">
+            Discover <span className="text-gradient-elegant font-medium">AI companies</span> with natural language
           </h2>
           
-          <p className="text-sm sm:text-base text-white/60 max-w-2xl mx-auto">
-            Use natural language to find AI startups - powered by semantic search
+          <p className="text-base sm:text-lg text-white/70 max-w-2xl mx-auto font-light">
+            Describe what you're looking for in plain English - our AI understands context, not just keywords
           </p>
         </div>
 
         {/* Search container */}
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <div className={`
             relative group transition-all duration-300
-            ${isFocused ? 'scale-[1.02]' : ''}
+            ${isFocused ? 'scale-[1.03]' : ''}
+            ${showPulse ? 'animate-pulse-border' : ''}
           `}>
-            {/* Glow effect on focus */}
+            {/* Enhanced glow effect on focus */}
             <div className={`
-              absolute -inset-1 bg-gradient-to-r from-white/10 to-white/5 rounded-2xl blur-xl 
+              absolute -inset-2 bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-purple-500/20 rounded-2xl blur-2xl 
               opacity-0 group-hover:opacity-100 transition-opacity duration-500
-              ${isFocused ? 'opacity-100' : ''}
+              ${isFocused ? 'opacity-100 animate-gradient-x' : ''}
             `} />
             
-            {/* Search input container */}
-            <div className="relative bg-white/[0.03] border border-white/[0.08] rounded-xl overflow-hidden">
+            {/* Search input container with enhanced styling */}
+            <div className="relative bg-gradient-to-r from-white/[0.06] to-white/[0.03] border border-white/[0.12] rounded-2xl overflow-hidden shadow-2xl">
               <div className="flex items-center">
-                <div className="pl-6 pr-4">
-                  <Search className="w-5 h-5 text-white/40" />
+                <div className="pl-7 pr-5">
+                  <Search className="w-6 h-6 text-white/50" />
                 </div>
                 
                 <input
@@ -119,31 +128,31 @@ export default function HeroSearch() {
                   onFocus={() => setIsFocused(true)}
                   onBlur={() => setIsFocused(false)}
                   placeholder={PLACEHOLDER_EXAMPLES[placeholderIndex]}
-                  className="flex-1 py-5 sm:py-6 pr-4 bg-transparent text-base sm:text-lg text-white/90 
-                           placeholder-white/30 focus:outline-none transition-all duration-200"
+                  className="flex-1 py-6 sm:py-7 pr-4 bg-transparent text-lg sm:text-xl text-white 
+                           placeholder-white/40 focus:outline-none transition-all duration-200 font-light"
                 />
                 
                 <button
                   onClick={handleSearch}
                   disabled={!searchValue.trim() || loading}
                   className={`
-                    mr-3 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium text-sm sm:text-base
-                    flex items-center gap-2 transition-all duration-200
+                    mr-4 px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-medium text-base sm:text-lg
+                    flex items-center gap-2.5 transition-all duration-200
                     ${searchValue.trim() && !loading
-                      ? 'bg-white text-gray-900 hover:bg-white/90 hover:scale-105' 
+                      ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:shadow-lg hover:shadow-purple-500/25 hover:scale-105' 
                       : 'bg-white/10 text-white/50 cursor-not-allowed'
                     }
                   `}
                 >
                   {loading ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-gray-400 border-t-gray-600 rounded-full animate-spin" />
-                      <span>Searching...</span>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white/80 rounded-full animate-spin" />
+                      <span>Analyzing...</span>
                     </>
                   ) : (
                     <>
-                      <span>Search</span>
-                      <ArrowRight className="w-4 h-4" />
+                      <span>Discover</span>
+                      <ArrowRight className="w-5 h-5" />
                     </>
                   )}
                 </button>
@@ -151,29 +160,40 @@ export default function HeroSearch() {
             </div>
           </div>
 
-          {/* Search hints */}
-          <div className="mt-4 text-center">
+          {/* Search hints with enhanced styling */}
+          <div className="mt-6 text-center">
             {searchQuery && !loading ? (
-              <div className="inline-flex items-center gap-2 text-sm text-white/60">
-                <span>Finding AI companies similar to:</span>
-                <span className="font-medium text-white/80">"{searchQuery}"</span>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/[0.03] border border-white/[0.08] rounded-full">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-sm text-white/70">AI is analyzing companies similar to:</span>
+                <span className="font-medium text-white">"{searchQuery}"</span>
               </div>
             ) : (
-              <div className="flex items-center justify-center gap-4 text-xs text-white/40">
-                <span>Try searching for:</span>
-                <button 
-                  onClick={() => setSearchValue("AI for sustainable energy")}
-                  className="hover:text-white/70 transition-colors"
-                >
-                  "AI for sustainable energy"
-                </button>
-                <span className="text-white/20">•</span>
-                <button 
-                  onClick={() => setSearchValue("Computer vision in manufacturing")}
-                  className="hover:text-white/70 transition-colors"
-                >
-                  "Computer vision in manufacturing"
-                </button>
+              <div className="space-y-3">
+                <div className="flex items-center justify-center gap-1 text-sm text-white/50">
+                  <Sparkles className="w-4 h-4 text-purple-400/60" />
+                  <span>Example searches:</span>
+                </div>
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  <button 
+                    onClick={() => setSearchValue("AI for sustainable energy")}
+                    className="px-4 py-2 text-sm bg-white/[0.04] border border-white/[0.08] rounded-full hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white transition-all"
+                  >
+                    "AI for sustainable energy"
+                  </button>
+                  <button 
+                    onClick={() => setSearchValue("Computer vision in manufacturing")}
+                    className="px-4 py-2 text-sm bg-white/[0.04] border border-white/[0.08] rounded-full hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white transition-all"
+                  >
+                    "Computer vision in manufacturing"
+                  </button>
+                  <button 
+                    onClick={() => setSearchValue("LLMs for healthcare diagnostics")}
+                    className="px-4 py-2 text-sm bg-white/[0.04] border border-white/[0.08] rounded-full hover:bg-white/[0.08] hover:border-white/[0.12] hover:text-white transition-all"
+                  >
+                    "LLMs for healthcare"
+                  </button>
+                </div>
               </div>
             )}
           </div>

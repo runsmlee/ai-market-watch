@@ -430,6 +430,13 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     // Use filteredStartups during vector search to show current results metadata
     const startupsToAnalyze = isVectorSearchActive ? filteredStartups : allStartups;
     
+    console.log('🔍 getFilterMetadata called:', {
+      allStartupsLength: allStartups.length,
+      filteredStartupsLength: filteredStartups.length,
+      isVectorSearchActive,
+      startupsToAnalyzeLength: startupsToAnalyze.length
+    });
+    
     // If no startups loaded yet, return empty arrays
     if (!startupsToAnalyze || startupsToAnalyze.length === 0) {
       return { categories: [], locations: [] };
@@ -459,6 +466,13 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     
 
     const metadata = { categories, locations };
+    
+    console.log('📊 Filter metadata:', {
+      categoriesCount: categories.length,
+      locationsCount: locations.length,
+      sampleCategories: categories.slice(0, 5),
+      sampleLocations: locations.slice(0, 5)
+    });
     
     
     // Cache for 1 hour (only in browser) and only if we have data AND not in vector search mode

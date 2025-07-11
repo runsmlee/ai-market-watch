@@ -100,6 +100,9 @@ module.exports = {
         'float': 'float 6s ease-in-out infinite',
         'pulse-subtle': 'pulseSubtle 2s ease-in-out infinite',
         'shimmer': 'shimmer 2s linear infinite',
+        'pulse-slow': 'pulse 3s ease-in-out infinite',
+        'pulse-border': 'pulseBorder 2s ease-in-out infinite',
+        'gradient-x': 'gradientX 3s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -133,6 +136,14 @@ module.exports = {
         shimmer: {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(100%)' },
+        },
+        pulseBorder: {
+          '0%, 100%': { borderColor: 'rgba(255, 255, 255, 0.12)' },
+          '50%': { borderColor: 'rgba(255, 255, 255, 0.24)' },
+        },
+        gradientX: {
+          '0%, 100%': { 'background-position': '0% 50%' },
+          '50%': { 'background-position': '100% 50%' },
         },
       },
       borderRadius: {

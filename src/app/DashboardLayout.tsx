@@ -31,6 +31,7 @@ export default function DashboardLayout() {
   }, []);
 
   const {
+    allStartups,
     filteredStartups,
     filters,
     updateFilters,
@@ -99,7 +100,7 @@ export default function DashboardLayout() {
 
   const filterMetadata = React.useMemo(() => {
     return getFilterMetadata();
-  }, [getFilterMetadata]);
+  }, [getFilterMetadata, allStartups.length]);
 
   if (!mounted) {
     return null;
