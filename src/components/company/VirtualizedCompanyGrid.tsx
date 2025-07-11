@@ -22,6 +22,18 @@ export default function VirtualizedCompanyGrid({
   const { sidebarCollapsed } = useDashboardStore();
   const parentRef = useRef<HTMLDivElement>(null);
 
+  // Debug logging
+  useEffect(() => {
+    console.log('🎨 VirtualizedCompanyGrid received companies:', companies.length);
+    if (companies.length > 0) {
+      console.log('🎨 First 3 companies:', companies.slice(0, 3).map(c => ({
+        companyName: c.companyName,
+        category: c.category,
+        vectorSimilarity: c.vectorSimilarity
+      })));
+    }
+  }, [companies]);
+
   // Ensure client-side only rendering for responsive behavior
   useEffect(() => {
     setIsClient(true);

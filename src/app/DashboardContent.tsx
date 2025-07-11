@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, BarChart3 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import StatsGrid from '@/components/layout/StatsGrid';
+import HeroSearch from '@/components/search/HeroSearch';
 import AdvancedFilters from '@/components/filters/AdvancedFilters';
 import DNAMatchFloatingButton from '@/components/dna/DNAMatchFloatingButton';
 import DNAMatchModalWithCompany from '@/components/dna/DNAMatchModalWithCompany';
@@ -88,13 +89,17 @@ export default function DashboardContent() {
     if (!mounted || isInitialized) return;
 
     const initializeData = async () => {
+      // Don't reload if we already have data (e.g., from vector search)
+      const currentState = useDashboardStore.getState();
+      if (currentState.allStartups.length > 0 || currentState.filteredStartups.length > 0) {
+        console.log('📊 Data already loaded, skipping initialization');
+        setIsInitialized(true);
+        return;
+      }
+
       try {
         setLoading(true);
         setError(null);
-        
-        // Clear any existing data first
-        console.log('🧹 Clearing existing data...');
-        setStartups([], null, false);
         
         console.log('🚀 Initializing dashboard data...');
         
@@ -103,38 +108,12 @@ export default function DashboardContent() {
           forceRefresh: true,
           includeStats: true 
         });
-        
-        console.log('📊 API Response received:', {
-          dataLength: response.transformedData?.length || 0,
-          rawDataLength: response.data?.length || 0,
-          lastUpdated: response.lastUpdated,
-          hasError: !!response.error,
-          responseKeys: Object.keys(response),
-          hasTransformedData: !!response.transformedData,
-          transformedDataSample: response.transformedData?.slice(0, 1),
-          source: response.source || 'unknown'
-        });
 
         if (response.error) {
           throw new Error(response.message || 'Failed to fetch data');
         }
 
         const startups = response.transformedData || [];
-        console.log('🏗️ About to set startups:', {
-          startupsCount: startups.length,
-          firstStartup: startups[0],
-          firstStartupKeys: startups[0] ? Object.keys(startups[0]) : [],
-          firstStartupCompanyName: startups[0]?.companyName,
-          firstStartupCompanyNameType: typeof startups[0]?.companyName,
-          sampleData: startups.slice(0, 3).map(s => ({
-            id: s.id,
-            companyName: s.companyName,
-            companyNameType: typeof s.companyName,
-            category: s.category,
-            yearFounded: s.yearFounded
-          }))
-        });
-        
         setStartups(startups, response.lastUpdated, false);
         setIsInitialized(true);
         
@@ -207,7 +186,10 @@ export default function DashboardContent() {
         {/* Stats Grid */}
         <StatsGrid stats={stats} />
         
-        {/* Filters */}
+        {/* Hero Search - Moved below stats for better flow */}
+        <HeroSearch />
+        
+        {/* Advanced Filters - Renamed from Filters */}
         <AdvancedFilters 
           filters={filters}
           onFiltersChange={updateFilters}

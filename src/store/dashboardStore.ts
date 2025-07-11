@@ -17,6 +17,8 @@ interface DashboardState {
 
   // Filters
   filters: StartupFilters;
+  searchQuery: string | null;
+  isVectorSearchActive: boolean;
   
   // Performance
   isProcessing: boolean;
@@ -26,7 +28,7 @@ interface DashboardState {
   setStartups: (startups: Startup[], lastUpdated?: string, isFromCache?: boolean) => void;
   updateFilters: (filters: Partial<StartupFilters>) => void;
   applyFilters: () => Promise<void>;
-  performVectorSearch: () => Promise<void>;
+  performVectorSearch: (query?: string) => Promise<void>;
   sortStartups: (startups: Startup[], sortBy: SortOption) => Startup[];
   clearFilters: () => void;
   setLoading: (loading: boolean) => void;
@@ -104,6 +106,8 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   error: null,
   lastUpdated: null,
   isFromCache: false,
+  searchQuery: null,
+  isVectorSearchActive: false,
   isProcessing: false,
   processingTask: null,
   
@@ -119,20 +123,21 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   sidebarCollapsed: true,
 
   setStartups: (startups, lastUpdated, isFromCache = false) => {
-    console.log('📊 Setting startups:', { 
-      count: startups.length, 
-      lastUpdated, 
-      isFromCache,
-      firstStartup: startups[0]
-    });
-    
-
+    // Don't override if vector search is active
+    const { isVectorSearchActive, filteredStartups } = get();
+    if (isVectorSearchActive) {
+      console.log('🛡️ Vector search active, preventing data override in setStartups');
+      console.log('Keeping vector results:', filteredStartups.length, 'companies');
+      if (filteredStartups.length > 0) {
+        console.log('Current vector results sample:', filteredStartups.slice(0, 3).map(s => s.companyName));
+      }
+      return;
+    }
     
     // Get current filters and sort function
     const { filters, sortStartups } = get();
     
     // Apply filters immediately with the new data
-    console.log('🔍 Applying filters to new startups...');
     const filtered = startups.filter((startup) => {
       // Search filter
       if (filters.search.trim()) {
@@ -187,22 +192,40 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       isFromCache 
     });
     
-    console.log('✅ Startups set and filtered:', {
-      totalCount: startups.length,
-      filteredCount: sorted.length,
-      firstFiltered: sorted[0],
-      sampleFiltered: sorted.slice(0, 3).map(s => ({
-        id: s.id,
-        companyName: s.companyName,
-        category: s.category
-      })),
-      stats
-    });
+    console.log('✅ Startups loaded:', startups.length, 'total,', sorted.length, 'after filters');
   },
 
   updateFilters: async (newFilters) => {
     console.log('🔧 Updating filters:', newFilters);
     
+    const currentState = get();
+    
+    // 🛡️ CRITICAL: During vector search, only allow clearing search filter
+    if (currentState.isVectorSearchActive) {
+      console.log('🛡️ Vector search active - checking filter update');
+      
+      // Only process if search is being cleared
+      if ('search' in newFilters && newFilters.search === '') {
+        console.log('🛡️ Search cleared - deactivating vector search');
+        
+        // Reset to full data when clearing vector search
+        set({ 
+          isVectorSearchActive: false,
+          filters: { ...currentState.filters, ...newFilters }
+        });
+        
+        // Reload full dataset
+        const { refreshData } = get();
+        refreshData();
+        return;
+      }
+      
+      // Block all other filter updates during vector search
+      console.log('🛡️ Blocking filter update during vector search');
+      return;
+    }
+    
+    // Normal filter update
     set((state) => ({
       filters: { ...state.filters, ...newFilters }
     }));
@@ -212,7 +235,17 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   },
 
   applyFilters: async () => {
-    const { allStartups, filters, processDataInBackground, calculateStatsInBackground } = get();
+    const { allStartups, filters, processDataInBackground, calculateStatsInBackground, isVectorSearchActive, filteredStartups } = get();
+    
+    // Don't apply text-based filtering when vector search is active
+    if (isVectorSearchActive) {
+      console.log('🛡️ Vector search active, skipping text-based filtering');
+      console.log('Current vector results:', filteredStartups.length, 'companies');
+      if (filteredStartups.length > 0) {
+        console.log('First 3 vector results:', filteredStartups.slice(0, 3).map(s => s.companyName));
+      }
+      return;
+    }
     
     console.log('🔍 applyFilters called with:', {
       allStartupsLength: allStartups.length,
@@ -351,6 +384,14 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   sortStartups: (startups, sortBy) => {
     const sorted = [...startups];
     
+    // 🔍 CRITICAL: During vector search, preserve similarity order
+    const { isVectorSearchActive } = get();
+    if (isVectorSearchActive && sorted.length > 0 && sorted[0].vectorSimilarity !== undefined) {
+      console.log('🔍 Preserving vector similarity order');
+      // Keep the original order from vector search (already sorted by similarity)
+      return sorted;
+    }
+    
     switch (sortBy) {
       case 'name':
         return sorted.sort((a, b) => (a.companyName || '').localeCompare(b.companyName || ''));
@@ -387,7 +428,9 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
         yearFrom: 2000,
         yearTo: new Date().getFullYear(),
         sortBy: 'recent' as SortOption,
-      }
+      },
+      searchQuery: null,
+      isVectorSearchActive: false
     });
     
     get().applyFilters();
@@ -433,41 +476,45 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
   },
 
   getFilterMetadata: () => {
-    const { allStartups } = get();
+    const { allStartups, filteredStartups, isVectorSearchActive } = get();
+    
+    // CRITICAL: Use filteredStartups during vector search to show current results metadata
+    const startupsToAnalyze = isVectorSearchActive ? filteredStartups : allStartups;
     
     console.log('🔍 getFilterMetadata called with:', {
-      allStartupsCount: allStartups.length,
-      sampleStartup: allStartups[0],
-      sampleCategory: allStartups[0]?.category,
-      sampleLocation: allStartups[0]?.location
+      isVectorSearchActive,
+      dataSource: isVectorSearchActive ? 'filteredStartups' : 'allStartups',
+      count: startupsToAnalyze.length,
+      sampleCategory: startupsToAnalyze[0]?.category,
+      sampleLocation: startupsToAnalyze[0]?.location
     });
     
     // If no startups loaded yet, return empty arrays
-    if (!allStartups || allStartups.length === 0) {
+    if (!startupsToAnalyze || startupsToAnalyze.length === 0) {
       console.log('⚠️ No startups loaded yet, returning empty metadata');
       return { categories: [], locations: [] };
     }
     
-    // Try to get from cache first
-    const cached = DataCache.get<{ categories: string[]; locations: string[] }>({ 
-      key: CACHE_KEYS.FILTERS_META 
-    });
-    if (cached && cached.categories.length > 0 && cached.locations.length > 0) {
-      console.log('📋 Using cached filter metadata:', JSON.stringify(cached, null, 2));
-      return cached;
-    } else if (cached) {
-      console.log('⚠️ Found cached metadata but it was empty, clearing cache:', JSON.stringify(cached, null, 2));
-      DataCache.remove(CACHE_KEYS.FILTERS_META);
+    // Skip cache during vector search
+    if (!isVectorSearchActive) {
+      // Try to get from cache first
+      const cached = DataCache.get<{ categories: string[]; locations: string[] }>({ 
+        key: CACHE_KEYS.FILTERS_META 
+      });
+      if (cached && cached.categories.length > 0 && cached.locations.length > 0) {
+        console.log('📋 Using cached filter metadata');
+        return cached;
+      }
     }
 
-    // Calculate fresh metadata
+    // Calculate fresh metadata from the appropriate data source
     console.log('🔬 Analyzing startup data for metadata:');
-    console.log('First 5 startups categories:', allStartups.slice(0, 5).map(s => s.category));
-    console.log('First 5 startups locations:', allStartups.slice(0, 5).map(s => s.location));
+    console.log('First 5 startups categories:', startupsToAnalyze.slice(0, 5).map(s => s.category));
+    console.log('First 5 startups locations:', startupsToAnalyze.slice(0, 5).map(s => s.location));
     
-    const categories = Array.from(new Set(allStartups.map(s => s.category))).filter(Boolean) as string[];
+    const categories = Array.from(new Set(startupsToAnalyze.map(s => s.category))).filter(Boolean) as string[];
     const locations = Array.from(new Set(
-      allStartups.map(s => {
+      startupsToAnalyze.map(s => {
         if (!s.location) return 'Unknown';
         // Extract city from "City, State/Country" format
         const city = s.location.split(',')[0].trim();
@@ -482,10 +529,12 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     
     console.log('📊 Generated fresh filter metadata:', JSON.stringify(metadata, null, 2));
     
-    // Cache for 1 hour (only in browser) and only if we have data
-    if (categories.length > 0 && locations.length > 0) {
+    // Cache for 1 hour (only in browser) and only if we have data AND not in vector search mode
+    if (!isVectorSearchActive && categories.length > 0 && locations.length > 0) {
       DataCache.set({ key: CACHE_KEYS.FILTERS_META, ttl: 60 * 60 * 1000 }, metadata);
       console.log('✅ Cached non-empty filter metadata');
+    } else if (isVectorSearchActive) {
+      console.log('🔍 Not caching metadata during vector search');
     } else {
       console.log('⚠️ Not caching empty filter metadata');
     }
@@ -532,16 +581,25 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     }
   },
 
-  performVectorSearch: async () => {
+  performVectorSearch: async (query?: string) => {
     const { filters, setLoading, setError } = get();
     
-    const searchQuery = filters.search.trim();
+    // Use provided query or fall back to filter search
+    const searchQuery = (query || filters.search).trim();
     if (!searchQuery) {
       console.log('🔍 No search query for vector search');
       return;
     }
     
     console.log('🚀 Performing vector search for:', searchQuery);
+    
+    // First set vector search active, then update search filter
+    set({ 
+      searchQuery, 
+      isVectorSearchActive: true,
+      filters: { ...filters, search: searchQuery }
+    });
+    console.log('🛡️ Vector search protection activated');
     
     try {
       setLoading(true);
@@ -567,25 +625,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       // searchResponse.data already contains all the fields from SearchResult (extends Startup)
       const vectorResults = searchResponse.data;
       
-      // 🔍 COMPREHENSIVE: Log ALL fields to check for missing data
-      if (vectorResults.length > 0) {
-        const first = vectorResults[0];
-        console.log('📊 Complete search result data check (32 fields):');
-        console.log('Basic Info:', { id: first.id, companyName: first.companyName, location: first.location, category: first.category });
-        console.log('Team:', { ceo: first.ceo, previousExperience: first.previousExperience, keyMembers: first.keyMembers, teamSize: first.teamSize });
-        console.log('Business:', { description: first.description, currentStage: first.currentStage, targetCustomer: first.targetCustomer, mainValueProposition: first.mainValueProposition });
-        console.log('Products:', { keyProducts: first.keyProducts, industryVerticals: first.industryVerticals, uvp: first.uvp });
-        console.log('Tech:', { technologicalAdvantage: first.technologicalAdvantage, patents: first.patents, keyPartnerships: first.keyPartnerships });
-        console.log('Competition:', { competitors: first.competitors, differentiation: first.differentiation, marketPositioning: first.marketPositioning, geographicFocus: first.geographicFocus });
-        console.log('Funding:', { totalFundingRaised: first.totalFundingRaised, latestFundingRound: first.latestFundingRound, keyInvestors: first.keyInvestors });
-        console.log('Growth:', { growthMetrics: first.growthMetrics, notableCustomers: first.notableCustomers, majorMilestones: first.majorMilestones });
-        console.log('Meta:', { webpage: first.webpage, yearFounded: first.yearFounded, updatedDate: first.updatedDate, postingStatus: first.postingStatus });
-        
-        // Count undefined/null/empty fields
-        const allFields = Object.entries(first);
-        const emptyFields = allFields.filter(([key, value]) => !value || value === '').map(([key]) => key);
-        console.log(`❌ Empty/missing fields (${emptyFields.length}/${allFields.length}):`, emptyFields);
-      }
+      console.log('📊 Vector search found:', vectorResults.length, 'results');
       
       // Apply year filter if needed
       const yearFiltered = vectorResults.filter(startup => {
@@ -597,19 +637,36 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       });
       
       const sorted = get().sortStartups(yearFiltered, filters.sortBy);
-      const stats = calculateDashboardStats(get().allStartups, sorted);
+      // Use vectorResults for stats calculation, not old allStartups
+      const stats = calculateDashboardStats(vectorResults, sorted);
       
+      // 🔧 CRITICAL: Set both allStartups and filteredStartups to prevent override
       set({ 
+        allStartups: vectorResults,  // This is the key - set the full dataset
         filteredStartups: sorted, 
         stats,
         loading: false
       });
       
+      // 🛡️ Log the final state to verify
+      const finalState = get();
+      console.log('🎯 Final state after vector search:', {
+        allStartupsCount: finalState.allStartups.length,
+        filteredStartupsCount: finalState.filteredStartups.length,
+        isVectorSearchActive: finalState.isVectorSearchActive
+      });
+      
       console.log(`✅ Vector search completed: ${sorted.length} results`);
+      console.log('🎯 First 3 companies in filteredStartups:', sorted.slice(0, 3).map(s => ({
+        companyName: s.companyName,
+        category: s.category,
+        vectorSimilarity: s.vectorSimilarity
+      })));
     } catch (error) {
       console.error('❌ Vector search failed:', error);
       setError(error instanceof Error ? error.message : 'Vector search failed');
       setLoading(false);
+      set({ isVectorSearchActive: false });
     }
   }
 }));

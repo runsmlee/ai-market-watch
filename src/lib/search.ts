@@ -51,7 +51,13 @@ export async function searchCompanies(
       params.append('locations', options.locations.join(','));
     }
 
-    const response = await fetch(`/api/startups/search?${params}`);
+    // GET 요청으로 변경 (API가 GET만 지원)
+    const response = await fetch(`/api/startups/search?${params}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
     if (!response.ok) {
       throw new Error(`Search failed: ${response.status}`);
     }
