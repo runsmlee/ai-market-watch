@@ -58,7 +58,7 @@ export default function Header() {
             name: 'AI Market Watch',
             description: 'AI Startups Intelligence Platform',
             url: 'https://ai-market-watch.com',
-            logo: 'https://ai-market-watch.com/logo.png',
+            logo: 'https://ai-market-watch.com/logo_without_text.png',
             sameAs: [
               'https://twitter.com/aimarketwatch',
               'https://linkedin.com/company/aimarketwatch'
@@ -94,10 +94,11 @@ export default function Header() {
               {/* Logo with subtle glow effect */}
               <div className="absolute inset-0 bg-white/5 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <Image 
-                src="/ai-market-watch-logo.png" 
+                src="/logo_without_text.png" 
                 alt="AI Market Watch Logo" 
                 width={60} 
                 height={60}
+                priority={true}
                 className="sm:w-20 sm:h-20 opacity-90 relative z-10 hover:opacity-100 transition-opacity duration-300"
               />
             </div>

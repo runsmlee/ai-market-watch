@@ -67,7 +67,7 @@ export async function fetchCompanyFromSupabase(companyId: string): Promise<any |
       return null;
     }
     
-    console.log('Fetching from startup_vectors with ID:', companyId);
+    // Fetching from startup_vectors
     
     const { data, error } = await supabase
       .from('startup_vectors')
@@ -107,11 +107,12 @@ export async function fetchAllStartupsFromSupabase(): Promise<Startup[] | null> 
       return null;
     }
     
-    console.log('Fetching all startups from startup_vectors');
-    
+    // Fetching all startups from startup_vectors
+    // Adding explicit limit to ensure we get all records (default is 1000)
     const { data, error } = await supabase
       .from('startup_vectors')
-      .select('id, metadata');
+      .select('id, metadata')
+      .limit(5000); // Set higher than expected count to ensure all startups are fetched
 
     if (error) {
       console.error('Supabase error:', error);
@@ -123,7 +124,7 @@ export async function fetchAllStartupsFromSupabase(): Promise<Startup[] | null> 
       return [];
     }
 
-    console.log(`Found ${data.length} startups in Supabase`);
+    // Found startups in Supabase
     
     // Convert each startup to the expected format
     const startups = data
@@ -133,12 +134,7 @@ export async function fetchAllStartupsFromSupabase(): Promise<Startup[] | null> 
       })
       .filter((startup): startup is Startup => startup !== null); // Type-safe filter
 
-    console.log(`Successfully converted ${startups.length} startups`);
-    console.log('First 3 startups:', startups.slice(0, 3).map(s => ({
-      id: s.id,
-      companyName: s.companyName,
-      category: s.category
-    })));
+    // Successfully converted startups
 
     return startups;
   } catch (error) {
@@ -200,8 +196,7 @@ export function convertSupabaseToStartup(id: string, metadata: any): Startup | n
       postingStatus: data["Posting"] || ''
     };
 
-    // Log the full converted startup object
-    console.log('Converted startup (full):', JSON.stringify(startup, null, 2));
+    // Conversion complete
 
     return startup;
   } catch (error) {
