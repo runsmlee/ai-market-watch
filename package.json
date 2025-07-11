@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "cleanup-duplicates": "tsx scripts/cleanup-duplicates.ts"
+    "cleanup-duplicates": "tsx scripts/cleanup-duplicates.ts",
+    "sync-vectors": "tsx scripts/sync-vectors.ts"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.3.0",

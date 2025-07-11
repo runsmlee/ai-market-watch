@@ -1,0 +1,24 @@
+name: Sync Startup Vectors
+
+on:
+  schedule:
+    # Run every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Call Supabase Edge Function
+      run: |
+        curl -X POST \
+          "${{ secrets.SUPABASE_URL }}/functions/v1/sync-startup-vectors" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+          -H "Content-Type: application/json" \
+          -d '{}'
+    
+    - name: Log sync result
+      if: always()
+      run: echo "Sync completed at $(date)"

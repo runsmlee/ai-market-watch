@@ -712,7 +712,7 @@ export async function uploadPDFToStorage(
       return null;
     }
     
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('dna-reports')
       .upload(fileName, pdfBuffer, {
         contentType: 'application/pdf',

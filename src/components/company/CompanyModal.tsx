@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { X, ExternalLink, Building2, TrendingUp, Users, Target, Shield, Lightbulb, Award, Globe, DollarSign, Calendar, Star, BarChart3, ChevronRight } from 'lucide-react';
 import { Startup } from '@/types/startup';
 import CompanyLogo from './CompanyLogo';
+import Image from 'next/image';
 import {
   RadarChart,
   PolarGrid,
@@ -416,10 +417,10 @@ export default function CompanyModal({ company, isOpen, onClose }: CompanyModalP
       />
       
       {/* Modal container */}
-      <div className="relative z-10 h-full flex items-center justify-center p-4 sm:p-8">
+      <div className="relative z-10 h-full flex flex-col items-center justify-center p-4 sm:p-8">
         <div 
           className="relative w-full max-w-6xl rounded-xl sm:rounded-2xl 
-                     max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] flex flex-col
+                     max-h-[calc(100vh-6rem)] sm:max-h-[calc(100vh-8rem)] flex flex-col
                      bg-black/90 backdrop-blur-xl shadow-2xl shadow-black/60
                      border border-white/[0.15]"
           onClick={(e) => e.stopPropagation()}
@@ -490,6 +491,36 @@ export default function CompanyModal({ company, isOpen, onClose }: CompanyModalP
             {activeTab === 'overview' && <OverviewTab company={company} />}
             {activeTab === 'analysis' && <VCAnalysisTab company={company} radarData={radarData} />}
             {activeTab === 'funding' && <FundingTab company={company} timelineData={timelineData} />}
+          </div>
+        </div>
+        
+        {/* Footer with branding - Outside the card */}
+        <div className="flex items-center justify-between w-full max-w-6xl mt-4 px-4 sm:px-0">
+          {/* AI Market Watch logo */}
+          <div className="flex items-center gap-2">
+            <Image 
+              src="/logo_without_text.png" 
+              alt="AI Market Watch" 
+              width={20} 
+              height={20}
+              className="opacity-60 hover:opacity-80 transition-opacity"
+            />
+            <span className="text-xs text-white/50 font-medium">AI Market Watch</span>
+          </div>
+          
+          {/* Powered by WeeklyVentures */}
+          <div className="flex items-center gap-1.5 text-xs">
+            <span className="text-white/40">Powered by</span>
+            <a 
+              href="https://weeklyventures.xyz" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-orange-400/80 hover:text-orange-300 font-medium transition-colors duration-200 
+                       flex items-center gap-0.5"
+            >
+              WeeklyVentures
+              <ExternalLink className="w-2.5 h-2.5" />
+            </a>
           </div>
         </div>
       </div>
